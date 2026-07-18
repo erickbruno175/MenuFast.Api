@@ -1,6 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
-
-namespace MenuFast.Api.Api.Domain.Entities.Models.Cliente;
+﻿namespace MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
 
 public class Impressora {
     public Guid Id { get; set; }

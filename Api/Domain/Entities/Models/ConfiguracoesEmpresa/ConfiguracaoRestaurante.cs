@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Domain.Entities.Models.Empresa;
+﻿
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
 

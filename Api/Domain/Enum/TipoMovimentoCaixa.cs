@@ -1,10 +1,10 @@
 ﻿namespace MenuFast.Api.Api.Domain.Enum {
     public enum TipoMovimentoCaixa {
-        Venda = 1,
-        Sangria = 2,
-        Suprimento = 3,
-        Recebimento = 4,
-        Pagamento = 5,
-        Estorno = 6
+        Venda = 0,
+        Sangria = 1,
+        Suprimento = 2,
+        Recebimento = 3,
+        Pagamento = 4,
+        Estorno = 5
     }
 }

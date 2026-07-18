@@ -1,9 +1,9 @@
 ﻿namespace MenuFast.Api.Api.Domain.Enum;
 
 public enum TipoTerminal {
-    Caixa = 1,
-    Garcom = 2,
-    Cozinha = 3,
-    Gerencia = 4,
-    AutoAtendimento = 5
+    Caixa = 0,
+    Garcom = 1,
+    Cozinha = 2,
+    Gerencia = 3,
+    AutoAtendimento = 4
 }

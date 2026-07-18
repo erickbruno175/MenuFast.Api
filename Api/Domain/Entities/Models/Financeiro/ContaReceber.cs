@@ -1,4 +1,6 @@
-﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
+﻿using MenuFast.Api.Api.Domain.Enum;
+
+namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 
 public class ContaReceber {
     public Guid Id { get; set; }
@@ -8,4 +10,6 @@ public class ContaReceber {
     public DateTime DataVencimento { get; set; }
     public DateTime? DataRecebimento { get; set; }
     public bool Recebido { get; set; }
+    public StatusContaFinanceira Status { get; set; }
+
 }

@@ -1,5 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Usuario;
-
+﻿
 namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
     public class Caixa {
         public Guid Id { get; set; }
@@ -11,6 +10,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
         public DateTime? DataFechamento { get; set; }
         public ICollection<MovimentoCaixa> Movimentos { get; set; } = [ ];
         public int FuncioanrioId { get; set; }
-        public Funcionario Funcionario{  get; set; }
+        public Funcionario.Funcionario Funcionario{  get; set; }
     }
 }

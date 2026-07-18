@@ -14,5 +14,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
         public string? FotoProduto { get; set; }
         public CategoriaProduto? CategoriaProduto { get; set; }
         public ICollection<Complemento> Complementos { get; set; } = new List<Complemento>();
+
     }
 }
