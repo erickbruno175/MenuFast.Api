@@ -7,6 +7,7 @@ using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
+using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using Microsoft.EntityFrameworkCore;
 
 namespace MenuFast.Api.Api.Persistence.Context;
@@ -51,7 +52,7 @@ public class MenuFastContext : DbContext {
     public DbSet<Perfil> Perfis { get; set; }
     public DbSet<Permissao> Permissoes { get; set; }
     public DbSet<PerfilPermissao> PerfilPermissoes { get; set; }
-
+    public DbSet<HistoricoAcesso> HistoricoAcessos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);

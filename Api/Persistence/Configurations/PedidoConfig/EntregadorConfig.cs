@@ -8,6 +8,8 @@ public class EntregadorConfig : IEntityTypeConfiguration<Entregador> {
     public void Configure(EntityTypeBuilder<Entregador> builder) {
         builder.ToTable("Entregador");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(5001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único do entregador.");
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(150).HasComment("Nome do entregador.");
         builder.Property(x => x.Telefone).HasMaxLength(20).HasComment("Telefone do entregador.");

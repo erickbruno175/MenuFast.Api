@@ -1,7 +1,7 @@
 ﻿using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 
 public class Entregador {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Telefone { get; set; } = string.Empty;
     public string MarcaMoto { get; set; } = string.Empty;

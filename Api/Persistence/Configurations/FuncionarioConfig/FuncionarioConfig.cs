@@ -8,6 +8,7 @@ public class FuncionarioConfig : IEntityTypeConfiguration<Funcionario> {
     public void Configure(EntityTypeBuilder<Funcionario> builder) {
         builder.ToTable("Funcionario");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1000, 1);
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(150);
         builder.Property(x => x.Cpf).IsRequired().HasMaxLength(11);
         builder.HasIndex(x => x.Cpf).IsUnique();
@@ -22,8 +23,13 @@ public class FuncionarioConfig : IEntityTypeConfiguration<Funcionario> {
         builder.Property(x => x.DataAdmissao).IsRequired();
         builder.Property(x => x.Salario).HasColumnType("decimal(18,2)");
         builder.Property(x => x.DataCadastro).IsRequired();
-        builder.Property(x => x.UltimoLogin);
+        builder.Property(x => x.Bloqueado);
+        builder.Property(x => x.DataBloqueio);
+        builder.Property(x => x.DataUltimoLogin);
+        builder.Property(x => x.TentativasLogin);
+
         builder.HasOne(x => x.Perfil).WithMany().HasForeignKey(x => x.PerfilId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.Funcao).WithMany(x => x.Funcionarios).HasForeignKey(x => x.FuncaoId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(x => x.Empresa).WithMany().HasForeignKey(x => x.EmpresaId).OnDelete(DeleteBehavior.Restrict);
     }
 }

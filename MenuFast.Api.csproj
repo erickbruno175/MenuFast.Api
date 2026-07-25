@@ -22,6 +22,8 @@
 
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 
+		<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
+
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
 
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
@@ -46,6 +48,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 
+		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+
 
 		<PackageReference Include="QuestPDF" Version="2026.7.0" />
 
@@ -59,7 +63,9 @@
 
 
 	<ItemGroup>
-		<Folder Include="Api\Domain\Entities\Models\Historico\" />
+		<Folder Include="Api\Application\Services\EmpresaConfiguracoes\" />
+		<Folder Include="Api\Domain\Entities\Models\NovaPasta\" />
+		<Folder Include="Api\Endpoints\" />
 	</ItemGroup>
 
 

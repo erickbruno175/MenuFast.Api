@@ -8,6 +8,8 @@ public class ItemPedidoConfig : IEntityTypeConfiguration<ItemPedido> {
     public void Configure(EntityTypeBuilder<ItemPedido> builder) {
         builder.ToTable("ItemPedido");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(3001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único do item do pedido.");
         builder.Property(x => x.PedidoId).HasComment("Pedido vinculado ao item.");
         builder.Property(x => x.ProdutoId).HasComment("Produto vinculado ao item.");

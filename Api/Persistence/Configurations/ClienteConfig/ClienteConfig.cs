@@ -8,6 +8,8 @@ public class ClienteConfig : IEntityTypeConfiguration<Cliente> {
     public void Configure(EntityTypeBuilder<Cliente> builder) {
         builder.ToTable("Cliente");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único do cliente.");
         builder.Property(x => x.EmpresaId).HasComment("Empresa à qual o cliente pertence.");
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(150).HasComment("Nome completo do cliente.");

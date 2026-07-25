@@ -8,6 +8,7 @@ public class CaixaConfig : IEntityTypeConfiguration<Caixa> {
     public void Configure(EntityTypeBuilder<Caixa> builder) {
         builder.ToTable("Caixa");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(100, 1);
         builder.Property(x => x.Id).HasComment("Identificador único do caixa.");
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(100).HasComment("Nome do caixa.");
         builder.Property(x => x.Aberto).HasComment("Indica se o caixa está aberto.");

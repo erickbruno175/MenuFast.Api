@@ -9,6 +9,8 @@ public class ConfiguracaoRestauranteConfig : IEntityTypeConfiguration<Configurac
     public void Configure(EntityTypeBuilder<ConfiguracaoRestaurante> builder) {
         builder.ToTable("ConfiguracaoRestaurante");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único da configuração do restaurante.");
         builder.Property(x => x.EmpresaId).HasComment("Empresa vinculada à configuração do restaurante.");
         builder.Property(x => x.TrabalhaComMesa).HasComment("Indica se o restaurante trabalha com controle de mesas.");

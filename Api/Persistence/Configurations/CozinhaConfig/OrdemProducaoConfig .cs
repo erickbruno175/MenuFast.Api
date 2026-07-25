@@ -8,6 +8,8 @@ public class OrdemProducaoConfig : IEntityTypeConfiguration<OrdemProducao> {
     public void Configure(EntityTypeBuilder<OrdemProducao> builder) {
         builder.ToTable("OrdemProducao");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único da ordem de produção.");
         builder.Property(x => x.PedidoId).HasComment("Pedido vinculado à ordem de produção.");
         builder.Property(x => x.FuncionarioId).HasComment("Funcionário responsável pela produção.");

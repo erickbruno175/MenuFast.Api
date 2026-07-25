@@ -8,6 +8,8 @@ public class ChavePixConfig : IEntityTypeConfiguration<ChavePix> {
     public void Configure(EntityTypeBuilder<ChavePix> builder) {
         builder.ToTable("ChavePix");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único da chave Pix.");
         builder.Property(x => x.ContaBancariaId).IsRequired().HasComment("Identificador da conta bancária vinculada à chave Pix.");
         builder.Property(x => x.Tipo).IsRequired().HasComment("Tipo da chave Pix: CPF, CNPJ, e-mail, telefone ou chave aleatória.");

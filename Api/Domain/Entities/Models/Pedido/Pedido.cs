@@ -5,8 +5,8 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 
 public class Pedido {
     public int Id { get; set; }
-    public Guid? MesaId { get; set; }
-    public Guid? ClienteId { get; set; }
+    public int? MesaId { get; set; }
+    public int? ClienteId { get; set; }
     public Guid? FuncionarioId { get; set; }
     public StatusPedido Status { get; set; }
     public TipoPedido TipoPedido { get; set; }

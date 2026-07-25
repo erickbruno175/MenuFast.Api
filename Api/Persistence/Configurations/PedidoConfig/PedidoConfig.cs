@@ -8,6 +8,8 @@ public class PedidoConfig : IEntityTypeConfiguration<Pedido> {
     public void Configure(EntityTypeBuilder<Pedido> builder) {
         builder.ToTable("Pedido");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 10);
+
         builder.Property(x => x.Id).HasComment("Identificador único do pedido.");
         builder.Property(x => x.MesaId).HasComment("Mesa vinculada ao pedido.");
         builder.Property(x => x.ClienteId).HasComment("Cliente vinculado ao pedido.");

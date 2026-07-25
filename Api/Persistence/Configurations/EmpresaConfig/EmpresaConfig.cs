@@ -8,6 +8,7 @@ public class EmpresaConfig : IEntityTypeConfiguration<Empresa> {
     public void Configure(EntityTypeBuilder<Empresa> builder) {
         builder.ToTable("Empresa");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(100, 1);
         builder.Property(x => x.Id).HasComment("Identificador único da empresa.");
         builder.Property(x => x.Slug).HasMaxLength(100).IsRequired().HasComment("Slug único utilizado para identificar a empresa na URL.");
         builder.HasIndex(x => x.Slug).IsUnique();
@@ -35,5 +36,6 @@ public class EmpresaConfig : IEntityTypeConfiguration<Empresa> {
         builder.Property(x => x.YouTube).HasComment("URL do canal da empresa no YouTube.");
         builder.Property(x => x.LinkedIn).HasComment("URL da página da empresa no LinkedIn.");
         builder.Property(x => x.Site).HasComment("Site oficial da empresa.");
+       
     }
 }

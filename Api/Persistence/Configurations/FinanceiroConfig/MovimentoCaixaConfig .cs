@@ -8,6 +8,8 @@ public class MovimentoCaixaConfig : IEntityTypeConfiguration<MovimentoCaixa> {
     public void Configure(EntityTypeBuilder<MovimentoCaixa> builder) {
         builder.ToTable("MovimentoCaixa");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(11001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único do movimento de caixa.");
         builder.Property(x => x.CaixaId).HasComment("Caixa vinculado ao movimento.");
         builder.Property(x => x.FuncionarioId).HasComment("Funcionário responsável pelo movimento.");

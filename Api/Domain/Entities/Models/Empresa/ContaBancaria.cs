@@ -1,8 +1,8 @@
 ﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Empresa;
 
 public class ContaBancaria {
-    public Guid Id { get; set; }
-    public Guid EmpresaId { get; set; }
+    public int Id { get; set; }
+    public int EmpresaId { get; set; }
     public string Banco { get; set; } = string.Empty;
     public string Agencia { get; set; } = string.Empty;
     public string Conta { get; set; } = string.Empty;

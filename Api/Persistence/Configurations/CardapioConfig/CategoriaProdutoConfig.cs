@@ -8,6 +8,8 @@ public class CategoriaProdutoConfig : IEntityTypeConfiguration<CategoriaProduto>
     public void Configure(EntityTypeBuilder<CategoriaProduto> builder) {
         builder.ToTable("CategoriaProduto");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único da categoria de produtos.");
         builder.Property(x => x.CardapioId).HasComment("Cardápio ao qual a categoria pertence.");
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(100).HasComment("Nome da categoria.");

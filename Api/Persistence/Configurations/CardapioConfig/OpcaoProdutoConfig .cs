@@ -8,6 +8,8 @@ public class OpcaoProdutoConfig : IEntityTypeConfiguration<OpcaoProduto> {
     public void Configure(EntityTypeBuilder<OpcaoProduto> builder) {
         builder.ToTable("OpcaoProduto");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único da opção do produto.");
         builder.Property(x => x.ProdutoId).HasComment("Produto ao qual a opção pertence.");
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(100).HasComment("Nome da opção do produto.");

@@ -8,6 +8,8 @@ public class EntregaConfig : IEntityTypeConfiguration<Entrega> {
     public void Configure(EntityTypeBuilder<Entrega> builder) {
         builder.ToTable("Entrega");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(6001, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único da entrega.");
         builder.Property(x => x.PedidoId).HasComment("Pedido vinculado à entrega.");
         builder.Property(x => x.ClienteEnderecoId).HasComment("Endereço do cliente para entrega.");

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace MenuFast.Api.Api.Helpers;
+namespace MenuFast.Api.Api.Util.Helpers;
 
 public static class PasswordHelper {
     private static readonly PasswordHasher<string> Hasher = new();

@@ -1,7 +1,7 @@
 ﻿
 namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
     public class Caixa {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Nome { get; set; } = string.Empty;
         public bool Aberto { get; set; }
         public decimal ValorAbertura { get; set; }

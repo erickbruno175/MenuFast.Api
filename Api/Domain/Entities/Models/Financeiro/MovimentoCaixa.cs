@@ -6,10 +6,10 @@ using MenuFast.Api.Api.Domain.Enum;
 namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 
 public class MovimentoCaixa {
-    public Guid Id { get; set; }
-    public Guid CaixaId { get; set; }
+    public int Id { get; set; }
+    public int CaixaId { get; set; }
     public Caixa Caixa { get; set; } = null!;
-    public Guid FuncionarioId { get; set; }
+    public int FuncionarioId { get; set; }
     public TipoMovimentoCaixa Tipo { get; set; }
     public decimal Valor { get; set; }
     public string? Descricao { get; set; }
