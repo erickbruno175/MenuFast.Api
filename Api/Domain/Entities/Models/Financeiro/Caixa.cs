@@ -1,8 +1,7 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Usuario;
-
+﻿
 namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
     public class Caixa {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Nome { get; set; } = string.Empty;
         public bool Aberto { get; set; }
         public decimal ValorAbertura { get; set; }
@@ -11,6 +10,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
         public DateTime? DataFechamento { get; set; }
         public ICollection<MovimentoCaixa> Movimentos { get; set; } = [ ];
         public int FuncioanrioId { get; set; }
-        public Funcionario Funcionario{  get; set; }
+        public Funcionario.Funcionario Funcionario{  get; set; }
     }
 }

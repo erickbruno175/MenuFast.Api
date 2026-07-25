@@ -1,6 +1,6 @@
 ﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Cliente {
     public class Cliente {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public Guid EmpresaId { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string CPF { get; set; } = string.Empty;

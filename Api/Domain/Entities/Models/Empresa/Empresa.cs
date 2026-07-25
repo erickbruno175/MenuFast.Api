@@ -3,7 +3,7 @@
 namespace MenuFast.Api.Api.Domain.Entities.Models.Empresa;
 
 public class Empresa {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Slug { get; set; } = string.Empty;
     public string RazaoSocial { get; set; } = string.Empty;
     public string NomeFantasia { get; set; } = string.Empty;
@@ -18,6 +18,7 @@ public class Empresa {
     public string Estado { get; set; } = string.Empty;
     public string Logradouro { get; set; }
     public string Numero { get; set; }
+    public string Sigla {  get; set; } = string.Empty;
     public string? Complemento { get; set; }
     public DateTime DataCadastro { get; set; }
     public string? Facebook { get; set; }

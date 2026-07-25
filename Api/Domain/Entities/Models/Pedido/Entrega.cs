@@ -2,10 +2,10 @@
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Pedido {
     public class Entrega {
-        public Guid Id { get; set; }
-        public Guid PedidoId { get; set; }
-        public Guid? ClienteEnderecoId { get; set; }
-        public Guid? MotoboyId { get; set; }
+        public int Id { get; set; }
+        public int PedidoId { get; set; }
+        public int? ClienteEnderecoId { get; set; }
+        public int? MotoboyId { get; set; }
         public StatusPedido Status { get; set; }
         public decimal TaxaEntrega { get; set; }
         public DateTime? DataSaida { get; set; }

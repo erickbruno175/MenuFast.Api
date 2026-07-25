@@ -9,6 +9,8 @@ public class TerminalConfig : IEntityTypeConfiguration<Terminal> {
     public void Configure(EntityTypeBuilder<Terminal> builder) {
         builder.ToTable("Terminal");
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).UseIdentityColumn(200, 1);
+
         builder.Property(x => x.Id).HasComment("Identificador único do terminal.");
         builder.Property(x => x.EmpresaId).HasComment("Empresa vinculada ao terminal.");
         builder.Property(x => x.Nome).HasMaxLength(100).IsRequired().HasComment("Nome do terminal.");

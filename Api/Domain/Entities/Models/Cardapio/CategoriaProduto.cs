@@ -1,7 +1,7 @@
 ﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
     public class CategoriaProduto {
-        public Guid Id { get; set; }
-        public Guid CardapioId { get; set; }
+        public int Id { get; set; }
+        public int CardapioId { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string? Descricao { get; set; }
         public int Ordem { get; set; }

@@ -2,8 +2,8 @@
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
     public class Produto {
-        public Guid Id { get; set; }
-        public Guid CategoriaProdutoId { get; set; }
+        public int Id { get; set; }
+        public int CategoriaProdutoId { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string? Descricao { get; set; }
         public decimal Preco { get; set; }
@@ -14,5 +14,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
         public string? FotoProduto { get; set; }
         public CategoriaProduto? CategoriaProduto { get; set; }
         public ICollection<Complemento> Complementos { get; set; } = new List<Complemento>();
+
     }
 }

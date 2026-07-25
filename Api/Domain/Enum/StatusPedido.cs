@@ -1,12 +1,12 @@
 ﻿namespace MenuFast.Api.Api.Domain.Enum {
     public enum StatusPedido {
-        Aberto = 1,
-        EmPreparo = 2,
-        Pronto = 3,
-        AguardandoMotoboy = 4,
-        EmRota = 5,
-        Entregue = 6,
-        Finalizado = 7,
-        Cancelado = 8
+        Aberto = 0,
+        EmPreparo = 1,
+        Pronto = 2,
+        AguardandoMotoboy = 3,
+        EmRota = 4,
+        Entregue = 5,
+        Finalizado = 6,
+        Cancelado = 7
     }
 }
