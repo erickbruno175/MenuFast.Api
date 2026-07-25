@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 using MenuFast.Api.Api.Domain.Enum;
@@ -22,11 +23,14 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         private readonly MenuFastContext _menuFastContext;
         private readonly JwtService _jwtService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        public readonly RedisService _redisService;
         private const int MAX_TENTATIVAS_LOGIN = 5;
         private const int TEMPO_BLOQUEIO_MINUTOS = 30;
-        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService) {
+        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, IHttpContextAccessor httpContextAccessor) {
             _menuFastContext = menuFastContext;
             jwtService = _jwtService;
+            redisService = _redisService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest) {
@@ -34,7 +38,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             var hoje = DateTime.Now;
             var funcionario = _menuFastContext.Funcionarios
                 .Include(x => x.Funcao)
-                .Include(x => x.Perfil).FirstOrDefault(x => x.SenhaHash == loginRequest.Senha &&  new int [] {1,2,3}.Contains(x.PerfilId));
+                .Include(x => x.Perfil).FirstOrDefault(x => x.SenhaHash == loginRequest.Senha && new int [ ] { 1, 2, 3 }.Contains(x.PerfilId));
 
             if(funcionario == null) { throw new BusinessLogicException("Usaurio  invalido"); }
             if(!funcionario.Ativo) { throw new BusinessLogicException("Usaurio não esta ativo"); }
@@ -64,7 +68,6 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             funcionario.TentativasLogin = 0;
             funcionario.DataUltimoLogin = hoje;
             funcionario.DataBloqueio = null;
-            _menuFastContext.SaveChangesAsync();
 
             var token = _jwtService.GerarToken(funcionario.Id, funcionario.Login, funcionario.Perfil.Descricao, funcionario.Funcao.Descricao, funcionario.Nome);
             if(token == null) { throw new BusinessLogicException("Token não pode ser gerado"); }
@@ -72,7 +75,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             var dadosAcesso = new InformacaoAcesso
             {
                 Ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
-                Dispositivo = _httpContextAccessor?.HttpContext?.Request.Headers["User-Agent"]
+                Dispositivo = _httpContextAccessor?.HttpContext?.Request.Headers [ "User-Agent" ]
             };
             _menuFastContext.HistoricoAcessos.AddAsync(new Domain.Entities.Models.Seguranca.HistoricoAcesso
             {
@@ -85,8 +88,21 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 Ip = dadosAcesso.Ip,
 
             });
-            _menuFastContext.SaveChangesAsync();
 
+            await _redisService.SetAsync($"id usaurio logado - {funcionario.Id}",
+                new
+                {
+                    funcionario.Id,
+                    funcionario.Nome,
+                    funcionario.PerfilId,
+                    funcionario.Email,
+
+                }, TimeSpan.FromHours(8)
+
+                 );
+
+
+            _menuFastContext.SaveChangesAsync();
             return new LoginResponse
             {
                 Token = token,
