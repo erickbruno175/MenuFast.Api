@@ -2,7 +2,8 @@
 
 public class ContaBancaria {
     public int Id { get; set; }
-    public int EmpresaId { get; set; }
+    public int LojaId { get; set; }
+    public Loja Loja { get; set; }
     public string Banco { get; set; } = string.Empty;
     public string Agencia { get; set; } = string.Empty;
     public string Conta { get; set; } = string.Empty;
@@ -10,5 +11,5 @@ public class ContaBancaria {
     public string Titular { get; set; } = string.Empty;
     public string DocumentoTitular { get; set; } = string.Empty;
     public ICollection<ChavePix> ChavesPix { get; set; } = new List<ChavePix>();
-    public Empresa? Empresa { get; set; }
+   
 }

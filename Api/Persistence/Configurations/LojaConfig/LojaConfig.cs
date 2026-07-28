@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MenuFast.Api.Api.Persistence.Configurations.EmpresaConfig;
 
-public class EmpresaConfig : IEntityTypeConfiguration<Empresa> {
-    public void Configure(EntityTypeBuilder<Empresa> builder) {
+public class LojaConfig : IEntityTypeConfiguration<Loja> {
+    public void Configure(EntityTypeBuilder<Loja> builder) {
         builder.ToTable("Empresa");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).UseIdentityColumn(100, 1);

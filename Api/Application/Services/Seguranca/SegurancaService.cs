@@ -9,6 +9,8 @@ using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
@@ -86,10 +88,12 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 Token = token,
                 Dispositivo = dadosAcesso.Dispositivo,
                 Ip = dadosAcesso.Ip,
+                TipoAcesso = TipoAcesso.Login
+
 
             });
 
-            await _redisService.SetAsync($"id usaurio logado - {funcionario.Id}",
+            await _redisService.SetAsync($"id usuaurio logado - {funcionario.Id}",
                 new
                 {
                     funcionario.Id,
@@ -114,5 +118,59 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
         }
 
+        public async Task Desloga() {
+            var token = _httpContextAccessor.HttpContext?.Request.Headers [ "Authorization" ].ToString().Replace("Bearer ", "");
+
+            if(string.IsNullOrWhiteSpace(token))
+                return;
+
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+            var tempoRestante = jwt.ValidTo - DateTime.UtcNow;
+
+            if(tempoRestante > TimeSpan.Zero)
+            {
+                await _redisService.SetAsync(
+                    $"blacklist:{token}",
+                    "logout",
+                    tempoRestante);
+            }
+
+            var historico = await _menuFastContext.HistoricoAcessos
+                .FirstOrDefaultAsync(x => x.Token == token && x.SessaoAtiva);
+            var clianIdUsuario = _httpContextAccessor.HttpContext?.User?.FindFirst("id")?.Value;
+
+            if(int.TryParse(clianIdUsuario, out var funcionarioId))
+            {
+                throw new BusinessLogicException("Não foi possível identificar o usuário.");
+            }
+            historico.FuncionarioId = funcionarioId;
+
+            var dadosAcesso = new InformacaoAcesso
+            {
+                Ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
+                Dispositivo = _httpContextAccessor?.HttpContext?.Request.Headers [ "User-Agent" ]
+            };
+            if(historico != null)
+            {
+                historico.DataLogout = DateTime.Now;
+                historico.SessaoAtiva = false;
+                historico.TipoAcesso = TipoAcesso.Logout;
+                historico.Ip = dadosAcesso.Ip;
+                historico.Dispositivo = dadosAcesso.Dispositivo;
+                await _menuFastContext.SaveChangesAsync();
+            }
+        }
+
+       /* public async Task RecuperaSenha(string email) {
+            var emailFuncionario = _menuFastContext.Funcionarios.FirstOrDefaultAsync(x => x.Email == email);
+            if(emailFuncionario == null)return ;
+
+            var token = Guid.NewGuid().ToString();
+
+
+        }*/
     }
+
 }
+

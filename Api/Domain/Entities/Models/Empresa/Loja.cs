@@ -2,7 +2,7 @@
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Empresa;
 
-public class Empresa {
+public class Loja {
     public int Id { get; set; }
     public string Slug { get; set; } = string.Empty;
     public string RazaoSocial { get; set; } = string.Empty;
@@ -34,4 +34,5 @@ public class Empresa {
     public ICollection<HorarioFuncionamento> Horarios { get; set; } = new List<HorarioFuncionamento>();
     public ICollection<Terminal> Terminais { get; set; } = new List<Terminal>();
     public ICollection<ContaBancaria> ContasBancarias { get; set; } = new List<ContaBancaria>();
+    public DateTime DataAlteracao { get; internal set; }
 }

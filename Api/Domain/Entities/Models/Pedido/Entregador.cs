@@ -1,4 +1,6 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
+using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 
 public class Entregador {
     public int Id { get; set; }
@@ -10,4 +12,11 @@ public class Entregador {
     public DateTime Ano {  get; set; } 
     public string Placa {  get; set; } = string.Empty;
     public ICollection<Entrega> Entregas { get; set; } = [ ];
+
+    public int FuncionarioId { get; set; }
+    public Funcionario Funcionario { get; set; }
+    public int LojaId { get; set; }
+    public Loja Loja { get; set; }
+
+
 }

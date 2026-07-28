@@ -1,4 +1,5 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 
 using MenuFast.Api.Api.Domain.Enum;
@@ -7,6 +8,8 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 
 public class MovimentoCaixa {
     public int Id { get; set; }
+    public int LojaId { get; set; }
+    public Loja Loja { get; set; }
     public int CaixaId { get; set; }
     public Caixa Caixa { get; set; } = null!;
     public int FuncionarioId { get; set; }

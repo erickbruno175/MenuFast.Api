@@ -1,7 +1,10 @@
-﻿namespace MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa {
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+
+namespace MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa {
     public class ConfiguracaoProvedorPagamento {
         public int Id { get; set; }
-        public int EmpresaId { get; set; }
+        public int LojaId { get; set; }
+        public Loja Loja { get; set; }
         public int ProvedorPagamentoId { get; set; }
         public string? ChaveApi { get; set; }
         public string? Token { get; set; }

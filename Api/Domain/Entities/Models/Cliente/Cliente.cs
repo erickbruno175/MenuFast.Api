@@ -1,7 +1,10 @@
-﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Cliente {
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+
+namespace MenuFast.Api.Api.Domain.Entities.Models.Cliente {
     public class Cliente {
         public int Id { get; set; }
-        public Guid EmpresaId { get; set; }
+        public int LojaId { get; set; }
+        public Loja Loja { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string CPF { get; set; } = string.Empty;
         public DateTime? DataNascimento { get; set; }

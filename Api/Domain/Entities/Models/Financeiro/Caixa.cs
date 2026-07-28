@@ -1,7 +1,11 @@
 ﻿
+using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+
 namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
     public class Caixa {
         public int Id { get; set; }
+        public int LojaId { get; set; }
+        public Loja Loja { get; set; }
         public string Nome { get; set; } = string.Empty;
         public bool Aberto { get; set; }
         public decimal ValorAbertura { get; set; }
