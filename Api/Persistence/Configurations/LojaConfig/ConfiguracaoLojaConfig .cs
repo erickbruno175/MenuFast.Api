@@ -28,6 +28,6 @@ public class ConfiguracaoRestauranteConfig : IEntityTypeConfiguration<Configurac
         builder.Property(x => x.ImprimirComprovanteFechamento).HasComment("Indica se imprime comprovante no fechamento do caixa.");
         builder.Property(x => x.IdentificarClienteObrigatorio).HasComment("Indica se a identificação do cliente é obrigatória.");
         builder.Property(x => x.Ativo).HasComment("Indica se a configuração está ativa.");
-        builder.HasOne<Empresa>().WithOne().HasForeignKey<ConfiguracaoRestaurante>(x => x.EmpresaId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne<Loja>().WithOne().HasForeignKey<ConfiguracaoRestaurante>(x => x.EmpresaId).OnDelete(DeleteBehavior.Cascade);
     }
 }

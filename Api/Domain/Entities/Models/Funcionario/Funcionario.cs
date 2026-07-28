@@ -22,7 +22,7 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
         public Funcao Funcao { get; set; } = null!;
         public int? ResponsavelId { get; set; } = null!;
         public int? EmpresaId { get; set; } = null!;
-        public Empresa.Empresa? Empresa { get; set; } = null!;
+        public Empresa.Loja? Empresa { get; set; } = null!;
         public int TentativasLogin { get; set; }
         public bool Bloqueado { get; set; }
         public DateTime? DataBloqueio { get; set; }

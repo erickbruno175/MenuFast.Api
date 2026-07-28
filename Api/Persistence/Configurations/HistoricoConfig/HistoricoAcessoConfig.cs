@@ -12,6 +12,7 @@ namespace MenuFast.Api.Api.Persistence.Configurations.HistoricoConfig {
             builder.Property(x => x.Token).HasMaxLength(500);
             builder.Property(x => x.DataLogin).IsRequired();
             builder.Property(x => x.SessaoAtiva).IsRequired();
+            builder.Property(x=> x.TipoAcesso).IsRequired();
             builder.HasOne(x => x.Funcionario).WithMany().HasForeignKey(x => x.FuncionarioId).OnDelete(DeleteBehavior.Restrict);
         }
     }

@@ -12,5 +12,5 @@ public class Terminal {
     public string? SistemaOperacional { get; set; }
     public bool Ativo { get; set; }
     public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
-    public Empresa.Empresa? Empresa { get; set; }
+    public Empresa.Loja? Empresa { get; set; }
 }

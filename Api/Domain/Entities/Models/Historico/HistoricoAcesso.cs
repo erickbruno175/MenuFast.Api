@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+using MenuFast.Api.Api.Domain.Enum;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
@@ -15,4 +17,7 @@ public class HistoricoAcesso {
     public string? Ip { get; set; }
     public string? Dispositivo { get; set; }
     public string? Token { get; set; }
+    public TipoAcesso TipoAcesso { get; set; } = new TipoAcesso();
+    public int LojaId { get; set; }
+    public Loja Loja { get; set; }
 }

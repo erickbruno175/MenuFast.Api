@@ -1,6 +1,7 @@
 using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
+using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
@@ -36,6 +37,9 @@ if(app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+app.UseAuthentication();
+app.UseMiddleware<JwtBlacklistMiddleware>();
+app.UseAuthorization();
 
 app.UseHttpsRedirection();
 

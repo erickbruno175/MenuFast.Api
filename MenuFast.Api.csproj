@@ -62,11 +62,4 @@
 	</ItemGroup>
 
 
-	<ItemGroup>
-		<Folder Include="Api\Application\Services\EmpresaConfiguracoes\" />
-		<Folder Include="Api\Domain\Entities\Models\NovaPasta\" />
-		<Folder Include="Api\Endpoints\" />
-	</ItemGroup>
-
-
 </Project>
