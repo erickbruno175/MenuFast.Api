@@ -30,3 +30,6 @@ namespace MenuFast.Api.Api.Middlewares {
 
             await _next(context);
         }
+    }
+}
+    

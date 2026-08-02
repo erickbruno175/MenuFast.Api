@@ -1,10 +1,10 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
     public class Cardapio {
         public int Id { get; set; }
         public int LojaId { get; set; }
-        public Loja Loja { get; set; }
+        public Loja.Loja Loja { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string? Descricao { get; set; }
         public bool Ativo { get; set; } = true;

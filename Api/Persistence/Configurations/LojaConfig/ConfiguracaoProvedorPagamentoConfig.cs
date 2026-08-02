@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,8 +11,8 @@ public class ConfiguracaoProvedorPagamentoConfig : IEntityTypeConfiguration<Conf
         builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
 
         builder.Property(x => x.Id).HasComment("Identificador único da configuração do provedor de pagamento.");
-        builder.Property(x => x.EmpresaId).HasComment("Empresa vinculada ao provedor de pagamento.");
-        builder.Property(x => x.ProvedorPagamentoId).HasComment("Provedor de pagamento utilizado pela empresa.");
+        builder.Property(x => x.LojaId).HasComment("Loja vinculada ao provedor de pagamento.");
+        builder.Property(x => x.ProvedorPagamentoId).HasComment("Provedor de pagamento utilizado pela loja.");
         builder.Property(x => x.ChaveApi).HasMaxLength(500).HasComment("Chave de acesso da API do provedor de pagamento.");
         builder.Property(x => x.Token).HasMaxLength(500).HasComment("Token de autenticação do provedor de pagamento.");
         builder.Property(x => x.SecretKey).HasMaxLength(500).HasComment("Chave secreta do provedor de pagamento.");

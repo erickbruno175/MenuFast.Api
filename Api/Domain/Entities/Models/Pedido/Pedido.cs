@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Enum;
 
@@ -24,5 +24,5 @@ public class Pedido {
     public Mesa.Mesa? Mesa { get; set; } = null!;
     public Funcionario.Funcionario Funcionario { get; set; }
     public int LojaId { get; set; }
-    public Loja Loja { get; set; }
+    public Loja.Loja Loja { get; set; }
 }

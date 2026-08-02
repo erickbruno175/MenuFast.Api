@@ -1,4 +1,4 @@
-﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
 public class ContaBancaria {
     public int Id { get; set; }

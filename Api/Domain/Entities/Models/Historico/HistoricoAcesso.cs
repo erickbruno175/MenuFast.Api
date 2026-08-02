@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Enum;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,5 +19,5 @@ public class HistoricoAcesso {
     public string? Token { get; set; }
     public TipoAcesso TipoAcesso { get; set; } = new TipoAcesso();
     public int LojaId { get; set; }
-    public Loja Loja { get; set; }
+    public Loja.Loja Loja { get; set; }
 }

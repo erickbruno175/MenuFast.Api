@@ -4,5 +4,7 @@
         public Perfil Perfil { get; set; } = null!;
         public int PermissaoId { get; set; }
         public Permissao Permissao { get; set; } = null!;
+        public bool Ativo { get; internal set; }
+        public object Codigo { get; internal set; }
     }
 }

@@ -1,10 +1,9 @@
-﻿using MenuFast.Api.Api.Domain.Enum;
-using MenuFast.Api.Api.Domain.Entities;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
-namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
-    public class Funcionario {
-        public int Id { get; set; }
+namespace MenuFast.Api.Api.Application.DTOs.Request {
+    public class CadastrarFuncionarioRequest {
+
         public string Nome { get; set; } = string.Empty;
         public string Cpf { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
@@ -22,11 +21,10 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
         public Funcao Funcao { get; set; } = null!;
         public int? ResponsavelId { get; set; } = null!;
         public int LojaId { get; set; }
-        public Loja.Loja Loja { get; set; }
+        public Loja Loja { get; set; }
         public int TentativasLogin { get; set; }
         public bool Bloqueado { get; set; }
         public DateTime? DataBloqueio { get; set; }
         public DateTime? DataUltimoLogin { get; set; }
-
     }
 }

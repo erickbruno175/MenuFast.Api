@@ -1,6 +1,6 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 
-namespace MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+namespace MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
 public class Loja {
     public int Id { get; set; }
@@ -24,15 +24,11 @@ public class Loja {
     public string? Facebook { get; set; }
     public string? Instagram { get; set; }
     public string? WhatsApp { get; set; }
-    public string? TikTok { get; set; }
-    public string? YouTube { get; set; }
-    public string? LinkedIn { get; set; }
     public string? Site { get; set; }
     public string Uf { get; set; } = string.Empty;
     public string? Logo { get; set; }
-    public ConfiguracaoRestaurante? Configuracao { get; set; }
+    public ConfiguracaoLoja? Configuracao { get; set; }
     public ICollection<HorarioFuncionamento> Horarios { get; set; } = new List<HorarioFuncionamento>();
-    public ICollection<Terminal> Terminais { get; set; } = new List<Terminal>();
     public ICollection<ContaBancaria> ContasBancarias { get; set; } = new List<ContaBancaria>();
     public DateTime DataAlteracao { get; internal set; }
 }

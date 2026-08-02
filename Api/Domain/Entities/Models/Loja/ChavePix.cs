@@ -1,6 +1,6 @@
 ﻿using MenuFast.Api.Api.Domain.Enum;
 
-namespace MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+namespace MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
 public class ChavePix {
     public int Id { get; set; }

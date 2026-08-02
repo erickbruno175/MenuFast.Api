@@ -1,4 +1,5 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
+using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -6,7 +7,7 @@ namespace MenuFast.Api.Api.Persistence.Configurations.EmpresaConfig;
 
 public class LojaConfig : IEntityTypeConfiguration<Loja> {
     public void Configure(EntityTypeBuilder<Loja> builder) {
-        builder.ToTable("Empresa");
+        builder.ToTable("Loja");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).UseIdentityColumn(100, 1);
         builder.Property(x => x.Id).HasComment("Identificador único da empresa.");
@@ -32,9 +33,6 @@ public class LojaConfig : IEntityTypeConfiguration<Loja> {
         builder.Property(x => x.Facebook).HasComment("URL do perfil ou página da empresa no Facebook.");
         builder.Property(x => x.Instagram).HasComment("URL do perfil da empresa no Instagram.");
         builder.Property(x => x.WhatsApp).HasComment("Número ou link do WhatsApp da empresa.");
-        builder.Property(x => x.TikTok).HasComment("URL do perfil da empresa no TikTok.");
-        builder.Property(x => x.YouTube).HasComment("URL do canal da empresa no YouTube.");
-        builder.Property(x => x.LinkedIn).HasComment("URL da página da empresa no LinkedIn.");
         builder.Property(x => x.Site).HasComment("Site oficial da empresa.");
        
     }

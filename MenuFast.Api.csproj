@@ -9,6 +9,10 @@
 		<NuGetAudit>false</NuGetAudit>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Include="Api\Domain\Entities\Models\ConfiguracoesLoja\ConfiguracaoLoja.cs" />
+	</ItemGroup>
+
 
 	<ItemGroup>
 

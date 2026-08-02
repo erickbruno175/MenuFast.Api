@@ -12,7 +12,6 @@ namespace MenuFast.Api.Api.Persistence.Configurations.EmpresaConfig {
             builder.Property(x => x.Assunto);
             builder.Property(x => x.DataCadastro);
             builder.Property(x => x.DataAlteracao);
-            builder.HasOne(x=> x.Empresa).WithMany().HasForeignKey(x=> x.EmpresaId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

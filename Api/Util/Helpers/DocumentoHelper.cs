@@ -5,8 +5,8 @@ namespace MenuFast.Api.Api.Util.Helpers {
 
         public static string RemoverCaracteresEspeciais(string? valor) {
             if(string.IsNullOrWhiteSpace(valor))
-             return string.Empty;
-            
+                return string.Empty;
+
             return Regex.Replace(valor, @"\D", "");
 
         }
@@ -17,4 +17,5 @@ namespace MenuFast.Api.Api.Util.Helpers {
 
             return Regex.Replace(telefone, @"\D", "");
         }
+    }
 }
