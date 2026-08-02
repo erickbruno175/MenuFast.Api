@@ -17,6 +17,6 @@ public class CategoriaProdutoConfig : IEntityTypeConfiguration<CategoriaProduto>
         builder.Property(x => x.Ordem).HasComment("Ordem de exibição da categoria no cardápio.");
         builder.Property(x => x.Ativo).HasComment("Indica se a categoria está ativa.");
         builder.HasOne(x => x.Cardapio).WithMany(x => x.Categorias).HasForeignKey(x => x.CardapioId).OnDelete(DeleteBehavior.Cascade);
-        builder.HasMany(x => x.Produtos).WithOne(x => x.CategoriaProduto).HasForeignKey(x => x.CategoriaProdutoId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(x => x.Loja).WithMany().HasForeignKey(x => x.LojaId).OnDelete(DeleteBehavior.NoAction);
     }
 }

@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

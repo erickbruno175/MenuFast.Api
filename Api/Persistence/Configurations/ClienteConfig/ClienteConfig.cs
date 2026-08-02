@@ -11,7 +11,7 @@ public class ClienteConfig : IEntityTypeConfiguration<Cliente> {
         builder.Property(x => x.Id).UseIdentityColumn(1001, 1);
 
         builder.Property(x => x.Id).HasComment("Identificador único do cliente.");
-        builder.Property(x => x.EmpresaId).HasComment("Empresa à qual o cliente pertence.");
+        builder.Property(x => x.LojaId).HasComment("Loja à qual o cliente pertence.");
         builder.Property(x => x.Nome).IsRequired().HasMaxLength(150).HasComment("Nome completo do cliente.");
         builder.Property(x => x.CPF).IsRequired().HasMaxLength(14).HasComment("CPF do cliente.");
         builder.Property(x => x.DataNascimento).HasComment("Data de nascimento do cliente.");

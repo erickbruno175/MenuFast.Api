@@ -15,13 +15,29 @@
         public string Uf { get; set; } = string.Empty;
         public string? Complemento { get; set; }
         public string Sigla { get; set; } = string.Empty;
-        public string? Facebook { get; set; }
-        public string? Instagram { get; set; }
         public string? WhatsApp { get; set; }
-        public string? TikTok { get; set; }
-        public string? YouTube { get; set; }
-        public string? LinkedIn { get; set; }
         public string? Site { get; set; }
         public string? Logo { get; set; }
+        public IEnumerable<CadastrarHorarioFuncionamentoRequest> Horarios { get; set; }
+
+    }
+    public class CadastrarHorarioFuncionamentoRequest {
+        public DayOfWeek DiaSemana { get; set; }
+        public TimeSpan HoraAbertura { get; set; }
+        public TimeSpan HoraFechamento { get; set; }
+        public bool Fechado { get; set; }
+    }
+    public class CadastrarConfiguracaoLojaRequest {
+        public bool TrabalhaComMesa { get; set; }
+        public bool TrabalhaComDelivery { get; set; }
+        public bool TrabalhaComRetirada { get; set; }
+        public bool ControlaEstoque { get; set; }
+        public bool PermiteVendaSemEstoque { get; set; }
+        public bool CobraTaxaServico { get; set; }
+        public decimal PercentualTaxaServico { get; set; }
+        public bool ExigirGarcomNaMesa { get; set; }
+        public bool ImprimirPedidoAutomaticamente { get; set; }
+        public bool EnviarPedidoAutomaticamenteCozinha { get; set; }
+        public bool EnviarPedidoAutomaticamenteBar { get; internal set; }
     }
 }

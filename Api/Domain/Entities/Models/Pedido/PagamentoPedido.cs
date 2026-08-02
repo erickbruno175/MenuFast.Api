@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Pedido {
     public class PagamentoPedido {

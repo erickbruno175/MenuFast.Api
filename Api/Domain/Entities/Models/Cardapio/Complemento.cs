@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
 namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
     public class Complemento {
@@ -9,6 +9,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
         public bool Ativo { get; set; } = true;
         public ICollection<Produto> Produtos { get; set; } = new List<Produto>();
         public int LojaId { get; set; }
-        public Loja Loja { get; set; }
+        public Loja.Loja Loja { get; set; }
     }
 }

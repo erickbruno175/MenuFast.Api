@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 
@@ -9,7 +9,7 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 public class MovimentoCaixa {
     public int Id { get; set; }
     public int LojaId { get; set; }
-    public Loja Loja { get; set; }
+    public Loja.Loja Loja { get; set; }
     public int CaixaId { get; set; }
     public Caixa Caixa { get; set; } = null!;
     public int FuncionarioId { get; set; }

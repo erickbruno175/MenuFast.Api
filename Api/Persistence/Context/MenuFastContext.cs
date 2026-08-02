@@ -1,8 +1,8 @@
 ﻿using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
 using MenuFast.Api.Api.Domain.Entities.Models.Cliente;
-using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesEmpresa;
+using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Cozinha;
-using MenuFast.Api.Api.Domain.Entities.Models.Empresa;
+using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
@@ -24,12 +24,10 @@ public class MenuFastContext : DbContext {
     public DbSet<Complemento> Complementos { get; set; }
     public DbSet<Cliente> Clientes { get; set; }
     public DbSet<ConfiguracaoProvedorPagamento> ConfiguracoesProvedorPagamento { get; set; }
-    public DbSet<ConfiguracaoRestaurante> ConfiguracoesRestaurante { get; set; }
+    public DbSet<ConfiguracaoLoja> ConfiguracoesLoja{ get; set; }
     public DbSet<FormaPagamento> FormasPagamento { get; set; }
     public DbSet<HorarioFuncionamento> HorariosFuncionamento { get; set; }
-    public DbSet<Impressora> Impressoras { get; set; }
     public DbSet<ProvedorPagamento> ProvedoresPagamento { get; set; }
-    public DbSet<Terminal> Terminais { get; set; }
     public DbSet<OrdemProducao> OrdensProducao { get; set; }
     public DbSet<Loja> Lojas { get; set; }
     public DbSet<ContaBancaria> ContasBancarias { get; set; }
@@ -45,7 +43,6 @@ public class MenuFastContext : DbContext {
     public DbSet<PagamentoPedido> PagamentosPedido { get; set; }
     public DbSet<HistoricoPedido> HistoricosPedido { get; set; }
     public DbSet<Entrega> Entregas { get; set; }
-    public DbSet<Entregador> Entregadores { get; set; }
     public DbSet<HistoricoPedido> HistoricoPedidos { get; set; }
     public DbSet<ItemPedido> ItemsPedido { get; set; }
     public DbSet<Funcao> Funcoes { get; set; }
