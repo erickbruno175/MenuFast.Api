@@ -14,7 +14,7 @@ public class JwtService {
     }
 
 
-    public string GerarToken(int funcionarioId, string login, string perfil, string funcao, string nome) {
+    public string GerarToken(int funcionarioId, string login, string perfil,  string nome) {
         var chave = _configuration [ "Jwt:Key" ];
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -24,7 +24,6 @@ public class JwtService {
             new Claim(JwtRegisteredClaimNames.UniqueName,login),
             new Claim(ClaimTypes.Role,perfil),
             new Claim(nome , "nome"),
-            new Claim(funcao , "funcao"),
 
         };
         var token = new JwtSecurityToken(

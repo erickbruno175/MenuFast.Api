@@ -1,5 +1,6 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
+using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -27,25 +28,15 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
    
         public async Task CadastrarFuncionario(CadastrarFuncionarioRequest request) {
             var perfil = await _menuFastContext.Perfis.FirstOrDefaultAsync(p => p.Id == request.PerfilId);
-            if(perfil == null)
-            {
-                throw new Exception("Perfil não encontrado.");
-            }
 
-            var funcao = await _menuFastContext.Funcoes.FirstOrDefaultAsync(f => f.Id == request.FuncaoId);
-            if(funcao == null)
-            {
-                throw new Exception("Função não encontrada.");
-            }
-
+           
             var funcionario = new Domain.Entities.Models.Funcionario.Funcionario
             {
                 Nome = request.Nome,
                 Email = request.Email,
                 SenhaHash = request.SenhaHash,
-                PerfilId = request.PerfilId,
                 DataCadastro = DateTime.Now,
-                Ativo = true,
+                Ativo = request.Ativo,
                 DataAdmissao = DateTime.Now,
                 DataBloqueio = null,
                 DataUltimoLogin = null,
@@ -55,7 +46,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
                 Salario = request.Salario ?? null,
                 Login = request.Login,
                 Cpf = DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf),
-
+                DataExpiracaoSenha = _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoExpiracaoSessaoDias != null ? DateTime.Now.AddDays(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault().TempoExpiracaoSessaoDias) : (DateTime?)null,
             };
             _menuFastContext.Funcionarios.Add(funcionario);
             await _menuFastContext.SaveChangesAsync();
@@ -69,24 +60,9 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
             {
                 throw new Exception("Funcionário não encontrado.");
             }
-
-            var perfil = await _menuFastContext.Perfis
-                .FirstOrDefaultAsync(p => p.Id == request.PerfilId);
-
-            if(perfil == null)
-            {
-                throw new Exception("Perfil não encontrado.");
-            }
-
-            var funcao = await _menuFastContext.Funcoes.FirstOrDefaultAsync(f => f.Id == request.FuncaoId);
-            if(funcao == null)
-            {
-                throw new Exception("Função não encontrada.");
-            }
-
+          
             funcionario.Nome = request.Nome;
             funcionario.Email = request.Email;
-            funcionario.PerfilId = request.PerfilId;
             funcionario.FuncaoId = request.FuncaoId;
             funcionario.Ativo = request.Ativo;
             funcionario.Bloqueado = request.Bloqueado;
@@ -95,13 +71,13 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
             funcionario.Login = request.Login;
             funcionario.Telefone = DocumentoHelper.RemoverCaracteresEspeciais(request.Telefone);
             funcionario.Cpf = DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf);
+            funcionario.DataExpiracaoSenha = _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoExpiracaoSessaoDias != null ? DateTime.Now.AddDays(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault().TempoExpiracaoSessaoDias) : (DateTime?)null;
 
             await _menuFastContext.SaveChangesAsync();
         }
         public async Task<List<Domain.Entities.Models.Funcionario.Funcionario>> GetFuncionariosAsync() {
             return await _menuFastContext.Funcionarios
                  .Include(p => p.Perfil)
-                 .Include(f => f.Funcao)
                  .ToListAsync();
         }
     }

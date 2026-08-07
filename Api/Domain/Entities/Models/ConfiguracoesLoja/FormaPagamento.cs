@@ -10,6 +10,4 @@ public class FormaPagamento {
     public bool PermiteTroco { get; set; }
     public bool Ativo { get; set; }
     public string? Foto { get; set; }
-    public int? ProvedorPagamentoId { get; set; }
-    public ProvedorPagamento? ProvedorPagamento { get; set; }
 }

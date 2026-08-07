@@ -26,100 +26,125 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         private readonly JwtService _jwtService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         public readonly RedisService _redisService;
-        private const int MAX_TENTATIVAS_LOGIN = 5;
-        private const int TEMPO_BLOQUEIO_MINUTOS = 30;
-        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, IHttpContextAccessor httpContextAccessor) {
+        public readonly ILogger<SegurancaService> _logger;
+
+        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor) {
             _menuFastContext = menuFastContext;
-            jwtService = _jwtService;
-            redisService = _redisService;
+            _jwtService = jwtService;
+            _redisService = redisService;
+            _logger = logger;
             _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest) {
-
-            var hoje = DateTime.Now;
-            var funcionario = _menuFastContext.Funcionarios
-                .Include(x => x.Funcao)
-                .Include(x => x.Perfil).FirstOrDefault(x => x.SenhaHash == loginRequest.Senha && new int [ ] { 1, 2, 3 }.Contains(x.PerfilId));
-
-            if(funcionario == null) { throw new BusinessLogicException("Usaurio  invalido"); }
-            if(!funcionario.Ativo) { throw new BusinessLogicException("Usaurio não esta ativo"); }
-            if(funcionario.Bloqueado)
+            try
             {
-                if(funcionario.DataBloqueio.HasValue && funcionario.DataBloqueio.Value > hoje) { throw new BusinessLogicException($" Usuario Bloquedo temporariamente, estar desbloquado apos {funcionario.DataBloqueio}"); }
-            }
-            if(!PasswordHelper.ValidarSenha(loginRequest.Senha, funcionario.SenhaHash))
-            {
-                funcionario.TentativasLogin++;
-                if(funcionario.TentativasLogin >= MAX_TENTATIVAS_LOGIN)
+                var hoje = DateTime.Now;
+                var funcionario = _menuFastContext.Funcionarios
+                    .Include(x => x.Perfil).FirstOrDefault(x => x.SenhaHash == loginRequest.Senha && new int [ ] { 1, 2, 3 }.Contains(x.PerfilId));
+
+                if(funcionario == null) { throw new BusinessLogicException("Usaurio  invalido"); }
+                if(!funcionario.Ativo) { throw new BusinessLogicException("Usaurio não esta ativo"); }
+                if(SegurancaHelper.VerificaExpiracaoSenha(funcionario.DataExpiracaoSenha)) { throw new BusinessLogicException("Senha expirada, favor redefinir a senha."); }
+
+                if(funcionario.Bloqueado)
                 {
-                    funcionario.Bloqueado = true;
-                    funcionario.DataBloqueio = DateTime.Now.AddMinutes(TEMPO_BLOQUEIO_MINUTOS);
-                    _menuFastContext.SaveChangesAsync();
-
-                    throw new BusinessLogicException($"Usuário bloqueado por {TEMPO_BLOQUEIO_MINUTOS} minutos.");
+                    if(funcionario.DataBloqueio.HasValue && funcionario.DataBloqueio.Value > hoje) { throw new BusinessLogicException($" Usuario Bloquedo temporariamente, estar desbloquado apos {funcionario.DataBloqueio}"); }
                 }
-                await _menuFastContext.SaveChangesAsync();
+                if(!SegurancaHelper.ValidarSenha(loginRequest.Senha, funcionario.SenhaHash))
+                {
+                    funcionario.TentativasLogin++;
+                    if(funcionario.TentativasLogin >= _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.MaxTentativasLogin)
+                    {
+                        funcionario.Bloqueado = true;
+                        funcionario.DataBloqueio = DateTime.Now.AddMinutes(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoBloqueioMinutos ?? 30);
+                        _menuFastContext.SaveChangesAsync();
 
-                throw new BusinessLogicException(
-                    $"Senha inválida. Tentativa {funcionario.TentativasLogin} de {MAX_TENTATIVAS_LOGIN}.");
+                        throw new BusinessLogicException($"Usuário bloqueado por {_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoBloqueioMinutos ?? 30} minutos.");
+                    }
+                    await _menuFastContext.SaveChangesAsync();
+
+                    throw new BusinessLogicException(
+                        $"Senha inválida. Tentativa {funcionario.TentativasLogin} de {_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.MaxTentativasLogin ?? 5}.");
+
+                }
+
+                _logger.LogWarning($"Tentativa de login inválida para o usuário {funcionario.Login}." +
+                 $" Tentativa {funcionario.TentativasLogin} de " +
+                 $"{_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.MaxTentativasLogin ?? 5}." +
+                 $"Data: {hoje}");
+
+                funcionario.Bloqueado = false;
+                funcionario.TentativasLogin = 0;
+                funcionario.DataUltimoLogin = hoje;
+                funcionario.DataBloqueio = null;
+
+                var token = _jwtService.GerarToken(funcionario.Id, funcionario.Login, funcionario.Perfil.Descricao, funcionario.Nome);
+                if(token == null) { throw new BusinessLogicException("Token não pode ser gerado"); }
+
+                var dadosAcesso = new InformacaoAcesso
+                {
+                    Ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
+                    Dispositivo = _httpContextAccessor?.HttpContext?.Request.Headers [ "User-Agent" ]
+                };
+                _menuFastContext.HistoricoAcessos.AddAsync(new Domain.Entities.Models.Seguranca.HistoricoAcesso
+                {
+                    DataLogin = hoje,
+                    DataLogout = null,
+                    FuncionarioId = funcionario.Id,
+                    SessaoAtiva = true,
+                    Token = token,
+                    Dispositivo = dadosAcesso.Dispositivo,
+                    Ip = dadosAcesso.Ip,
+                    TipoAcesso = TipoAcesso.Login
+
+
+                });
+
+                await _redisService.SetAsync($"id usuaurio logado - {funcionario.Id}",
+                    new
+                    {
+                        funcionario.Id,
+                        funcionario.Nome,
+                        funcionario.PerfilId,
+                        funcionario.Email,
+
+                    }, TimeSpan.FromHours(8)
+
+                     );
+
+
+                _menuFastContext.SaveChangesAsync();
+                return new LoginResponse
+                {
+                    Token = token,
+                    Nome = funcionario.Nome,
+                    PerfilId = funcionario.PerfilId,
+                    FuncaoId = funcionario.FuncaoId
+                };
+            }
+            catch(BusinessLogicException ex)
+            {
+                _logger.LogError($"Erro de negócio ao autenticar funcionário: {ex.Message}"
+                    + $"Data: {DateTime.UtcNow}");
+                throw new BusinessLogicException("Ocorreu um erro de negócio ao autenticar o funcionário.");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"Erro inesperado ao autenticar funcionário: {ex.Message}"
+                    + $"Data: {DateTime.UtcNow}");
+                throw new BusinessLogicException("Ocorreu um erro inesperado ao autenticar o funcionário.");
 
             }
-
-            funcionario.Bloqueado = false;
-            funcionario.TentativasLogin = 0;
-            funcionario.DataUltimoLogin = hoje;
-            funcionario.DataBloqueio = null;
-
-            var token = _jwtService.GerarToken(funcionario.Id, funcionario.Login, funcionario.Perfil.Descricao, funcionario.Funcao.Descricao, funcionario.Nome);
-            if(token == null) { throw new BusinessLogicException("Token não pode ser gerado"); }
-
-            var dadosAcesso = new InformacaoAcesso
-            {
-                Ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
-                Dispositivo = _httpContextAccessor?.HttpContext?.Request.Headers [ "User-Agent" ]
-            };
-            _menuFastContext.HistoricoAcessos.AddAsync(new Domain.Entities.Models.Seguranca.HistoricoAcesso
-            {
-                DataLogin = hoje,
-                DataLogout = null,
-                FuncionarioId = funcionario.Id,
-                SessaoAtiva = true,
-                Token = token,
-                Dispositivo = dadosAcesso.Dispositivo,
-                Ip = dadosAcesso.Ip,
-                TipoAcesso = TipoAcesso.Login
-
-
-            });
-
-            await _redisService.SetAsync($"id usuaurio logado - {funcionario.Id}",
-                new
-                {
-                    funcionario.Id,
-                    funcionario.Nome,
-                    funcionario.PerfilId,
-                    funcionario.Email,
-
-                }, TimeSpan.FromHours(8)
-
-                 );
-
-
-            _menuFastContext.SaveChangesAsync();
-            return new LoginResponse
-            {
-                Token = token,
-                Nome = funcionario.Nome,
-                PerfilId = funcionario.PerfilId,
-                FuncaoId = funcionario.FuncaoId
-            };
-
-
         }
-
         public async Task Desloga() {
-            var token = _httpContextAccessor.HttpContext?.Request.Headers [ "Authorization" ].ToString().Replace("Bearer ", "");
+            var httpContext = _httpContextAccessor.HttpContext;
+
+            var token = httpContext?
+                .Request
+                .Headers [ "Authorization" ]
+                .ToString()
+                .Replace("Bearer ", "");
 
             if(string.IsNullOrWhiteSpace(token))
                 return;
@@ -136,40 +161,44 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     tempoRestante);
             }
 
+            var usuarioIdClaim = httpContext?
+                .User?
+                .FindFirst("id")?
+                .Value;
+
+            if(!int.TryParse(usuarioIdClaim, out var funcionarioId))
+            {
+                throw new BusinessLogicException(
+                    "Não foi possível identificar o usuário.");
+            }
+
             var historico = await _menuFastContext.HistoricoAcessos
-                .FirstOrDefaultAsync(x => x.Token == token && x.SessaoAtiva);
-            var clianIdUsuario = _httpContextAccessor.HttpContext?.User?.FindFirst("id")?.Value;
+                .FirstOrDefaultAsync(x =>
+                    x.Token == token &&
+                    x.SessaoAtiva);
 
-            if(int.TryParse(clianIdUsuario, out var funcionarioId))
-            {
-                throw new BusinessLogicException("Não foi possível identificar o usuário.");
-            }
+            if(historico == null)
+                return;
+
             historico.FuncionarioId = funcionarioId;
+            historico.DataLogout = DateTime.Now;
+            historico.SessaoAtiva = false;
+            historico.TipoAcesso = TipoAcesso.Logout;
 
-            var dadosAcesso = new InformacaoAcesso
-            {
-                Ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString(),
-                Dispositivo = _httpContextAccessor?.HttpContext?.Request.Headers [ "User-Agent" ]
-            };
-            if(historico != null)
-            {
-                historico.DataLogout = DateTime.Now;
-                historico.SessaoAtiva = false;
-                historico.TipoAcesso = TipoAcesso.Logout;
-                historico.Ip = dadosAcesso.Ip;
-                historico.Dispositivo = dadosAcesso.Dispositivo;
-                await _menuFastContext.SaveChangesAsync();
-            }
+            historico.Ip = httpContext
+                .Connection
+                .RemoteIpAddress?
+                .ToString();
+
+            historico.Dispositivo = httpContext
+                .Request
+                .Headers [ "User-Agent" ]
+                .ToString();
+
+            await _menuFastContext.SaveChangesAsync();
         }
 
-       /* public async Task RecuperaSenha(string email) {
-            var emailFuncionario = _menuFastContext.Funcionarios.FirstOrDefaultAsync(x => x.Email == email);
-            if(emailFuncionario == null)return ;
 
-            var token = Guid.NewGuid().ToString();
-
-
-        }*/
     }
 
 }

@@ -1,8 +1,8 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace MenuFast.Api.Api.Persistence.Configurations;
+namespace MenuFast.Api.Api.Persistence.Configurations.SegurancaConfig;
 
 public class PerfilPermissaoConfig : IEntityTypeConfiguration<PerfilPermissao> {
     public void Configure(EntityTypeBuilder<PerfilPermissao> builder) {
