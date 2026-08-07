@@ -26,6 +26,10 @@
 
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 
+		<PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
+
+		<PackageReference Include="Google.Apis.Gmail.v1" Version="1.75.0.4225" />
+
 		<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
 
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
@@ -51,6 +55,8 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+
+		<PackageReference Include="MimeKit" Version="4.17.0" />
 
 		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
 

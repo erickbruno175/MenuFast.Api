@@ -1,6 +1,7 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +11,10 @@ namespace MenuFast.Api.Api.Controllers {
     public class SegurancaControllers : ControllerBase {
 
         private readonly SegurancaService _service;
-
-        public SegurancaControllers(SegurancaService service) {
+        private readonly EmailService _emailService;
+        public SegurancaControllers(SegurancaService service, EmailService emailService) {
             _service = service;
+            _emailService = emailService;
         }
 
 
@@ -30,6 +32,12 @@ namespace MenuFast.Api.Api.Controllers {
         public async Task<OkResult> Desloga() {
             await _service.Desloga();
             return Ok();
+        }
+
+        [HttpPost("recuperar-senha")]
+        public async Task<IActionResult> RecuperarSenha(string email) {
+            await _emailService.EnviarEmailRecuperacaoSenha(email);
+            return Ok(new { Mensagem = "E-mail de recuperação de senha enviado com sucesso." });
         }
     }
 }

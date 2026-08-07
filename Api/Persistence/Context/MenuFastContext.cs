@@ -9,6 +9,7 @@ using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using Microsoft.EntityFrameworkCore;
+using MenuFast.Api.Api.Domain;
 
 namespace MenuFast.Api.Api.Persistence.Context;
 
@@ -48,7 +49,7 @@ public class MenuFastContext : DbContext {
     public DbSet<PerfilPermissao> PerfilPermissoes { get; set; }
     public DbSet<HistoricoAcesso> HistoricoAcessos { get; set; }
     public DbSet<ConfiguracaoSeguranca> ConfiguracoesSeguranca { get; set; }
-
+    public DbSet<TemplateEmail> TemplatesEmail { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 

@@ -1,6 +1,8 @@
 using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
+using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +39,10 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsuarioContextService>();
+builder.Services.AddScoped<SegurancaService>();
+builder.Services.AddScoped<GoogleEmailService>();
+//builder.Services.AddScoped<JwtBlacklistMiddleware>();
+builder.Services.AddScoped<RedisService>();
 
 builder.Services.AddHttpContextAccessor();
 
