@@ -1,4 +1,6 @@
-﻿namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
+
+namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
     public class Perfil {
         public int Id { get; set; }
         public string Nome { get; set; } = string.Empty;

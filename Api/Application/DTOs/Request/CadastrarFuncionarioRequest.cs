@@ -18,7 +18,6 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public int PerfilId { get; set; }
         public Perfil Perfil { get; set; } = null!;
         public int FuncaoId { get; set; }
-        public Funcao Funcao { get; set; } = null!;
         public int? ResponsavelId { get; set; } = null!;
         public int LojaId { get; set; }
         public Loja Loja { get; set; }
@@ -26,5 +25,6 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public bool Bloqueado { get; set; }
         public DateTime? DataBloqueio { get; set; }
         public DateTime? DataUltimoLogin { get; set; }
+
     }
 }
