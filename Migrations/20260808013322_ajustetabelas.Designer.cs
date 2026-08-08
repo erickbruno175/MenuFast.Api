@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuFast.Api.Migrations
 {
     [DbContext(typeof(MenuFastContext))]
-    partial class MenuFastContextModelSnapshot : ModelSnapshot
+    [Migration("20260808013322_ajustetabelas")]
+    partial class ajustetabelas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -781,7 +784,7 @@ namespace MenuFast.Api.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("Bloqueado")
+                    b.Property<bool>("Bloqueado")
                         .HasColumnType("bit");
 
                     b.Property<string>("Cpf")
@@ -809,12 +812,15 @@ namespace MenuFast.Api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<int>("FuncaoId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("LojaId")
+                    b.Property<int>("LojaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Nome")
@@ -822,11 +828,14 @@ namespace MenuFast.Api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int?>("PerfilId")
+                    b.Property<int>("PerfilId")
                         .HasColumnType("int");
 
                     b.Property<bool>("PrimeiroAcesso")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("ResponsavelId")
+                        .HasColumnType("int");
 
                     b.Property<decimal?>("Salario")
                         .HasColumnType("decimal(18,2)");
@@ -841,7 +850,7 @@ namespace MenuFast.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int?>("TentativasLogin")
+                    b.Property<int>("TentativasLogin")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1780,12 +1789,14 @@ namespace MenuFast.Api.Migrations
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
                         .WithMany()
                         .HasForeignKey("LojaId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Perfil", "Perfil")
                         .WithMany()
                         .HasForeignKey("PerfilId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Loja");
 

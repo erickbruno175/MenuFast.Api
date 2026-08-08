@@ -11,9 +11,14 @@
 
 	<ItemGroup>
 	  <None Include="Api\Domain\Entities\Models\ConfiguracoesLoja\ConfiguracaoLoja.cs" />
+	  <None Include="C:\Users\erick\source\repos\MenuFast.Api\.editorconfig" />
 	</ItemGroup>
 
-
+	<ItemGroup>
+		<None Update="credentials.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 	<ItemGroup>
 
 		<PackageReference Include="AutoMapper" Version="14.0.0" />
@@ -56,6 +61,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.10" />
+
 		<PackageReference Include="MimeKit" Version="4.17.0" />
 
 		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
@@ -78,6 +85,11 @@
 
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
 
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <EditorConfigFiles Remove="C:\Users\erick\source\repos\MenuFast.Api\.editorconfig" />
 	</ItemGroup>
 
 

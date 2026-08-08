@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MenuFast.Api.Api.Controllers {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/seguranca")]
     public class SegurancaControllers : ControllerBase {
 
         private readonly SegurancaService _service;
@@ -36,7 +36,7 @@ namespace MenuFast.Api.Api.Controllers {
 
         [HttpPost("recuperar-senha")]
         public async Task<IActionResult> RecuperarSenha(string email) {
-            await _emailService.EnviarEmailRecuperacaoSenha(email);
+            await _service.RedefinirSenhas(email);
             return Ok(new { Mensagem = "E-mail de recuperação de senha enviado com sucesso." });
         }
     }

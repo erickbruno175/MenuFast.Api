@@ -7,6 +7,5 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Seguranca {
         public int PermissaoId { get; set; }
         public Permissao Permissao { get; set; } = null!;
         public bool Ativo { get; internal set; }
-        public object Codigo { get; internal set; }
     }
 }

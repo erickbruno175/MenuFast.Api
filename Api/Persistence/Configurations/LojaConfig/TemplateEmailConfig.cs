@@ -1,4 +1,4 @@
-﻿using MenuFast.Api.Api.Domain;
+﻿using MenuFast.Api.Api.Domain.Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
