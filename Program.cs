@@ -5,7 +5,6 @@ using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
-using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Serilog;
@@ -38,16 +37,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-    options.InstanceName = "MenuFast:";
-});
-
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsuarioContextService>();
 builder.Services.AddScoped<SegurancaService>();
-builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<GoogleEmailService>();
 //builder.Services.AddScoped<JwtBlacklistMiddleware>();
 builder.Services.AddScoped<RedisService>();
 
@@ -73,15 +66,6 @@ app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "MenuFast API v1");
 });
-
-app.UseMiddleware<ExceptionMiddleware>();
-
-if(app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 
 app.UseHttpsRedirection();
 
