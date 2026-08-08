@@ -1,14 +1,17 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
+using MenuFast.Api.Api.Domain.Constantes;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 using MenuFast.Api.Api.Domain.Enum;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -27,27 +30,27 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         private readonly IHttpContextAccessor _httpContextAccessor;
         public readonly RedisService _redisService;
         public readonly ILogger<SegurancaService> _logger;
-
-        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor) {
+        public readonly EmailService _emailService;
+        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor, EmailService emailService) {
             _menuFastContext = menuFastContext;
             _jwtService = jwtService;
             _redisService = redisService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _emailService = emailService;
         }
 
         public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest) {
             try
             {
                 var hoje = DateTime.Now;
-                var funcionario = _menuFastContext.Funcionarios
-                    .Include(x => x.Perfil).FirstOrDefault(x => x.SenhaHash == loginRequest.Senha && new int [ ] { 1, 2, 3 }.Contains(x.PerfilId));
+                var funcionario = _menuFastContext.Funcionarios.Include(x => x.Perfil).FirstOrDefault(x =>x.SenhaHash == loginRequest.Senha &&new [ ] { 1, 2, 3 }.Contains(x.PerfilId.Value));
 
                 if(funcionario == null) { throw new BusinessLogicException("Usaurio  invalido"); }
                 if(!funcionario.Ativo) { throw new BusinessLogicException("Usaurio não esta ativo"); }
                 if(SegurancaHelper.VerificaExpiracaoSenha(funcionario.DataExpiracaoSenha)) { throw new BusinessLogicException("Senha expirada, favor redefinir a senha."); }
 
-                if(funcionario.Bloqueado)
+                if(funcionario.Bloqueado.HasValue)
                 {
                     if(funcionario.DataBloqueio.HasValue && funcionario.DataBloqueio.Value > hoje) { throw new BusinessLogicException($" Usuario Bloquedo temporariamente, estar desbloquado apos {funcionario.DataBloqueio}"); }
                 }
@@ -119,20 +122,19 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 {
                     Token = token,
                     Nome = funcionario.Nome,
-                    PerfilId = funcionario.PerfilId,
-                    FuncaoId = funcionario.FuncaoId
+                    PerfilId = funcionario.PerfilId.Value,
                 };
             }
             catch(BusinessLogicException ex)
             {
                 _logger.LogError($"Erro de negócio ao autenticar funcionário: {ex.Message}"
-                    + $"Data: {DateTime.UtcNow}");
+                    + $"Data: {DateTime.UtcNow}", $"Tipo de log:{TipoLog.ErroLogin}");
                 throw new BusinessLogicException("Ocorreu um erro de negócio ao autenticar o funcionário.");
             }
             catch(Exception ex)
             {
                 _logger.LogError($"Erro inesperado ao autenticar funcionário: {ex.Message}"
-                    + $"Data: {DateTime.UtcNow}");
+                    + $"Data: {DateTime.UtcNow}", $"Tipo de log:{TipoLog.ErroLogin}");
                 throw new BusinessLogicException("Ocorreu um erro inesperado ao autenticar o funcionário.");
 
             }
@@ -140,14 +142,9 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         public async Task Desloga() {
             var httpContext = _httpContextAccessor.HttpContext;
 
-            var token = httpContext?
-                .Request
-                .Headers [ "Authorization" ]
-                .ToString()
-                .Replace("Bearer ", "");
+            var token = httpContext?.Request.Headers [ "Authorization" ].ToString().Replace("Bearer ", "");
 
-            if(string.IsNullOrWhiteSpace(token))
-                return;
+            if(string.IsNullOrWhiteSpace(token)) return;
 
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
@@ -155,16 +152,10 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
             if(tempoRestante > TimeSpan.Zero)
             {
-                await _redisService.SetAsync(
-                    $"blacklist:{token}",
-                    "logout",
-                    tempoRestante);
+                await _redisService.SetAsync($"blacklist:{token}", "logout", tempoRestante);
             }
 
-            var usuarioIdClaim = httpContext?
-                .User?
-                .FindFirst("id")?
-                .Value;
+            var usuarioIdClaim = httpContext?.User?.FindFirst("id")?.Value;
 
             if(!int.TryParse(usuarioIdClaim, out var funcionarioId))
             {
@@ -198,8 +189,54 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             await _menuFastContext.SaveChangesAsync();
         }
 
+        public async Task RedefinirSenhas(string email) {
+            try
+            {
+                var funcionario = await _menuFastContext.Funcionarios
+                    .FirstOrDefaultAsync(f => f.Email == email);
 
+                if(funcionario == null)
+                    throw new BusinessLogicException(
+                        "Não encontramos nenhum usuário cadastrado com este e-mail."
+                    );
+
+                var template = await _menuFastContext.TemplatesEmail
+                    .FirstOrDefaultAsync(e => e.Nome == "RECUPERAÇÃO DE SENHA");
+
+                if(template == null)
+                    throw new BusinessLogicException(
+                        "Não foi possível localizar o modelo de e-mail para recuperação de senha."
+                    );
+
+                var conteudo = template.Conteudo
+                    .Replace("{NOME_USUARIO}", funcionario.Nome)
+                    .Replace("{LINK_REDEFINICAO}", LinkEmail.LinkRecuperarSenha);
+
+                await _emailService.EnviarAsync(
+                    email,
+                    template.Assunto,
+                    conteudo
+                );
+            }
+            catch(BusinessLogicException)
+            {
+                throw;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(
+                    $"Erro inesperado ao redefinir senha: {ex.Message} " +
+                    $"Data: {DateTime.UtcNow}",
+                    $"Tipo de log: {TipoLog.ErroEnvioEmail.GetDisplayName()}"
+                );
+
+                throw new BusinessLogicException(
+                    "Não foi possível enviar o e-mail de recuperação de senha. Tente novamente."
+                );
+            }
+        }
     }
+
 
 }
 
