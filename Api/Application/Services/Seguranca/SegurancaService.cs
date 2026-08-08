@@ -169,7 +169,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             if(!int.TryParse(usuarioIdClaim, out var funcionarioId))
             {
                 throw new BusinessLogicException(
-                    "Não foi possível identificar o usuário.");
+                    "Não foi possível identificar o usuário.!");
             }
 
             var historico = await _menuFastContext.HistoricoAcessos
