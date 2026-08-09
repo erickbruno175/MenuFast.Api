@@ -1,17 +1,14 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
-using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
-using MenuFast.Api.Api.Domain.Constantes;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
 using MenuFast.Api.Api.Domain.Enum;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -30,14 +27,13 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         private readonly IHttpContextAccessor _httpContextAccessor;
         public readonly RedisService _redisService;
         public readonly ILogger<SegurancaService> _logger;
-        public readonly EmailService _emailService;
-        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor, EmailService emailService) {
+
+        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor) {
             _menuFastContext = menuFastContext;
             _jwtService = jwtService;
             _redisService = redisService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
-            _emailService = emailService;
         }
 
         public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest) {
@@ -301,7 +297,6 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             }
         }
     }
-
 
 }
 

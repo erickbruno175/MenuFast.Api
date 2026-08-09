@@ -39,6 +39,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
                 DataAdmissao = DateTime.Now,
                 DataBloqueio = null,
                 DataUltimoLogin = null,
+                FuncaoId = request.FuncaoId,
                 PrimeiroAcesso = true,
                 LojaId = request.LojaId,
                 Salario = request.Salario ?? null,
@@ -60,6 +61,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
           
             funcionario.Nome = request.Nome;
             funcionario.Email = request.Email;
+            funcionario.FuncaoId = request.FuncaoId;
             funcionario.Ativo = request.Ativo;
             funcionario.LojaId = request.LojaId;
             funcionario.Salario = request.Salario;

@@ -443,6 +443,51 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("ConfiguracaoLoja", (string)null);
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.ConfiguracaoProvedorPagamento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasComment("Identificador único da configuração do provedor de pagamento.");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se a configuração do provedor está ativa.");
+
+                    b.Property<string>("ChaveApi")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Chave de acesso da API do provedor de pagamento.");
+
+                    b.Property<int>("LojaId")
+                        .HasColumnType("int")
+                        .HasComment("Loja vinculada ao provedor de pagamento.");
+
+                    b.Property<int>("ProvedorPagamentoId")
+                        .HasColumnType("int")
+                        .HasComment("Provedor de pagamento utilizado pela loja.");
+
+                    b.Property<string>("SecretKey")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Chave secreta do provedor de pagamento.");
+
+                    b.Property<string>("Token")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Token de autenticação do provedor de pagamento.");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LojaId");
+
+                    b.HasIndex("ProvedorPagamentoId");
+
+                    b.ToTable("ConfiguracaoProvedorPagamento", (string)null);
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.FormaPagamento", b =>
                 {
                     b.Property<int>("Id")
@@ -474,9 +519,15 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("bit")
                         .HasComment("Indica se a forma de pagamento permite troco.");
 
+                    b.Property<int?>("ProvedorPagamentoId")
+                        .HasColumnType("int")
+                        .HasComment("Provedor de pagamento vinculado à forma de pagamento.");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LojaId");
+
+                    b.HasIndex("ProvedorPagamentoId");
 
                     b.ToTable("FormaPagamento", (string)null);
                 });
@@ -515,6 +566,36 @@ namespace MenuFast.Api.Migrations
                     b.HasIndex("LojaId");
 
                     b.ToTable("HorarioFuncionamento", (string)null);
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.ProvedorPagamento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasComment("Identificador único do provedor de pagamento.");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se o provedor de pagamento está ativo.");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Código interno do provedor de pagamento.");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Nome do provedor de pagamento.");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProvedorPagamento", (string)null);
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cozinha.OrdemProducao", b =>
@@ -770,6 +851,34 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("MovimentoCaixa", (string)null);
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("Funcao", (string)null);
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcionario", b =>
                 {
                     b.Property<int>("Id")
@@ -781,7 +890,7 @@ namespace MenuFast.Api.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("Bloqueado")
+                    b.Property<bool>("Bloqueado")
                         .HasColumnType("bit");
 
                     b.Property<string>("Cpf")
@@ -796,9 +905,6 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataExpiracaoSenha")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DataUltimoLogin")
@@ -817,13 +923,16 @@ namespace MenuFast.Api.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<int?>("PerfilId")
+                    b.Property<int>("PerfilId")
                         .HasColumnType("int");
 
                     b.Property<bool>("PrimeiroAcesso")
                         .HasColumnType("bit");
 
-                    b.Property<decimal?>("Salario")
+                    b.Property<int?>("ResponsavelId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Salario")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SenhaHash")
@@ -836,7 +945,7 @@ namespace MenuFast.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int?>("TentativasLogin")
+                    b.Property<int>("TentativasLogin")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -880,6 +989,47 @@ namespace MenuFast.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Perfil", (string)null);
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.PerfilPermissao", b =>
+                {
+                    b.Property<int>("PerfilId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PermissaoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PerfilId", "PermissaoId");
+
+                    b.HasIndex("PermissaoId");
+
+                    b.ToTable("PerfilPermissao", (string)null);
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Permissao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Permissao", (string)null);
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Loja.ChavePix", b =>
@@ -1411,34 +1561,6 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("Pedido", (string)null);
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.ConfiguracaoSeguranca", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("LojaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxTentativasLogin")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TempoBloqueioMinutos")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TempoExpiracaoSessaoDias")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LojaId")
-                        .IsUnique();
-
-                    b.ToTable("ConfiguracaoSeguranca", (string)null);
-                });
-
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.HistoricoAcesso", b =>
                 {
                     b.Property<int>("Id")
@@ -1486,51 +1608,7 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("HistoricoAcessos", (string)null);
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.PerfilPermissao", b =>
-                {
-                    b.Property<int>("PerfilId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PermissaoId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.HasKey("PerfilId", "PermissaoId");
-
-                    b.HasIndex("PermissaoId");
-
-                    b.ToTable("PerfilPermissao", (string)null);
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.Permissao", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Codigo")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Codigo")
-                        .IsUnique();
-
-                    b.ToTable("Permissao", (string)null);
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.TemplateEmail", b =>
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.TemplateEmail", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1566,7 +1644,7 @@ namespace MenuFast.Api.Migrations
 
                     b.HasIndex("LojaId");
 
-                    b.ToTable("TemplatesEmail");
+                    b.ToTable("TemplateEmail");
                 });
 
             modelBuilder.Entity("ComplementoProduto", b =>
@@ -1677,6 +1755,25 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Loja");
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.ConfiguracaoProvedorPagamento", b =>
+                {
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
+                        .WithMany()
+                        .HasForeignKey("LojaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.ProvedorPagamento", "ProvedorPagamento")
+                        .WithMany()
+                        .HasForeignKey("ProvedorPagamentoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Loja");
+
+                    b.Navigation("ProvedorPagamento");
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.FormaPagamento", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
@@ -1685,7 +1782,14 @@ namespace MenuFast.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.ProvedorPagamento", "ProvedorPagamento")
+                        .WithMany("FormasPagamento")
+                        .HasForeignKey("ProvedorPagamentoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Loja");
+
+                    b.Navigation("ProvedorPagamento");
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.HorarioFuncionamento", b =>
@@ -1769,19 +1873,48 @@ namespace MenuFast.Api.Migrations
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcionario", b =>
                 {
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcao", "Funcao")
+                        .WithMany("Funcionarios")
+                        .HasForeignKey("FuncaoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
                         .WithMany()
                         .HasForeignKey("LojaId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Perfil", "Perfil")
                         .WithMany()
                         .HasForeignKey("PerfilId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Funcao");
 
                     b.Navigation("Loja");
 
                     b.Navigation("Perfil");
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.PerfilPermissao", b =>
+                {
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Perfil", "Perfil")
+                        .WithMany("PerfilPermissoes")
+                        .HasForeignKey("PerfilId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Permissao", "Permissao")
+                        .WithMany("PerfilPermissoes")
+                        .HasForeignKey("PermissaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Perfil");
+
+                    b.Navigation("Permissao");
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Loja.ChavePix", b =>
@@ -1932,17 +2065,6 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Mesa");
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.ConfiguracaoSeguranca", b =>
-                {
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
-                        .WithOne()
-                        .HasForeignKey("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.ConfiguracaoSeguranca", "LojaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Loja");
-                });
-
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.HistoricoAcesso", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcionario", "Funcionario")
@@ -1962,26 +2084,7 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Loja");
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.PerfilPermissao", b =>
-                {
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Perfil", "Perfil")
-                        .WithMany("PerfilPermissoes")
-                        .HasForeignKey("PerfilId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.Permissao", "Permissao")
-                        .WithMany("PerfilPermissoes")
-                        .HasForeignKey("PermissaoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Perfil");
-
-                    b.Navigation("Permissao");
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.TemplateEmail", b =>
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.TemplateEmail", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
                         .WithMany()
@@ -2002,12 +2105,27 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Produtos");
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.ProvedorPagamento", b =>
+                {
+                    b.Navigation("FormasPagamento");
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.Caixa", b =>
                 {
                     b.Navigation("Movimentos");
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcao", b =>
+                {
+                    b.Navigation("Funcionarios");
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Perfil", b =>
+                {
+                    b.Navigation("PerfilPermissoes");
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Permissao", b =>
                 {
                     b.Navigation("PerfilPermissoes");
                 });
@@ -2038,11 +2156,6 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Itens");
 
                     b.Navigation("Pagamentos");
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.Permissao", b =>
-                {
-                    b.Navigation("PerfilPermissoes");
                 });
 #pragma warning restore 612, 618
         }

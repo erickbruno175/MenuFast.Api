@@ -1,54 +1,64 @@
-﻿using MenuFast.Api.Api.Domain.Enum;
-using Microsoft.OpenApi;
-using System.Net;
-using System.Net.Mail;
+﻿using MenuFast.Api.Api.Domain.Constantes;
+using MenuFast.Api.Api.Persistence.Context;
+using MenuFast.Api.Middlewares;
+using Microsoft.EntityFrameworkCore;
 
-namespace MenuFast.Api.Api.Application.Services.Email;
+namespace MenuFast.Api.Api.Application.Services.Email {
+    public class EmailService {
 
-public class EmailService {
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<EmailService> _logger;
-    public EmailService(IConfiguration configuration, ILogger<EmailService> logger) {
-        _configuration = configuration;
-        _logger = logger;
-    }
+        private readonly GoogleEmailService _emailService;
+        private readonly MenuFastContext _menuFastContext;
+        private readonly ILogger<EmailService> _logger;
 
-    public async Task EnviarAsync(string destinatario, string assunto, string mensagem) {
-
-        try
-        {
-
-            var host = _configuration [ "Email:Host" ] ?? throw new InvalidOperationException("Email:Host não configurado.");
-            var port = int.Parse(_configuration [ "Email:Port" ] ?? throw new InvalidOperationException("Email:Port não configurado."));
-            var emailRemetente = _configuration [ "Email:EmailRemetente" ] ?? throw new InvalidOperationException("Email:EmailRemetente não configurado.");
-            var nomeRemetente = _configuration [ "Email:NomeRemetente" ] ?? throw new InvalidOperationException("Email:NomeRemetente não configurado.");
-            var senha = _configuration [ "Email:Senha" ] ?? throw new InvalidOperationException("Email:Senha não configurado.");
-
-            using var smtp = new SmtpClient(host, port)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(emailRemetente,senha)
-            };
-
-            using var email = new MailMessage
-            {
-                From = new MailAddress(emailRemetente,nomeRemetente),
-                Subject = assunto,
-                Body = mensagem,
-                IsBodyHtml = true
-            };
-
-            email.To.Add(destinatario);
-            await smtp.SendMailAsync(email);
+        public EmailService(GoogleEmailService emailService, MenuFastContext menuFastContext, ILogger<EmailService> logger) {
+            _emailService = emailService;
+            _menuFastContext = menuFastContext;
         }
-        catch(Exception ex)
-        {
-            
-                _logger.LogError(ex, "Erro ao enviar e-mail para {Destinatario}.", destinatario , $"Tipo de log:{TipoLog.ErroEnvioEmail.GetDisplayName()}" 
-                , "Data: {DateTime.UtcNow}");
-               throw new InvalidOperationException($"Erro ao enviar e-mail para {destinatario}.", ex);
+        public async Task EnviarEmailRecuperacaoSenha(string email) {
+            try
+            {
 
+                var funcionario = await _menuFastContext.Funcionarios.FirstAsync(f => f.Email == email);
+                if(funcionario == null) { throw new BusinessLogicException("E-mail  não encontrado."); }
+                var template = await _menuFastContext.TemplatesEmail.FirstAsync(t => t.Nome == "RECUPERAÇÃO DE SENHA");
+                var corpo = template.Conteudo.Replace("{NOME}", funcionario.Nome).Replace("{LINK_RECUPERACAO}", LinkEmail.LinkRecuperarSenha);
+                await _emailService.EnviarAsync(email, template.Assunto, corpo);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(
+                    ex, "Erro ao enviar e-mail de recuperação de senha para {Email}",
+                    email, $"Data de tentativa: {DateTime.Now}");
+                throw new BusinessLogicException("Erro ao enviar e-mail de recuperação de senha.");
+            }
+            finally
+            {
+                await _menuFastContext.DisposeAsync();// disposa o contexto do banco de dados para liberar recursosz
+            }
         }
-      
+
+        public async Task EnviarEmailConfirmacaoCadastro(string email) {
+            try
+            {
+                var funcionario = await _menuFastContext.Funcionarios.FirstAsync(f => f.Email == email);
+                if(funcionario == null) { throw new BusinessLogicException("E-mail  não encontrado."); }
+                var template = await _menuFastContext.TemplatesEmail.FirstAsync(t => t.Nome == "CONFIRMAÇÃO DE CADASTRO");
+                var corpo = template.Conteudo.Replace("{NOME}", funcionario.Nome).Replace("{LINK_CONFIRMAR_EMAIL}", LinkEmail.LinkConfirmarEmail);
+                await _emailService.EnviarAsync(email, template.Assunto, corpo);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(
+                    ex, "Erro ao enviar e-mail de confirmação de cadastro para {Email}",
+                    email, $"Data de tentativa: {DateTime.Now}");
+                throw new BusinessLogicException("Erro ao enviar e-mail de confirmação de cadastro.");
+            }
+            finally
+            {
+                await _menuFastContext.DisposeAsync();// disposa o contexto do banco de dados para liberar recursos
+            }
+        }
+
+
     }
 }
