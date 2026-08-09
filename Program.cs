@@ -5,11 +5,15 @@ using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
+using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
 using StackExchange.Redis;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +31,29 @@ builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration [ "Jwt:Issuer" ],
+            ValidAudience = builder.Configuration [ "Jwt:Audience" ],
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration [ "Jwt:Key" ]!
+                )
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -40,7 +67,9 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.Configuration =
+        builder.Configuration.GetConnectionString("Redis");
+
     options.InstanceName = "MenuFast:";
 });
 
@@ -48,7 +77,6 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsuarioContextService>();
 builder.Services.AddScoped<SegurancaService>();
 builder.Services.AddScoped<EmailService>();
-//builder.Services.AddScoped<JwtBlacklistMiddleware>();
 builder.Services.AddScoped<RedisService>();
 
 builder.Services.AddHttpContextAccessor();
@@ -63,25 +91,18 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     return ConnectionMultiplexer.Connect("localhost:6379");
 });
 
-builder.Services.AddScoped<RedisService>();
-
 var app = builder.Build();
 
 app.UseSwagger();
 
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "MenuFast API v1");
+    options.SwaggerEndpoint(
+        "/swagger/v1/swagger.json",
+        "MenuFast API v1");
 });
 
 app.UseMiddleware<ExceptionMiddleware>();
-
-if(app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 
 app.UseHttpsRedirection();
 

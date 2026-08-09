@@ -9,11 +9,10 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
         public string Cpf { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Telefone { get; set; } = string.Empty;
-        public string Login { get; set; } = string.Empty;
         public string SenhaHash { get; set; } = string.Empty;
         public bool PrimeiroAcesso { get; set; } = true;
         public bool Ativo { get; set; } 
-        public DateTime? DataAdmissao { get; set; }
+        public DateTime? DataAdmissao { get; set; } = DateTime.MinValue;
         public decimal? Salario { get; set; }
         public DateTime? DataCadastro { get; set; } = DateTime.UtcNow;
         public int? PerfilId { get; set; }
@@ -22,9 +21,9 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
         public Loja.Loja? Loja { get; set; }
         public int? TentativasLogin { get; set; }
         public bool? Bloqueado { get; set; }
-        public DateTime? DataBloqueio { get; set; }
-        public DateTime? DataUltimoLogin { get; set; }
-        public DateTime? DataExpiracaoSenha { get; set; }
+        public DateTime? DataBloqueio { get; set; } = null;
+        public DateTime? DataUltimoLogin { get; set; } = null;
+        public DateTime? DataExpiracaoSenha { get; set; } = null;
 
     }
 }

@@ -27,7 +27,6 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
         }
    
         public async Task CadastrarFuncionario(CadastrarFuncionarioRequest request) {
-            var perfil = await _menuFastContext.Perfis.FirstOrDefaultAsync(p => p.Id == request.PerfilId);
 
            
             var funcionario = new Domain.Entities.Models.Funcionario.Funcionario
@@ -43,7 +42,6 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
                 PrimeiroAcesso = true,
                 LojaId = request.LojaId,
                 Salario = request.Salario ?? null,
-                Login = request.Login,
                 Cpf = DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf),
                 DataExpiracaoSenha = _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoExpiracaoSessaoDias != null ? DateTime.Now.AddDays(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault().TempoExpiracaoSessaoDias) : (DateTime?)null,
             };
@@ -63,10 +61,8 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
             funcionario.Nome = request.Nome;
             funcionario.Email = request.Email;
             funcionario.Ativo = request.Ativo;
-            funcionario.Bloqueado = request.Bloqueado;
             funcionario.LojaId = request.LojaId;
             funcionario.Salario = request.Salario;
-            funcionario.Login = request.Login;
             funcionario.Telefone = DocumentoHelper.RemoverCaracteresEspeciais(request.Telefone);
             funcionario.Cpf = DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf);
             funcionario.DataExpiracaoSenha = _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoExpiracaoSessaoDias != null ? DateTime.Now.AddDays(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault().TempoExpiracaoSessaoDias) : (DateTime?)null;

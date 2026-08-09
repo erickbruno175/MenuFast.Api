@@ -15,8 +15,6 @@ public class FuncionarioConfig : IEntityTypeConfiguration<Funcionario> {
         builder.Property(x => x.Email).IsRequired().HasMaxLength(150);
         builder.HasIndex(x => x.Email).IsUnique();
         builder.Property(x => x.Telefone).HasMaxLength(20);
-        builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
-        builder.HasIndex(x => x.Login).IsUnique();
         builder.Property(x => x.SenhaHash).IsRequired().HasMaxLength(500);
         builder.Property(x => x.PrimeiroAcesso).IsRequired();
         builder.Property(x => x.Ativo).IsRequired();
