@@ -15,7 +15,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
         }
 
 
-        public async Task<Loja> CadastrarDadosLoja(RequestDadosEmpresa requestDadosEmpresa) {
+        public async Task<Loja> CadastrarDadosLoja(DadosEmpresaRequest requestDadosEmpresa) {
             var loja = new Loja
             {
                 Ativo = true,
@@ -47,7 +47,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             return loja;
         }
 
-        public async Task<Loja> AtualizarDadosLoja(int idLoja, RequestDadosEmpresa requestDadosEmpresa) {
+        public async Task<Loja> AtualizarDadosLoja(int idLoja, DadosEmpresaRequest requestDadosEmpresa) {
             var lojaParaEdicao = await _menuFastContext.Lojas.FindAsync(idLoja);
 
             if(lojaParaEdicao == null)
