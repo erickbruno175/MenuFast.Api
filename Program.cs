@@ -63,6 +63,22 @@ builder.Services.AddSwaggerGen(options =>
         Title = "MenuFast API",
         Version = "v1"
     });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Informe o token JWT."
+    });
+
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [ new OpenApiSecuritySchemeReference("Bearer", document) ] = [ ]
+        });
 });
 
 builder.Services.AddStackExchangeRedisCache(options =>

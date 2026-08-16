@@ -247,23 +247,18 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     tempoRestante);
             }
 
-            var historico = await _menuFastContext.HistoricoAcessos
-                .FirstOrDefaultAsync(x =>
-                    x.Token == token &&
-                    x.SessaoAtiva);
+            var historico = await _menuFastContext.HistoricoAcessos.FirstOrDefaultAsync(x =>x.Token == token &&x.SessaoAtiva);
 
             if(historico == null)
                 return;
 
-            await _redisService.RemoveAsync(
-                $"usuario-logado:{historico.FuncionarioId}");
+            await _redisService.RemoveAsync($"usuario-logado:{historico.FuncionarioId}");
 
             historico.DataLogout = DateTime.Now;
             historico.SessaoAtiva = false;
             historico.TipoAcesso = TipoAcesso.Logout;
             historico.Ip = httpContext.Connection.RemoteIpAddress?.ToString();
-            historico.Dispositivo =
-                httpContext.Request.Headers [ "User-Agent" ].ToString();
+            historico.Dispositivo =httpContext.Request.Headers [ "User-Agent" ].ToString();
 
             await _menuFastContext.SaveChangesAsync();
         }

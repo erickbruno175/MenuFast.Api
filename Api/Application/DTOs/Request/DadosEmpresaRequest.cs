@@ -1,5 +1,5 @@
 ﻿namespace MenuFast.Api.Api.Application.DTOs.Request {
-    public class RequestDadosEmpresa {
+    public class DadosEmpresaRequest {
         public string RazaoSocial { get; set; } = string.Empty;
         public string NomeFantasia { get; set; } = string.Empty;
         public string Cnpj { get; set; } = string.Empty;
