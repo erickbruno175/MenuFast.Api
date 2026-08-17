@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="img-imagem-arquitetura.png" alt="Arquitetura do MenuFast">
+  <img src="arquitetura-img.png" alt="Arquitetura do MenuFast">
 </p>
 
 ---
