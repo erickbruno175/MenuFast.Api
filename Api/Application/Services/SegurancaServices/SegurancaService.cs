@@ -126,7 +126,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
              
                 if(estarFechado && funcionario.PerfilId != (int)PerfilUsuario.Administrador)
                 {
-                    throw new BusinessLogicException("Opa, hoje estamos fechados.");
+                    throw new BusinessLogicException("Opa, hoje estamos fechados. Abriremos amanha");
                 }
 
                 funcionario.Bloqueado = false;

@@ -3,6 +3,7 @@ using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
+using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
 namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
@@ -16,18 +17,23 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
 
         public async Task<Loja> CadastrarDadosLoja(DadosEmpresaRequest requestDadosEmpresa) {
+
+
+            if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj)) {
+                throw new BusinessLogicException("CNPJ inválido.");
+
+            }
             var loja = new Loja
             {
                 Ativo = true,
                 DataCadastro = DateTime.Now,
                 Slug = SlugHelper.GerarSlug(requestDadosEmpresa.NomeFantasia),
                 RazaoSocial = requestDadosEmpresa.RazaoSocial,
-                NomeFantasia = requestDadosEmpresa.NomeFantasia,
                 Cnpj = DocumentoHelper.RemoverCaracteresEspeciais(requestDadosEmpresa.Cnpj),
+                NomeFantasia = requestDadosEmpresa.NomeFantasia,
                 InscricaoEstadual = requestDadosEmpresa.InscricaoEstadual,
                 Telefone = DocumentoHelper.RemoverMascaraTelefone(requestDadosEmpresa.Telefone),
                 Email = requestDadosEmpresa.Email,
-                Cep = DocumentoHelper.RemoverCaracteresEspeciais(requestDadosEmpresa.Cep),
                 Logradouro = requestDadosEmpresa.Logradouro,
                 Numero = requestDadosEmpresa.Numero,
                 Bairro = requestDadosEmpresa.Bairro,
@@ -53,14 +59,18 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             if(lojaParaEdicao == null)
                 return null;
 
+            if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj))
+            {
+                throw new BusinessLogicException("CNPJ inválido.");
+
+            }
+
             lojaParaEdicao.Slug = SlugHelper.GerarSlug(requestDadosEmpresa.NomeFantasia);
             lojaParaEdicao.RazaoSocial = requestDadosEmpresa.RazaoSocial;
             lojaParaEdicao.NomeFantasia = requestDadosEmpresa.NomeFantasia;
-            lojaParaEdicao.Cnpj = DocumentoHelper.RemoverCaracteresEspeciais(requestDadosEmpresa.Cnpj);
             lojaParaEdicao.InscricaoEstadual = requestDadosEmpresa.InscricaoEstadual;
             lojaParaEdicao.Telefone = DocumentoHelper.RemoverMascaraTelefone(requestDadosEmpresa.Telefone);
             lojaParaEdicao.Email = requestDadosEmpresa.Email;
-            lojaParaEdicao.Cep = DocumentoHelper.RemoverCaracteresEspeciais(requestDadosEmpresa.Cep);
             lojaParaEdicao.Logradouro = requestDadosEmpresa.Logradouro;
             lojaParaEdicao.Numero = requestDadosEmpresa.Numero;
             lojaParaEdicao.Bairro = requestDadosEmpresa.Bairro;
