@@ -37,6 +37,168 @@ O sistema também foi pensado para trabalhar com múltiplas lojas, permitindo a 
 
 ---
 
+# 🖼️ Apresentação das interfaces
+
+O MenuFast possui diferentes aplicações clientes que utilizam a mesma API central.
+
+Atualmente, o projeto conta com:
+
+* 📱 Aplicativo Mobile para garçons
+* 🖥️ Sistema Web para administração e operação
+* 👨‍🍳 Interface para KDS / cozinha
+* 💰 Interface para PDV / Caixa
+* 🍔 Cardápio digital
+
+---
+
+# 📱 Aplicativo Mobile — Garçom
+
+O aplicativo mobile foi desenvolvido para auxiliar os garçons durante o atendimento aos clientes.
+
+A aplicação permite que o garçom consulte as mesas, abra pedidos, adicione produtos, acompanhe os pedidos e consulte o andamento da produção.
+
+### Telas do aplicativo
+
+#### 🔐 Login
+
+<p align="center">
+  <img src="tela-app-mobil/login.png" alt="Login do aplicativo mobile" width="300">
+</p>
+
+#### 🏠 Tela inicial
+
+<p align="center">
+  <img src="tela-app-mobil/inicio.jpg" alt="Tela inicial do aplicativo mobile" width="300">
+</p>
+
+#### 🍔 Cardápio
+
+<p align="center">
+  <img src="tela-app-mobil/cardapio.jpg" alt="Cardápio do aplicativo mobile" width="300">
+</p>
+
+#### 🛒 Itens do pedido
+
+<p align="center">
+  <img src="tela-app-mobil/itens.jpg" alt="Itens do pedido no aplicativo mobile" width="300">
+</p>
+
+#### 🪑 Mesas
+
+<p align="center">
+  <img src="tela-app-mobil/mesas.jpg" alt="Mesas do aplicativo mobile" width="300">
+</p>
+
+### Fluxo do atendimento mobile
+
+```text
+Garçom
+   │
+   ▼
+Login
+   │
+   ▼
+Mesas
+   │
+   ▼
+Seleciona a mesa
+   │
+   ▼
+Cardápio
+   │
+   ▼
+Seleciona produtos
+   │
+   ▼
+Itens do pedido
+   │
+   ▼
+Envia pedido
+   │
+   ▼
+API MenuFast
+   │
+   ▼
+KDS / Cozinha
+```
+
+---
+
+# 🖥️ Sistema Web
+
+O sistema Web é destinado principalmente à administração e operação do estabelecimento.
+
+Através da aplicação Web é possível realizar os principais cadastros e operações do restaurante.
+
+### Principais áreas
+
+* Cadastros
+* Produtos
+* Categorias
+* Mesas
+* Clientes
+* Pedidos
+* PDV
+* Caixa
+* Financeiro
+* Relatórios
+* Configurações
+* Usuários
+* Permissões
+* Integrações
+
+---
+
+## 🖼️ Telas do Sistema Web
+
+### 🔐 Login
+
+<p align="center">
+  <img src="tela-sistema-web/login.jpeg" alt="Tela de login do sistema Web" width="900">
+</p>
+
+---
+
+### 🏠 Tela inicial
+
+<p align="center">
+  <img src="tela-sistema-web/inicio.jpg" alt="Tela inicial do sistema Web" width="900">
+</p>
+
+---
+
+### 📝 Formulário genérico
+
+<p align="center">
+  <img src="tela-sistema-web/form-generico.jpeg" alt="Formulário genérico do sistema Web" width="900">
+</p>
+
+---
+
+### 🖥️ PDV
+
+<p align="center">
+  <img src="tela-sistema-web/pdv.jpeg" alt="Tela do PDV MenuFast" width="900">
+</p>
+
+---
+
+### 📋 Pedido de balcão
+
+<p align="center">
+  <img src="tela-sistema-web/pedido-balcao.jpeg" alt="Tela de pedido de balcão" width="900">
+</p>
+
+---
+
+### 👨‍🍳 KDS — Cozinha
+
+<p align="center">
+  <img src="tela-sistema-web/kds.jpeg" alt="KDS do sistema MenuFast" width="900">
+</p>
+
+---
+
 # 🏗️ Arquitetura
 
 A arquitetura do MenuFast é baseada em uma **API REST desenvolvida em .NET 8**, responsável por centralizar as regras de negócio, autenticação, persistência e comunicação com os demais componentes do sistema.
@@ -218,7 +380,7 @@ Migrations/
 │
 ├── 20260802153652_InicioBancoDeDados.cs
 ├── 20260802153652_InicioBancoDeDados.Designer.cs
-├── ...
+├── ... 
 └── MenuFastContextModelSnapshot.cs
 ```
 
@@ -606,40 +768,60 @@ A documentação da API pode ser acessada através do **Swagger**, quando habili
 # 🗂️ Estrutura atual do repositório
 
 ```text
-MenuFast.Api/
+MenuFast/
 │
-├── Api/
+├── MenuFast.Api/
 │   │
-│   ├── Application/
-│   │   └── Serviços e casos de uso
+│   ├── Api/
+│   │   │
+│   │   ├── Application/
+│   │   │   └── Serviços e casos de uso
+│   │   │
+│   │   ├── Controllers/
+│   │   │   └── Endpoints HTTP
+│   │   │
+│   │   ├── Domain/
+│   │   │   └── Entidades e regras de domínio
+│   │   │
+│   │   ├── Middlewares/
+│   │   │   └── Middlewares da aplicação
+│   │   │
+│   │   ├── Persistence/
+│   │   │   └── Persistência e Entity Framework Core
+│   │   │
+│   │   └── Util/
+│   │       └── Helpers e utilitários
 │   │
-│   ├── Controllers/
-│   │   └── Endpoints HTTP
+│   ├── Migrations/
+│   │   └── Migrations do Entity Framework Core
 │   │
-│   ├── Domain/
-│   │   └── Entidades e regras de domínio
+│   ├── Properties/
+│   │   └── launchSettings.json
 │   │
-│   ├── Middlewares/
-│   │   └── Middlewares da aplicação
-│   │
-│   ├── Persistence/
-│   │   └── Persistência e Entity Framework Core
-│   │
-│   └── Util/
-│       └── Helpers e utilitários
+│   ├── .editorconfig
+│   ├── .gitattributes
+│   ├── .gitignore
+│   ├── MenuFast.Api.csproj
+│   ├── MenuFast.Api.http
+│   └── MenuFast.Api.sln
 │
-├── Migrations/
-│   └── Migrations do Entity Framework Core
+├── tela-app-mobil/
+│   ├── cardapio.jpg
+│   ├── inicio.jpg
+│   ├── itens.jpg
+│   ├── login.png
+│   └── mesas.jpg
 │
-├── Properties/
-│   └── launchSettings.json
+├── tela-sistema-web/
+│   ├── form-generico.jpeg
+│   ├── inicio.jpg
+│   ├── kds.jpeg
+│   ├── login.jpeg
+│   ├── pdv.jpeg
+│   └── pedido-balcao.jpeg
 │
-├── .editorconfig
-├── .gitattributes
-├── .gitignore
-├── MenuFast.Api.csproj
-├── MenuFast.Api.http
-└── MenuFast.Api.sln
+├── arquitetura-img.png
+└── README.md
 ```
 
 ---
@@ -700,9 +882,36 @@ docs/
 
 ---
 
-# 📌 Status do projeto
+# 📱 Resumo das aplicações
 
-🚧 **Em desenvolvimento**
+O MenuFast é composto por diferentes interfaces conectadas à mesma API:
+
+```text
+                         ┌──────────────────────┐
+                         │     MENUFAST API     │
+                         │        .NET 8        │
+                         └──────────┬───────────┘
+                                    │
+                ┌───────────────────┼───────────────────┐
+                │                   │                   │
+                ▼                   ▼                   ▼
+        ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+        │  SISTEMA WEB │    │ APP GARÇOM   │    │     KDS      │
+        │              │    │              │    │              │
+        │ Administração│    │ Atendimento  │    │   Cozinha    │
+        │ PDV          │    │ Mesas        │    │ Produção     │
+        │ Financeiro   │    │ Pedidos      │    │ Status       │
+        │ Relatórios   │    │ Cardápio     │    │              │
+        └──────────────┘    └──────────────┘    └──────────────┘
+```
+
+Essa abordagem permite que cada aplicação tenha uma finalidade específica, mantendo as regras de negócio centralizadas na API.
+
+---
+
+# 🚧 Status do projeto
+
+**Em desenvolvimento**
 
 O projeto está em evolução e novos módulos, integrações e funcionalidades podem ser adicionados conforme a necessidade da plataforma.
 
@@ -711,3 +920,9 @@ O projeto está em evolução e novos módulos, integrações e funcionalidades 
 # 👨‍💻 MenuFast
 
 Sistema desenvolvido para centralizar a operação de estabelecimentos alimentícios, desde o atendimento e abertura do pedido até a produção na cozinha, fechamento no caixa e geração de informações gerenciais.
+
+O projeto utiliza uma arquitetura baseada em **API REST + aplicações Web e Mobile**, permitindo que diferentes partes da operação utilizem o mesmo núcleo de regras de negócio e dados.
+
+<p align="center">
+  <strong>🍔 MenuFast — Gestão completa para estabelecimentos alimentícios.</strong>
+</p>
