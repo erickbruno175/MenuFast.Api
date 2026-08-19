@@ -19,7 +19,6 @@ public class JwtService {
         var chave = _configuration [ "Jwt:Key" ];
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave!));
-
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new [ ]
