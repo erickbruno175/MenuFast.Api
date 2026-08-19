@@ -22,7 +22,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
 
             var produto = new Produto
             {
-                Ativo = request.Ativo,
+                ProdutoEsgotado = request.Ativo,
                 CategoriaProdutoId = request.CategoriaProdutoId,
                 LojaId = request.LojaId,
                 FotoProduto = request.FotoProduto,
@@ -32,7 +32,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 ControlaEstoque = request.ControlaEstoque,
                 Codigo = UtilHelper.GerarCodigoProduto(_menuFastContext),
                 Descricao = request.Descricao,
-                
+                Ativo = request.Ativo,
 
             };
             _menuFastContext.AddAsync(produto);
@@ -44,7 +44,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             var produtoParaAtualizar = await _menuFastContext.Produtos.FirstOrDefaultAsync(x => x.Id == idProdudto);
             if(produtoParaAtualizar == null) throw new BusinessLogicException("Produto não encontrato");
 
-            produtoParaAtualizar.Ativo = produtoRequest.Ativo;
+            produtoParaAtualizar.ProdutoEsgotado = produtoRequest.Ativo;
             produtoParaAtualizar.FotoProduto = produtoRequest.FotoProduto;
             produtoParaAtualizar.CategoriaProdutoId = produtoRequest.CategoriaProdutoId;
             produtoParaAtualizar.ControlaEstoque = produtoRequest.ControlaEstoque;
@@ -58,7 +58,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
 
         public async Task<List<DetalheProdutos>> ListaProdutos(int idLojas) {
             var consultaProdutos = _menuFastContext.Produtos.AsNoTracking().ToList();
-            var produtos = consultaProdutos.Where(p => p.LojaId == idLojas && p.Ativo).OrderBy(p => p.Nome)
+            var produtos = consultaProdutos.Where(p => p.LojaId == idLojas && p.ProdutoEsgotado).OrderBy(p => p.Nome)
                   .Select(p => new DetalheProdutos
                   {
                       FotoProduto = p.FotoProduto,
@@ -67,7 +67,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                       Preco = MoedaHelper.FormatarReal(p.Preco),
                       Codigo = p.Codigo,
                       Descricao = p.Descricao,
-
+                      Ativo = p.Ativo,
                   })
                  .ToList();
             return produtos;
@@ -75,7 +75,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
         public async Task<List<DetalheProdutos>> BuscarProdutos(int idLojas, FiltroProdutoRequest? filtro) {
             var produtos = _menuFastContext.Produtos.AsNoTracking().
                 Include(c => c.CategoriaProduto).
-                Where(p => p.LojaId == idLojas && p.Ativo);
+                Where(p => p.LojaId == idLojas && p.ProdutoEsgotado);
 
             if(filtro.TipoFiltro.PorNome == "NOME" && !string.IsNullOrWhiteSpace(filtro.Nome))
             {
@@ -85,7 +85,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             {
                 produtos = produtos.Where(p => p.CategoriaProdutoId == filtro.CategoriaId);
             }
-            else if(filtro.TipoFiltro.TipoCodigo == "CODIGO" && !string.IsNullOrEmpty(filtro.Codigo.Result))
+            else if(filtro.TipoFiltro.TipoCodigo == "CODIGO" && !string.IsNullOrEmpty(filtro.Codigo))
             {
                 produtos = produtos.Where(p => p.Codigo == filtro.Codigo);
             }
@@ -99,19 +99,19 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 Nome = p.Nome,
                 Preco = MoedaHelper.FormatarReal(p.Preco),
                 Descricao = p.Descricao,
+                Ativo = p.Ativo,
 
             })
             .ToListAsync();
         }
         public async Task RemoverProdutoCardapio(int idProduto) {
-            var produto = _menuFastContext.Produtos.FirstOrDefault(p => p.Id == idProduto);
-            _menuFastContext.Produtos.Remove(produto);
+            var produto = _menuFastContext.Produtos.FirstOrDefault(p => p.Id == idProduto); _menuFastContext.Produtos.Remove(produto);
         }
-        public async Task EsgotarProduto(IEnumerable<int> idsProduto) {
+        public async Task EsgotarProduto(IEnumerable<int> idsProduto , bool esgotado ) {
             var produtos = await _menuFastContext.Produtos.Where(p => idsProduto.Contains(p.Id)).ToListAsync();
             foreach(var produto in produtos)
             {
-                produto.Ativo = false;
+                produto.ProdutoEsgotado = esgotado;
             }
             await _menuFastContext.SaveChangesAsync();
         }

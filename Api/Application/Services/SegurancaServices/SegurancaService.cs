@@ -64,6 +64,8 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 {
                     throw new BusinessLogicException("Usuário não está ativo.");
                 }
+                int idLoja = funcionario.LojaId.Value;
+              
 
                 if(SegurancaHelper.VerificaExpiracaoSenha(funcionario.DataExpiracaoSenha))
                 {
@@ -118,6 +120,13 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
                     await _menuFastContext.SaveChangesAsync();
                     throw new BusinessLogicException($"Senha inválida. Tentativa {funcionario.TentativasLogin} de {maxTentativas}.");
+                }
+
+                var estarFechado = await EstabelecimentoEstaFechado(idLoja);
+             
+                if(estarFechado && funcionario.PerfilId != (int)PerfilUsuario.Administrador)
+                {
+                    throw new BusinessLogicException("Opa, hoje estamos fechados.");
                 }
 
                 funcionario.Bloqueado = false;
@@ -222,17 +231,17 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         public async Task Desloga() {
             var httpContext = _httpContextAccessor.HttpContext;
 
-            if(httpContext == null)throw new BusinessLogicException("Contexto HTTP não encontrado.");
+            if(httpContext == null) throw new BusinessLogicException("Contexto HTTP não encontrado.");
 
             var authorization = httpContext.Request.Headers.Authorization.ToString();
 
-            if(string.IsNullOrWhiteSpace(authorization))throw new BusinessLogicException("Authorization não informado.");
+            if(string.IsNullOrWhiteSpace(authorization)) throw new BusinessLogicException("Authorization não informado.");
 
-            if(!authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))throw new BusinessLogicException("Authorization inválido.");
+            if(!authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) throw new BusinessLogicException("Authorization inválido.");
 
             var token = authorization [ "Bearer ".Length.. ].Trim();
 
-            if(string.IsNullOrWhiteSpace(token))throw new BusinessLogicException("Token não informado.");
+            if(string.IsNullOrWhiteSpace(token)) throw new BusinessLogicException("Token não informado.");
 
             var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
 
@@ -247,7 +256,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     tempoRestante);
             }
 
-            var historico = await _menuFastContext.HistoricoAcessos.FirstOrDefaultAsync(x =>x.Token == token &&x.SessaoAtiva);
+            var historico = await _menuFastContext.HistoricoAcessos.FirstOrDefaultAsync(x => x.Token == token && x.SessaoAtiva);
 
             if(historico == null)
                 return;
@@ -258,7 +267,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             historico.SessaoAtiva = false;
             historico.TipoAcesso = TipoAcesso.Logout;
             historico.Ip = httpContext.Connection.RemoteIpAddress?.ToString();
-            historico.Dispositivo =httpContext.Request.Headers [ "User-Agent" ].ToString();
+            historico.Dispositivo = httpContext.Request.Headers [ "User-Agent" ].ToString();
 
             await _menuFastContext.SaveChangesAsync();
         }
@@ -295,8 +304,21 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 );
             }
         }
+
+        private  async Task<bool> EstabelecimentoEstaFechado(int lojaId) {
+            var agora = DateTime.Now;
+            var horario =  await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(X => X.LojaId == lojaId && X.DiaSemana == agora.DayOfWeek);
+            if(horario == null) return true;
+            if(horario.Fechado) return true;
+
+            var horaAtual = agora.TimeOfDay;
+
+            return horaAtual < horario.HoraAbertura ||
+                   horaAtual > horario.HoraFechamento;
+        }
     }
-
-
 }
+
+
+
 

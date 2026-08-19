@@ -1,5 +1,7 @@
+using MenuFast.Api.Api.Application.Services.CategoriaServices;
 using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Application.Services.Email;
+using MenuFast.Api.Api.Application.Services.ProdutoServices;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
@@ -50,6 +52,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 )
             )
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    sucesso = false,
+                    mensagem = "Não autorizado. Faça login para continuar."
+                });
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -94,6 +113,8 @@ builder.Services.AddScoped<UsuarioContextService>();
 builder.Services.AddScoped<SegurancaService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<RedisService>();
+builder.Services.AddScoped<ProdutoServices>();
+builder.Services.AddScoped<CategoriaService>();
 
 builder.Services.AddHttpContextAccessor();
 

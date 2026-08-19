@@ -1,4 +1,5 @@
 ﻿using BCrypt.Net;
+using MenuFast.Api.Api.Persistence.Context;
 
 namespace MenuFast.Api.Api.Util.Helpers;
 
@@ -16,7 +17,7 @@ public static class SegurancaHelper {
             return BCrypt.Net.BCrypt.Verify(senha, senhaHash);
         }
         catch(SaltParseException)
-        {
+        {   
             return false;
         }
     }
@@ -27,4 +28,6 @@ public static class SegurancaHelper {
 
         return DateTime.Now > dataExpiracao.Value;
     }
+
+ 
 }
