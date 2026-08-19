@@ -44,7 +44,6 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             try
             {
                 var hoje = DateTime.Now;
-
                 var configuracao = await _menuFastContext.ConfiguracoesSeguranca.FirstOrDefaultAsync();
 
                 var maxTentativas = configuracao?.MaxTentativasLogin ?? 5;
@@ -52,25 +51,16 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
                 var funcionario = await _menuFastContext.Funcionarios
                     .Include(x => x.Loja)
-                    .Include(x => x.Perfil).FirstOrDefaultAsync(x => x.Email == loginRequest.Email && x.PerfilId.HasValue &&
+                    .Include(x => x.Perfil).
+                    FirstOrDefaultAsync(x => x.Email == loginRequest.Email && x.PerfilId.HasValue &&
                         new [ ] { 1, 2, 3 }.Contains(x.PerfilId.Value));
 
-                if(funcionario == null)
-                {
-                    throw new BusinessLogicException("Usuário inválido.");
-                }
+                if(funcionario == null){throw new BusinessLogicException("Usuário inválido.");}
 
-                if(!funcionario.Ativo)
-                {
-                    throw new BusinessLogicException("Usuário não está ativo.");
-                }
-                int idLoja = funcionario.LojaId.Value;
-              
-
+                if(!funcionario.Ativo){throw new BusinessLogicException("Usuário não está ativo.");}
+             
                 if(SegurancaHelper.VerificaExpiracaoSenha(funcionario.DataExpiracaoSenha))
-                {
-                    throw new BusinessLogicException("Senha expirada, favor redefinir a senha.");
-                }
+                    {throw new BusinessLogicException("Senha expirada, favor redefinir a senha.");}
 
 
                 if(funcionario.Bloqueado == true)
@@ -81,7 +71,8 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
                         throw new BusinessLogicException(
                             $"Usuário bloqueado temporariamente. " +
-                            $"Tente novamente em aproximadamente {minutosRestantes} minuto(s)."
+                            $"Tente novamente em aproximadamente " +
+                            $"{minutosRestantes} minuto(s)."
                         );
                     }
 
@@ -90,7 +81,6 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     funcionario.TentativasLogin = 0;
                     await _menuFastContext.SaveChangesAsync();
                 }
-
 
                 if(!SegurancaHelper.ValidarSenha(loginRequest.Senha, funcionario.SenhaHash))
                 {
@@ -113,21 +103,17 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
                         await _menuFastContext.SaveChangesAsync();
 
-                        throw new BusinessLogicException(
-                            $"Usuário bloqueado por {tempoBloqueio} minutos."
-                        );
+                        throw new BusinessLogicException($"Usuário bloqueado por {tempoBloqueio} minutos.");
                     }
 
                     await _menuFastContext.SaveChangesAsync();
                     throw new BusinessLogicException($"Senha inválida. Tentativa {funcionario.TentativasLogin} de {maxTentativas}.");
                 }
 
-                var estarFechado = await EstabelecimentoEstaFechado(idLoja);
+                var estarFechado = await EstabelecimentoEstaFechado(funcionario.LojaId.Value);
              
-                if(estarFechado && funcionario.PerfilId != (int)PerfilUsuario.Administrador)
-                {
-                    throw new BusinessLogicException("Opa, hoje estamos fechados. Abriremos amanha");
-                }
+                if(estarFechado && funcionario.PerfilId != (int) PerfilUsuario.Administrador)
+                    {throw new BusinessLogicException("Opa, hoje estamos fechados. Abriremos amanha");}
 
                 funcionario.Bloqueado = false;
                 funcionario.TentativasLogin = 0;
@@ -198,12 +184,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     TimeSpan.FromHours(8)
                 );
 
-                return new LoginResponse
-                {
-                    Token = token,
-                    Nome = funcionario.Nome,
-                    PerfilId = funcionario.PerfilId.Value
-                };
+                return new LoginResponse{Token = token,Nome = funcionario.Nome,PerfilId = funcionario.PerfilId.Value};
             }
             catch(BusinessLogicException ex)
             {
@@ -212,7 +193,6 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     ex.Message,
                     DateTime.UtcNow
                 );
-
                 throw;
             }
             catch(Exception ex)
@@ -220,12 +200,9 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 _logger.LogError(
                     ex,
                     "Erro inesperado ao autenticar funcionário. Data: {Data}",
-                    DateTime.UtcNow
-                );
+                    DateTime.UtcNow);
 
-                throw new BusinessLogicException(
-                    "Ocorreu um erro inesperado ao autenticar o funcionário."
-                );
+                throw new BusinessLogicException("Ocorreu um erro inesperado ao autenticar o funcionário.");
             }
         }
         public async Task Desloga() {
@@ -250,10 +227,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             // Coloca o token na blacklist até o vencimento
             if(tempoRestante > TimeSpan.Zero)
             {
-                await _redisService.SetAsync(
-                    $"blacklist:{token}",
-                    "logout",
-                    tempoRestante);
+                await _redisService.SetAsync($"blacklist:{token}","logout",tempoRestante);
             }
 
             var historico = await _menuFastContext.HistoricoAcessos.FirstOrDefaultAsync(x => x.Token == token && x.SessaoAtiva);
@@ -299,9 +273,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     $"Tipo de log: {TipoLog.ErroEnvioEmail.GetDisplayName()}"
                 );
 
-                throw new BusinessLogicException(
-                    "Não foi possível enviar o e-mail de recuperação de senha. Tente novamente."
-                );
+                throw new BusinessLogicException("Não foi possível enviar o e-mail de recuperação de senha. Tente novamente.");
             }
         }
 
@@ -313,8 +285,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
             var horaAtual = agora.TimeOfDay;
 
-            return horaAtual < horario.HoraAbertura ||
-                   horaAtual > horario.HoraFechamento;
+            return horaAtual < horario.HoraAbertura || horaAtual > horario.HoraFechamento;
         }
     }
 }

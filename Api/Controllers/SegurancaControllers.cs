@@ -16,7 +16,6 @@ namespace MenuFast.Api.Api.Controllers {
             _service = service;
         }
 
-
         [HttpPost("autenticar")]
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -39,8 +38,6 @@ namespace MenuFast.Api.Api.Controllers {
             await _service.RedefinirSenhas(email);
             return Ok(new { Mensagem = "E-mail de recuperação de senha enviado com sucesso." });
         }
-
-
 
     }
 }
