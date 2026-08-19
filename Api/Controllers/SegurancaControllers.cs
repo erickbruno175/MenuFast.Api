@@ -39,5 +39,8 @@ namespace MenuFast.Api.Api.Controllers {
             await _service.RedefinirSenhas(email);
             return Ok(new { Mensagem = "E-mail de recuperação de senha enviado com sucesso." });
         }
+
+
+
     }
 }

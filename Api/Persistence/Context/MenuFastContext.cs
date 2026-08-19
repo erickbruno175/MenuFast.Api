@@ -18,7 +18,6 @@ public class MenuFastContext : DbContext {
         : base(options) {
     }
 
-    public DbSet<Cardapio> Cardapios { get; set; }
     public DbSet<CategoriaProduto> CategoriasProdutos { get; set; }
     public DbSet<Produto> Produtos { get; set; }
     public DbSet<OpcaoProduto> OpcoesProdutos { get; set; }
