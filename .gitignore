@@ -361,3 +361,42 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Configurações locais
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+
+# User Secrets
+secrets.json
+
+# Certificados
+*.pfx
+*.p12
+*.key
+*.pem
+
+# Arquivos de ambiente
+.env
+.env.*
+!.env.example
+
+# Configurações locais do Angular
+ClientApp/.env
+ClientApp/.env.*
+!ClientApp/.env.example
+
+# Banco local
+*.mdf
+*.ldf
+*.ndf
+
+# Publish
+*.pubxml
+*.publishsettings
+PublishScripts/
+
+# Configurações específicas da máquina
+*.user
+*.suo
+.vs/
