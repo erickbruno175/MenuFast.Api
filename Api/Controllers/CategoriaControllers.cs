@@ -20,7 +20,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(CategoriaResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CadastrarCategoria(CategoriaRequest request) {
+        public async Task<IActionResult> CadastrarCategoria([FromBody] CategoriaRequest request) {
 
             var categoria = await _categoriaService.CadastrarCategoria(request);
             return Created("Categoria criada com sucesso", categoria);
@@ -30,7 +30,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(CategoriaResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> AtualizarCategoria(CategoriaRequest request) {
+        public async Task<IActionResult> AtualizarCategoria([FromBody] CategoriaRequest request) {
             var categoria = await _categoriaService.AtualizarCategoria(request);
 
             return Created("Categoria atualozada com sucesso", categoria);

@@ -16,11 +16,8 @@ namespace MenuFast.Api.Api.Util.Helpers {
         public static bool ValidarCpf(string? cpf) {
             cpf = SomenteNumeros(cpf);
 
-            if(cpf.Length != 11)
-                return false;
-
-            if(cpf.Distinct().Count() == 1)
-                return false;
+            if(cpf.Length != 11)return false;
+            if(cpf.Distinct().Count() == 1)return false;
 
             int soma = 0;
 

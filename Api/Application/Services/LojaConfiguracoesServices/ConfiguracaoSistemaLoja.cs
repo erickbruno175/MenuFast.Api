@@ -1,6 +1,8 @@
-﻿using MenuFast.Api.Api.Application.DTOs.Request;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
+using MenuFast.Api.Api.Domain.Enum;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
@@ -101,11 +103,28 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             }).ToList();
             await _menuFastContext.HorariosFuncionamento.AddRangeAsync(horarios);
             await _menuFastContext.SaveChangesAsync();
+
+
+            var configuracaoLoja = await _menuFastContext.ConfiguracoesLoja
+           .FirstOrDefaultAsync(x => x.LojaId == idLoja);
+
+            if(configuracaoLoja != null)
+            {
+                var loja = await _menuFastContext.Lojas.FirstOrDefaultAsync(x => x.Id == idLoja);
+
+                if(loja != null)
+                {
+                    loja.ConfiguracaoFinalizada = true;
+                }
+            }
+
+            await _menuFastContext.SaveChangesAsync();
+
             return horarios;
         }
-        public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionemnto(int idLoja, List<CadastrarHorarioFuncionamentoRequest> horariosRequest) {
+        public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionemnto(int idHorario, List<CadastrarHorarioFuncionamentoRequest> horariosRequest) {
 
-            var horariosExistentes = await _menuFastContext.HorariosFuncionamento.Where(x=> x.LojaId == idLoja).ToListAsync();
+            var horariosExistentes = await _menuFastContext.HorariosFuncionamento.Where(x=> x.Id == idHorario).ToListAsync();
             if(!horariosExistentes.Any()) return Enumerable.Empty<HorarioFuncionamento>();
 
             _menuFastContext.HorariosFuncionamento.RemoveRange(horariosExistentes);
@@ -116,11 +135,11 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 Fechado = x.Fechado,
                 HoraAbertura = x.HoraAbertura,
                 HoraFechamento = x.HoraFechamento,
-                LojaId = idLoja
 
             }).ToList();
             await _menuFastContext.HorariosFuncionamento.AddRangeAsync(horariosEdicao);
             await _menuFastContext.SaveChangesAsync();
+                       
             return horariosEdicao;
         }
 
@@ -145,12 +164,12 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             return confLoja;
         }
 
-        public async Task<ConfiguracaoLoja> AtualizarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {
+        public async Task<ConfiguracaoLoja> AtualizarConfiguracaoLoja(int idConfig ,CadastrarConfiguracaoLojaRequest request) {
 
-            var configuracaoLojaEditar = await _menuFastContext.ConfiguracoesLoja.FirstOrDefaultAsync(f=> f.LojaId == idLoja);
+            var configuracaoLojaEditar = await _menuFastContext.ConfiguracoesLoja.FirstOrDefaultAsync(f=> f.LojaId == idConfig);
 
             if(configuracaoLojaEditar == null) return null;
-            configuracaoLojaEditar.LojaId = idLoja;
+ 
             configuracaoLojaEditar.TrabalhaComRetirada = request.TrabalhaComRetirada;
             configuracaoLojaEditar.TrabalhaComMesa = request.TrabalhaComMesa;
             configuracaoLojaEditar.ExigirGarcomNaMesa = request.ExigirGarcomNaMesa;
@@ -161,6 +180,20 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar;
             await _menuFastContext.SaveChangesAsync();
             return configuracaoLojaEditar;
+        }
+        public async Task<bool> LembrarFinalizarCadastroConfiguracoesLoja(int idFuncionario) {
+            var funcionario = await _menuFastContext.Funcionarios
+                .Include(f => f.Loja)
+                .FirstOrDefaultAsync(f =>
+                    f.Id == idFuncionario &&
+                    f.PerfilId == (int)PerfilUsuario.Administrador &&
+                    f.Ativo);
+
+
+            if(funcionario.Loja.ConfiguracaoFinalizada)return false;
+            var possuiConfiguracao = await _menuFastContext.ConfiguracoesLoja.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
+            var possuiHorario = await _menuFastContext.HorariosFuncionamento.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
+            return !possuiConfiguracao || !possuiHorario;
         }
     }
 }
