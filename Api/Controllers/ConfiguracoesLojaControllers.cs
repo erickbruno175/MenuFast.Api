@@ -11,10 +11,10 @@ namespace MenuFast.Api.Api.Controllers {
     [ApiController]
     [Route("api/configuracoes")]
     public class ConfiguracaoSistemaLojaController : ControllerBase {
-        private readonly ConfiguracaoSistemaLoja _configuracaoSistemaLoja;
+        private readonly ConfiguracaoSistemaLojaServices _configuracaoSistemaLoja;
         private readonly UsuarioContextService _usuarioContextService;
         public ConfiguracaoSistemaLojaController(
-            ConfiguracaoSistemaLoja configuracaoSistemaLoja , UsuarioContextService usuarioContextService) {
+            ConfiguracaoSistemaLojaServices configuracaoSistemaLoja , UsuarioContextService usuarioContextService) {
             _configuracaoSistemaLoja = configuracaoSistemaLoja;
             _usuarioContextService = usuarioContextService;
         }
@@ -59,7 +59,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(IEnumerable<HorarioFuncionamento>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> AtualizarHorarioFuncionamento(int idHorario,[FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
-            var horarios = await _configuracaoSistemaLoja.AtualizarHorarioFuncionemnto(idHorario, request);
+            var horarios = await _configuracaoSistemaLoja.AtualizarHorarioFuncionamento(request, idHorario);
             return Ok(horarios);
         }
 
