@@ -9,11 +9,11 @@ using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
 namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
-    public class ConfiguracaoSistemaLoja {
+    public class ConfiguracaoSistemaLojaServices {
 
         private readonly MenuFastContext _menuFastContext;
 
-        public ConfiguracaoSistemaLoja(MenuFastContext menuFastContext) {
+        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext) {
             _menuFastContext = menuFastContext;
         }
 
@@ -122,25 +122,23 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
             return horarios;
         }
-        public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionemnto(int idHorario, List<CadastrarHorarioFuncionamentoRequest> horariosRequest) {
-
-            var horariosExistentes = await _menuFastContext.HorariosFuncionamento.Where(x=> x.Id == idHorario).ToListAsync();
-            if(!horariosExistentes.Any()) return Enumerable.Empty<HorarioFuncionamento>();
-
-            _menuFastContext.HorariosFuncionamento.RemoveRange(horariosExistentes);
-            var horariosEdicao = horariosRequest.Select(x => new HorarioFuncionamento
+        public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionamento(List<CadastrarHorarioFuncionamentoRequest> horariosRequest ,int idHorario) {
+            foreach(var request in horariosRequest)
             {
+                var horario = await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(x => x.Id == idHorario);
 
-                DiaSemana = x.DiaSemana,
-                Fechado = x.Fechado,
-                HoraAbertura = x.HoraAbertura,
-                HoraFechamento = x.HoraFechamento,
+                if(horario == null)
+                    continue;
 
-            }).ToList();
-            await _menuFastContext.HorariosFuncionamento.AddRangeAsync(horariosEdicao);
+                horario.DiaSemana = request.DiaSemana;
+                horario.Fechado = request.Fechado;
+                horario.HoraAbertura = request.HoraAbertura;
+                horario.HoraFechamento = request.HoraFechamento;
+            }
+
             await _menuFastContext.SaveChangesAsync();
-                       
-            return horariosEdicao;
+
+            return await _menuFastContext.HorariosFuncionamento.Where(x => horariosRequest.Select(r => idHorario).Contains(x.Id)).ToListAsync();
         }
 
         public async Task<ConfiguracaoLoja> CadastrarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {

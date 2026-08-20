@@ -1,6 +1,7 @@
 using MenuFast.Api.Api.Application.Services.CategoriaServices;
 using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Application.Services.Email;
+using MenuFast.Api.Api.Application.Services.LojaConfiguracoes;
 using MenuFast.Api.Api.Application.Services.ProdutoServices;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
@@ -115,7 +116,7 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<RedisService>();
 builder.Services.AddScoped<ProdutoServices>();
 builder.Services.AddScoped<CategoriaService>();
-
+builder.Services.AddScoped<ConfiguracaoSistemaLojaServices>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<MenuFastContext>(options =>
