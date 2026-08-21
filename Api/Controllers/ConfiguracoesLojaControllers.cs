@@ -37,7 +37,9 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AtualizarDadosLoja(int idLoja,[FromBody] DadosEmpresaRequest request) {var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(idLoja, request);
+        public async Task<IActionResult> AtualizarDadosLoja(int idLoja,[FromBody] DadosEmpresaRequest request) 
+        {
+            var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(idLoja, request);
             if(loja == null)return NotFound("Loja não encontrada.");
             return Ok(loja);
         }

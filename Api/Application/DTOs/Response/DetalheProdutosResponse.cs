@@ -1,5 +1,5 @@
 ﻿namespace MenuFast.Api.Api.Application.DTOs.Response {
-    public class DetalheProdutos {
+    public class DetalheProdutosResponse {
         public int Id { get; set; }
         public string Nome { get; set; }
         public string  FotoProduto { get; set; }
