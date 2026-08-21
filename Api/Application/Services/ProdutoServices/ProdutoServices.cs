@@ -14,20 +14,18 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             _menuFastContext = menuFastContext;
         }
 
-    
+
 
         public async Task<DetalheProdutosResponse> CadastrarNovoProduto(
             ProdutoRequest request) {
             var produto = new Produto
             {
-                ProdutoEsgotado = request.Ativo,
                 CategoriaProdutoId = request.CategoriaProdutoId,
                 LojaId = request.LojaId,
                 FotoProduto = request.FotoProduto,
                 Preco = request.Preco,
                 Nome = request.Nome,
                 DataCadastro = DateTime.UtcNow,
-                ControlaEstoque = request.ControlaEstoque,
                 Codigo = UtilHelper.GerarCodigoProduto(_menuFastContext),
                 Descricao = request.Descricao,
                 Ativo = request.Ativo
@@ -39,19 +37,17 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
 
             return ConverterParaDetalhe(produto);
         }
-        public async Task<DetalheProdutosResponse> AtualizarProduto(int idProduto,ProdutoRequest request) {
+        public async Task<DetalheProdutosResponse> AtualizarProduto(int idProduto, ProdutoRequest request) {
             var produto = await _menuFastContext.Produtos.FirstOrDefaultAsync(x => x.Id == idProduto);
 
-            if(produto == null)throw new BusinessLogicException("Produto não encontrado");
+            if(produto == null) throw new BusinessLogicException("Produto não encontrado");
 
             produto.Nome = request.Nome;
             produto.FotoProduto = request.FotoProduto;
             produto.Preco = request.Preco;
             produto.CategoriaProdutoId = request.CategoriaProdutoId;
-            produto.ControlaEstoque = request.ControlaEstoque;
             produto.Descricao = request.Descricao;
             produto.Ativo = request.Ativo;
-            produto.ProdutoEsgotado = request.Ativo;
 
             await _menuFastContext.SaveChangesAsync();
 
@@ -61,16 +57,14 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
         public async Task<DetalheProdutosResponse> DetalharProduto(int idProduto) {
             var produto = await _menuFastContext.Produtos.AsNoTracking().FirstOrDefaultAsync(x => x.Id == idProduto);
 
-            if(produto == null)throw new BusinessLogicException("Produto não encontrado");
+            if(produto == null) throw new BusinessLogicException("Produto não encontrado");
             return ConverterParaDetalhe(produto);
         }
 
         public async Task<List<DetalheProdutosResponse>> ListaProdutos(int idLoja) {
             return await _menuFastContext.Produtos.AsNoTracking()
                 .Where(p =>
-                    p.LojaId == idLoja &&
-                    p.ProdutoEsgotado)
-                .OrderBy(p => p.Nome)
+                    p.LojaId == idLoja).OrderBy(p => p.Nome)
                 .Select(p => new DetalheProdutosResponse
                 {
                     Id = p.Id,
@@ -83,15 +77,15 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 })
                 .ToListAsync();
         }
-       
-        public async Task<List<DetalheProdutosResponse>> BuscarProdutos(int idLoja,FiltroProdutoRequest? filtro , string tipoFiltro) {
-            var produtos = _menuFastContext.Produtos.AsNoTracking().Where(p =>p.LojaId == idLoja);
+
+        public async Task<List<DetalheProdutosResponse>> BuscarProdutos(int idLoja, FiltroProdutoRequest? filtro, string tipoFiltro) {
+            var produtos = _menuFastContext.Produtos.AsNoTracking().Where(p => p.LojaId == idLoja);
 
             if(filtro != null)
             {
-                if(tipoFiltro == "NOME" &&!string.IsNullOrWhiteSpace(filtro.Nome))
+                if(tipoFiltro == "NOME" && !string.IsNullOrWhiteSpace(filtro.Nome))
                 {
-                    produtos = produtos.Where(p =>EF.Functions.Like(p.Nome,$"%{filtro.Nome}%"));
+                    produtos = produtos.Where(p => EF.Functions.Like(p.Nome, $"%{filtro.Nome}%"));
                 }
                 else if(tipoFiltro == "CATEGORIA" && filtro.CategoriaId != null)
                 {
@@ -99,8 +93,9 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 }
                 else if(tipoFiltro == "CODIGO" && !string.IsNullOrWhiteSpace(filtro.Codigo))
                 {
-                    produtos = produtos.Where(p =>p.Codigo == filtro.Codigo);
-                }else
+                    produtos = produtos.Where(p => p.Codigo == filtro.Codigo);
+                }
+                else
                 {
                     produtos = produtos.Where(p => p.Ativo);
                 }
@@ -120,25 +115,15 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 })
                 .ToListAsync();
         }
-       
+
         public async Task RemoverProdutoCardapio(int idProduto) {
             var produto = await _menuFastContext.Produtos.FirstOrDefaultAsync(p => p.Id == idProduto);
 
-            if(produto == null)throw new BusinessLogicException("Produto não encontrado");
+            if(produto == null) throw new BusinessLogicException("Produto não encontrado");
             _menuFastContext.Produtos.Remove(produto);
             await _menuFastContext.SaveChangesAsync();
         }
-       
-        public async Task EsgotarProduto(IEnumerable<int> idsProduto,bool esgotado) {
-            var produtos = await _menuFastContext.Produtos.Where(p => idsProduto.Contains(p.Id)).ToListAsync();
 
-            foreach(var produto in produtos)
-            {
-                produto.ProdutoEsgotado = esgotado;
-            }
-
-            await _menuFastContext.SaveChangesAsync();
-        }
 
         private static DetalheProdutosResponse ConverterParaDetalhe(Produto produto) {
             return new DetalheProdutosResponse

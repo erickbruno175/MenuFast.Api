@@ -53,8 +53,8 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(List<DetalheProdutosResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> BuscarProdutos(int idLoja,[FromBody] FiltroProdutoRequest? filtro) {
-            return Ok(await _produtoService.BuscarProdutos(idLoja, filtro));
+        public async Task<ActionResult> BuscarProdutos(int idLoja,[FromBody] FiltroProdutoRequest? filtro , string tipoFiltro) {
+            return Ok(await _produtoService.BuscarProdutos(idLoja, filtro , tipoFiltro));
         }
 
         [HttpDelete("deletar/{id}")]
@@ -67,15 +67,6 @@ namespace MenuFast.Api.Api.Controllers {
                 message = $"Produto '{id}' removido com sucesso."
             });
         }
-
-        [HttpPatch("esgotar")]
-        [Authorize]
-        public async Task<ActionResult> EsgotarProduto([FromBody] IEnumerable<int> idsProduto,[FromQuery] bool esgotado) {
-         await _produtoService.EsgotarProduto(idsProduto, esgotado);
-            return Ok(new
-            {
-                message = "Produto atualizado com sucesso."
-            });
-        }
+    
     }
 }

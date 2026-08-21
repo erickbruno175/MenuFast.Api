@@ -20,8 +20,6 @@ public class MenuFastContext : DbContext {
 
     public DbSet<CategoriaProduto> CategoriasProdutos { get; set; }
     public DbSet<Produto> Produtos { get; set; }
-    public DbSet<OpcaoProduto> OpcoesProdutos { get; set; }
-    public DbSet<Complemento> Complementos { get; set; }
     public DbSet<Cliente> Clientes { get; set; }
     public DbSet<ConfiguracaoLoja> ConfiguracoesLoja{ get; set; }
     public DbSet<FormaPagamento> FormasPagamento { get; set; }
@@ -49,6 +47,8 @@ public class MenuFastContext : DbContext {
     public DbSet<HistoricoAcesso> HistoricoAcessos { get; set; }
     public DbSet<ConfiguracaoSeguranca> ConfiguracoesSeguranca { get; set; }
     public DbSet<TemplateEmail> TemplatesEmail { get; set; }
+   
+    public DbSet<EstoqueProduto> EstoqueProdutos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 
