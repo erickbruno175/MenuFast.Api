@@ -87,30 +87,25 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 .ToListAsync();
         }
        
-        public async Task<List<DetalheProdutosResponse>> BuscarProdutos(int idLoja,FiltroProdutoRequest? filtro) {
-            var produtos = _menuFastContext.Produtos.AsNoTracking().Where(p =>p.LojaId == idLoja &&p.ProdutoEsgotado);
+        public async Task<List<DetalheProdutosResponse>> BuscarProdutos(int idLoja,FiltroProdutoRequest? filtro , string tipoFiltro) {
+            var produtos = _menuFastContext.Produtos.AsNoTracking().Where(p =>p.LojaId == idLoja);
 
             if(filtro != null)
             {
-                if(filtro.TipoFiltro.PorNome == "NOME" &&
-                    !string.IsNullOrWhiteSpace(filtro.Nome))
+                if(tipoFiltro == "NOME" &&!string.IsNullOrWhiteSpace(filtro.Nome))
                 {
-                    produtos = produtos.Where(p =>
-                        EF.Functions.Like(
-                            p.Nome,
-                            $"%{filtro.Nome}%"));
+                    produtos = produtos.Where(p =>EF.Functions.Like(p.Nome,$"%{filtro.Nome}%"));
                 }
-                else if(filtro.TipoFiltro.PorCategoriaId == "CATEGORIA" &&
-                         filtro.CategoriaId != null)
+                else if(tipoFiltro == "CATEGORIA" && filtro.CategoriaId != null)
                 {
-                    produtos = produtos.Where(p =>
-                        p.CategoriaProdutoId == filtro.CategoriaId);
+                    produtos = produtos.Where(p => p.CategoriaProdutoId == filtro.CategoriaId);
                 }
-                else if(filtro.TipoFiltro.TipoCodigo == "CODIGO" &&
-                         !string.IsNullOrWhiteSpace(filtro.Codigo))
+                else if(tipoFiltro == "CODIGO" && !string.IsNullOrWhiteSpace(filtro.Codigo))
                 {
-                    produtos = produtos.Where(p =>
-                        p.Codigo == filtro.Codigo);
+                    produtos = produtos.Where(p =>p.Codigo == filtro.Codigo);
+                }else
+                {
+                    produtos = produtos.Where(p => p.Ativo);
                 }
             }
 

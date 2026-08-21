@@ -12,7 +12,7 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public bool Ativo { get; set; } 
         public string? FotoProduto { get; set; }
         public string? Descricao { get; set; }
-        public Task<string> Codigo { get; set; }
+        public string Codigo { get; set; }
     }
 
     public class FiltroProdutoRequest {
@@ -21,16 +21,9 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public bool Ativos { get; set; }
         public string Codigo { get; set; }
 
-        public TipoFiltro TipoFiltro { get; set; }
           
     }
-    public class TipoFiltro { 
-        public string PorNome { get; set; }
-        public string PorCategoriaId { get; set; }
-        public string TipoCodigo { get; set; }
-        public string Todos { get; set; } = "TODOS'";
-    }
-
+ 
     public class CategoriaRequest {
         public int CategoriaId { get; set; }
         public string Nome { get; set; }
