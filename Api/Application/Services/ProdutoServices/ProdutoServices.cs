@@ -39,9 +39,6 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
 
             return ConverterParaDetalhe(produto);
         }
-
-    
-
         public async Task<DetalheProdutosResponse> AtualizarProduto(int idProduto,ProdutoRequest request) {
             var produto = await _menuFastContext.Produtos.FirstOrDefaultAsync(x => x.Id == idProduto);
 
