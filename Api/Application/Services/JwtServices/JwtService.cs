@@ -15,20 +15,16 @@ public class JwtService {
     }
 
 
-    public string GerarToken(int funcionarioId, string email, string perfil, string nome ,  string lojaId) {
+    public string GerarToken(int funcionarioId,string email,string perfil,string nome,string lojaId) {
         var chave = _configuration [ "Jwt:Key" ];
-
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave!));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new [ ]
-     {
-    new Claim("id", funcionarioId.ToString()),
-    new Claim("lojaId", lojaId.ToString()),
-    new Claim(JwtRegisteredClaimNames.UniqueName, email),
-    new Claim(ClaimTypes.Role, perfil),
-    new Claim("nome", nome)
-      };
+        var credentials = new SigningCredentials(key,SecurityAlgorithms.HmacSha256
+        );var claims = new [ ]{
+        new Claim("id", funcionarioId.ToString()),
+        new Claim("lojaId", lojaId),
+        new Claim(JwtRegisteredClaimNames.UniqueName, email),
+        new Claim(ClaimTypes.Role, perfil),
+        new Claim("nome", nome)};
 
         var token = new JwtSecurityToken(
             issuer: _configuration [ "Jwt:Issuer" ],

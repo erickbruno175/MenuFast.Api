@@ -1,5 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
 using MenuFast.Api.Api.Application.DTOs.Request;
+using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Enum;
@@ -7,14 +9,17 @@ using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
     public class ConfiguracaoSistemaLojaServices {
 
         private readonly MenuFastContext _menuFastContext;
-
-        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext) {
+        private readonly IDistributedCache _cache;
+        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext , IDistributedCache redis) {
             _menuFastContext = menuFastContext;
+            _cache = redis;
         }
 
 
@@ -177,6 +182,52 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             await _menuFastContext.SaveChangesAsync();
             return configuracaoLojaEditar;
         }
+
+        public async Task<ConfiguracoesLojaResponse> ConsultarConfiguracoesLoja(int lojaId) {
+
+            var cacheKey = $"configuracoes-loja:{lojaId}";
+            var cache = await _cache.GetStringAsync(cacheKey);
+            if(!string.IsNullOrEmpty(cache))
+            {
+                return JsonSerializer.Deserialize<ConfiguracoesLojaResponse>(cache)!;
+            }
+
+            var loja = await _menuFastContext.Lojas
+                .Include(l => l.Configuracao)
+                .FirstOrDefaultAsync(x => x.Id == lojaId);
+
+            if(loja == null)throw new BusinessLogicException("Loja não encontrada.");
+
+            if(loja.Configuracao == null)throw new BusinessLogicException("Configurações da loja não encontradas.");
+
+            var response = new ConfiguracoesLojaResponse
+            {
+                Id = loja.Configuracao.Id,
+
+                Ativo = loja.Ativo,
+                RazaoSocial = loja.RazaoSocial,
+                Email = loja.Email,
+
+                TrabalhaComMesa = loja.Configuracao.TrabalhaComMesa,
+                TrabalhaComDelivery = loja.Configuracao.TrabalhaComDelivery,
+                TrabalhaComRetirada = loja.Configuracao.TrabalhaComRetirada,
+                PermiteVendaSemEstoque = loja.Configuracao.PermiteVendaSemEstoque,
+                CobraTaxaServico = loja.Configuracao.CobraTaxaServico,
+                PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico,
+                ExigirGarcomNaMesa = loja.Configuracao.ExigirGarcomNaMesa,
+                ImprimirPedidoAutomaticamente = loja.Configuracao.ImprimirPedidoAutomaticamente,
+                EnviarPedidoAutomaticamenteCozinha = loja.Configuracao.EnviarPedidoAutomaticamenteCozinha,
+                EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar
+            };
+
+            await _cache.SetStringAsync(cacheKey,JsonSerializer.Serialize(response),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+                });
+
+            return response;
+        }
         public async Task<bool> LembrarFinalizarCadastroConfiguracoesLoja(int idFuncionario) {
             var funcionario = await _menuFastContext.Funcionarios
                 .Include(f => f.Loja)
@@ -190,6 +241,10 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             var possuiConfiguracao = await _menuFastContext.ConfiguracoesLoja.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
             var possuiHorario = await _menuFastContext.HorariosFuncionamento.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
             return !possuiConfiguracao || !possuiHorario;
+        }
+
+        internal async Task ConsultarConfiguracoesLoja(object idUsuarioLogado) {
+            throw new NotImplementedException();
         }
     }
 }

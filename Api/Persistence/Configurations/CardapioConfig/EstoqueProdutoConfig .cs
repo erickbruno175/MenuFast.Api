@@ -16,7 +16,8 @@ public class EstoqueProdutoConfig : IEntityTypeConfiguration<EstoqueProduto> {
         builder.Property(x => x.EstoqueMinimo).HasComment("Quantidade mínima de estoque utilizada para gerar alerta de estoque baixo.");
         builder.Property(x => x.DataCadastro).HasComment("Data e hora em que o controle de estoque foi cadastrado.");
         builder.Property(x => x.DataAtualizacao).HasComment("Data e hora da última atualização do estoque.");
-
+        builder.Property(x => x.AlertaEstoqueEnviado).HasComment("Indica se o alerta de estoque baixo já foi enviado.");
+        builder.Property(x => x.UltimoAlertaEstoque).HasComment("Data e hora do último alerta de estoque enviado.");
         builder.HasOne(x => x.Produto)
             .WithOne(x => x.EstoqueProduto)
             .HasForeignKey<EstoqueProduto>(x => x.ProdutoId)

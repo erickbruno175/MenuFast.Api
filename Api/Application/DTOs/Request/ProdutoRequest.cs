@@ -13,8 +13,8 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public string? FotoProduto { get; set; }
         public string? Descricao { get; set; }
         public string Codigo { get; set; }
-        public int QuantidadeEstoque { get; internal set; }
-        public int EstoqueMinimo { get; internal set; }
+        public int QuantidadeEstoque { get; set; }
+        public int EstoqueMinimo { get; set; }
     }
 
     public class FiltroProdutoRequest {

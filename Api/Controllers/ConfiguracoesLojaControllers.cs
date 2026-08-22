@@ -98,5 +98,20 @@ namespace MenuFast.Api.Api.Controllers {
             var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(_usuarioContextService.FuncionarioId().Value);
             return Ok(lembrar);
         }
+        [HttpGet]
+        [Route("consultar-configuracoes-loja")]
+        [Authorize]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ConsultarConfiguracoesLoja() {
+       
+            if(!_usuarioContextService.LojaId().HasValue)
+            {
+                return Unauthorized("Funcionario não identificado");
+            }
+
+            var configuracoesLoja = await _configuracaoSistemaLoja.ConsultarConfiguracoesLoja(_usuarioContextService.LojaId()!.Value);
+            return Ok(configuracoesLoja);
+        }
     }
 }

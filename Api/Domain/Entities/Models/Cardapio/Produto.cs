@@ -17,5 +17,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
         public DateTime DataCadastro { get; set; }
         public CategoriaProduto? CategoriaProduto { get; set; }
         public EstoqueProduto? EstoqueProduto { get; set; }
+       
     }
 }
