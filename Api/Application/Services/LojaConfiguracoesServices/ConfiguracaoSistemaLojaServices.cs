@@ -145,7 +145,6 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             var confLoja = new ConfiguracaoLoja
             {
                 CobraTaxaServico = request.CobraTaxaServico,
-                ControlaEstoque = request.ControlaEstoque,
                 EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha,
                 ExigirGarcomNaMesa = request.ExigirGarcomNaMesa,
                 ImprimirPedidoAutomaticamente = request.ImprimirPedidoAutomaticamente,
@@ -172,7 +171,6 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             configuracaoLojaEditar.TrabalhaComMesa = request.TrabalhaComMesa;
             configuracaoLojaEditar.ExigirGarcomNaMesa = request.ExigirGarcomNaMesa;
             configuracaoLojaEditar.CobraTaxaServico = request.CobraTaxaServico;
-            configuracaoLojaEditar.ControlaEstoque = request.ControlaEstoque;
             configuracaoLojaEditar.TrabalhaComDelivery = request.TrabalhaComDelivery;
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha;
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar;

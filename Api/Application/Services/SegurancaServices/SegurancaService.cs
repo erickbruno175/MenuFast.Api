@@ -257,7 +257,10 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
                 if(template == null) throw new BusinessLogicException("Não foi possível localizar o modelo de e-mail para recuperação de senha.");
 
-                var conteudo = template.Conteudo.Replace("{NOME_USUARIO}", funcionario.Nome).Replace("{LINK_REDEFINICAO}", LinkEmail.LinkRecuperarSenha);
+                var conteudo = template.Conteudo
+                    .Replace("{NOME_USUARIO}", funcionario.Nome)
+                    .Replace("{LINK_REDEFINICAO}", LinkEmail.LinkRecuperarSenha)
+                    .Replace("{LOGO_MENUFAST}" , funcionario?.Loja?.Logo);
 
                 await _emailService.EnviarAsync(email, template.Assunto, conteudo);
             }

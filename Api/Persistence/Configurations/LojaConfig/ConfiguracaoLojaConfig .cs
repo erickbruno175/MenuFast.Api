@@ -17,7 +17,6 @@ public class ConfiguracaoRestauranteConfig : IEntityTypeConfiguration<Configurac
         builder.Property(x => x.TrabalhaComMesa).HasComment("Indica se o restaurante trabalha com controle de mesas.");
         builder.Property(x => x.TrabalhaComDelivery).HasComment("Indica se o restaurante trabalha com pedidos delivery.");
         builder.Property(x => x.TrabalhaComRetirada).HasComment("Indica se o restaurante trabalha com retirada no balcão.");
-        builder.Property(x => x.ControlaEstoque).HasComment("Indica se o restaurante utiliza controle de estoque.");
         builder.Property(x => x.PermiteVendaSemEstoque).HasComment("Indica se permite realizar venda de produtos sem estoque.");
         builder.Property(x => x.CobraTaxaServico).HasComment("Indica se cobra taxa de serviço.");
         builder.Property(x => x.PercentualTaxaServico).HasPrecision(5, 2).HasComment("Percentual aplicado para cobrança da taxa de serviço.");

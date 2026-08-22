@@ -21,7 +21,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(DetalheProdutosResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> CadastrarProduto([FromBody] ProdutoRequest request) {
-            var produto = await _produtoService.CadastrarNovoProduto(request);
+            var produto = await _produtoService.CadastrarProduto(request);
 
             return Created("Produto criado com sucesso", produto);
         }
@@ -32,9 +32,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(DetalheProdutosResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> AtualizarProduto(int idProduto,[FromBody] ProdutoRequest request) {
-            var produto = await _produtoService.AtualizarProduto(
-                idProduto,
-                request);
+            var produto = await _produtoService.AtualizarProduto(idProduto,request);
 
             return Created("Produto atualizado com sucesso", produto);
         }
@@ -45,7 +43,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(List<DetalheProdutosResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> ListarProdutos(int idLoja) {
-            return Ok(await _produtoService.ListaProdutos(idLoja));
+            return Ok(await _produtoService.ListaProdutosEmEstoque(idLoja));
         }
 
         [HttpPost]
