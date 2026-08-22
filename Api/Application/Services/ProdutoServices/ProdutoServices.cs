@@ -127,6 +127,10 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                         estoque.Quantidade = quantidadeAtual;
                         estoque.DataAtualizacao = agora;
 
+                        if(estoque.Quantidade > estoque.EstoqueMinimo) {
+                            estoque.AlertaEstoqueEnviado = false;
+                        }
+
                         estoque.Movimentacoe.Add(new MovimentacaoEstoque
                         {
                             Tipo = TipoMovimentacaoEstoque.Ajuste,
@@ -242,7 +246,6 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     return;
 
                 var produtos = await _menuFastContext.Produtos
-                    .AsNoTracking()
                     .Include(p => p.EstoqueProduto)
                     .Where(p =>
                         p.Ativo &&
@@ -255,7 +258,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 if(!produtos.Any())
                     return;
 
-                var templateEmail = await _menuFastContext.TemplatesEmail.FirstOrDefaultAsync(e =>e.Nome == "ALERTA DE ESTOQUE" &&e.Ativo);
+                var templateEmail = await _menuFastContext.TemplatesEmail.FirstOrDefaultAsync(e => e.Nome == "ALERTA DE ESTOQUE" && e.Ativo);
 
                 if(templateEmail == null)throw new BusinessLogicException("Não foi possível localizar o modelo de e-mail para alerta de estoque.");
 
@@ -267,7 +270,18 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 }));
 
                 var conteudo = templateEmail.Conteudo.Replace("{{PRODUTOS_ESTOQUE}}", produtosEstoque);
-                await _emailService.EnviarAsync(funcionario.Email,templateEmail.Assunto,conteudo);
+
+                foreach( var produto in produtos)
+                {
+
+                    if(produto.EstoqueProduto.Quantidade <= 0 && !produto.EstoqueProduto.AlertaEstoqueEnviado)
+
+                    await _emailService.EnviarAsync(funcionario.Email,templateEmail.Assunto,conteudo);
+                    produto!.EstoqueProduto!.AlertaEstoqueEnviado = true;
+                    produto!.EstoqueProduto!.UltimoAlertaEstoque = DateTime.Now ;
+
+                }
+               await  _menuFastContext.SaveChangesAsync();
             }
             catch(BusinessLogicException)
             {

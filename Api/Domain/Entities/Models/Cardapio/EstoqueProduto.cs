@@ -7,6 +7,8 @@
         public int EstoqueMinimo { get; set; }
         public DateTime DataCadastro { get; set; }
         public DateTime DataAtualizacao { get; set; }
+        public bool AlertaEstoqueEnviado { get; set; }
+        public DateTime UltimoAlertaEstoque { get; set; }
         public ICollection<MovimentacaoEstoque> Movimentacoe { get; set; }= new List<MovimentacaoEstoque>();
     }
 }

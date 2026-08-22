@@ -9,6 +9,7 @@ using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
+using MenuFast.Api.BackgroundServices;
 using MenuFast.Api.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -118,6 +119,9 @@ builder.Services.AddScoped<ProdutoServices>();
 builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddScoped<ConfiguracaoSistemaLojaServices>();
 builder.Services.AddHttpContextAccessor();
+
+
+builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
 
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(

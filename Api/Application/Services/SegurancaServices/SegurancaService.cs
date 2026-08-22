@@ -180,6 +180,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                         funcionario.PerfilId,
                         funcionario.Email,
                         token = token,
+                        lojaId = funcionario.LojaId.Value,
                     },
                     TimeSpan.FromHours(8)
                 );
