@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.InkML;
 using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.Redis;
@@ -17,7 +18,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
         private readonly MenuFastContext _menuFastContext;
         private readonly IDistributedCache _cache;
-        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext , IDistributedCache redis) {
+        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext, IDistributedCache redis) {
             _menuFastContext = menuFastContext;
             _cache = redis;
         }
@@ -26,7 +27,8 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
         public async Task<Loja> CadastrarDadosLoja(DadosEmpresaRequest requestDadosEmpresa) {
 
 
-            if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj)) {
+            if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj))
+            {
                 throw new BusinessLogicException("CNPJ inválido.");
 
             }
@@ -127,7 +129,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
             return horarios;
         }
-        public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionamento(List<CadastrarHorarioFuncionamentoRequest> horariosRequest ,int idHorario) {
+        public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionamento(List<CadastrarHorarioFuncionamentoRequest> horariosRequest, int idHorario) {
             foreach(var request in horariosRequest)
             {
                 var horario = await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(x => x.Id == idHorario);
@@ -166,12 +168,12 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             return confLoja;
         }
 
-        public async Task<ConfiguracaoLoja> AtualizarConfiguracaoLoja(int idConfig ,CadastrarConfiguracaoLojaRequest request) {
+        public async Task<ConfiguracaoLoja> AtualizarConfiguracaoLoja(int idConfig, CadastrarConfiguracaoLojaRequest request) {
 
-            var configuracaoLojaEditar = await _menuFastContext.ConfiguracoesLoja.FirstOrDefaultAsync(f=> f.LojaId == idConfig);
+            var configuracaoLojaEditar = await _menuFastContext.ConfiguracoesLoja.FirstOrDefaultAsync(f => f.LojaId == idConfig);
 
             if(configuracaoLojaEditar == null) return null;
- 
+
             configuracaoLojaEditar.TrabalhaComRetirada = request.TrabalhaComRetirada;
             configuracaoLojaEditar.TrabalhaComMesa = request.TrabalhaComMesa;
             configuracaoLojaEditar.ExigirGarcomNaMesa = request.ExigirGarcomNaMesa;
@@ -186,6 +188,8 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
         public async Task<ConfiguracoesLojaResponse> ConsultarConfiguracoesLoja(int lojaId) {
 
             var cacheKey = $"configuracoes-loja:{lojaId}";
+            await _cache.RemoveAsync(cacheKey);
+
             var cache = await _cache.GetStringAsync(cacheKey);
             if(!string.IsNullOrEmpty(cache))
             {
@@ -194,11 +198,12 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
             var loja = await _menuFastContext.Lojas
                 .Include(l => l.Configuracao)
+                .Include(h => h.Horarios)
                 .FirstOrDefaultAsync(x => x.Id == lojaId);
 
-            if(loja == null)throw new BusinessLogicException("Loja não encontrada.");
+            if(loja == null) throw new BusinessLogicException("Loja não encontrada.");
 
-            if(loja.Configuracao == null)throw new BusinessLogicException("Configurações da loja não encontradas.");
+            if(loja.Configuracao == null) throw new BusinessLogicException("Configurações da loja não encontradas.");
 
             var response = new ConfiguracoesLojaResponse
             {
@@ -217,10 +222,18 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 ExigirGarcomNaMesa = loja.Configuracao.ExigirGarcomNaMesa,
                 ImprimirPedidoAutomaticamente = loja.Configuracao.ImprimirPedidoAutomaticamente,
                 EnviarPedidoAutomaticamenteCozinha = loja.Configuracao.EnviarPedidoAutomaticamenteCozinha,
-                EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar
+                EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar,
+                horarioFuncionamentos = loja.Horarios.Select(x => new HorarioFuncionamento
+                {
+                    DiaSemana = x.DiaSemana,
+                    Fechado = x.Fechado,
+                    HoraAbertura = x.HoraAbertura,
+                    HoraFechamento = x.HoraFechamento,
+                }).ToList(),
             };
 
-            await _cache.SetStringAsync(cacheKey,JsonSerializer.Serialize(response),
+
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(response),
                 new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
@@ -237,14 +250,12 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                     f.Ativo);
 
 
-            if(funcionario.Loja.ConfiguracaoFinalizada)return false;
+            if(funcionario.Loja.ConfiguracaoFinalizada) return false;
             var possuiConfiguracao = await _menuFastContext.ConfiguracoesLoja.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
             var possuiHorario = await _menuFastContext.HorariosFuncionamento.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
             return !possuiConfiguracao || !possuiHorario;
         }
+    
 
-        internal async Task ConsultarConfiguracoesLoja(object idUsuarioLogado) {
-            throw new NotImplementedException();
-        }
     }
 }
