@@ -6,14 +6,19 @@ using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Domain.Constantes;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
+using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using MenuFast.Api.Api.Domain.Enum;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
@@ -31,13 +36,16 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         public readonly RedisService _redisService;
         public readonly ILogger<SegurancaService> _logger;
         public readonly EmailService _emailService;
-        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor, EmailService emailService) {
+        private readonly IConfiguration _configuration;
+
+        public SegurancaService(MenuFastContext menuFastContext, JwtService jwtService, RedisService redisService, ILogger<SegurancaService> logger, IHttpContextAccessor httpContextAccessor, EmailService emailService, IConfiguration configuration) {
             _menuFastContext = menuFastContext;
             _jwtService = jwtService;
             _redisService = redisService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+            _configuration = configuration;
         }
 
         public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest) {
@@ -55,12 +63,12 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     FirstOrDefaultAsync(x => x.Email == loginRequest.Email && x.PerfilId.HasValue &&
                         new [ ] { 1, 2, 3 }.Contains(x.PerfilId.Value));
 
-                if(funcionario == null){throw new BusinessLogicException("Usuário inválido.");}
+                if(funcionario == null) { throw new BusinessLogicException("Usuário inválido."); }
 
-                if(!funcionario.Ativo){throw new BusinessLogicException("Usuário não está ativo.");}
-             
+                if(!funcionario.Ativo) { throw new BusinessLogicException("Usuário não está ativo."); }
+
                 if(SegurancaHelper.VerificaExpiracaoSenha(funcionario.DataExpiracaoSenha))
-                    {throw new BusinessLogicException("Senha expirada, favor redefinir a senha.");}
+                { throw new BusinessLogicException("Senha expirada, favor redefinir a senha."); }
 
 
                 if(funcionario.Bloqueado == true)
@@ -111,9 +119,9 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 }
 
                 var estarFechado = await EstabelecimentoEstaFechado(funcionario.LojaId.Value);
-             
-                if(estarFechado && funcionario.PerfilId != (int) PerfilUsuario.Administrador)
-                    {throw new BusinessLogicException("Opa, hoje estamos fechados. Abriremos amanha");}
+
+                if(estarFechado && funcionario.PerfilId != (int)PerfilUsuario.Administrador)
+                { throw new BusinessLogicException("Opa, hoje estamos fechados. Abriremos amanha"); }
 
                 funcionario.Bloqueado = false;
                 funcionario.TentativasLogin = 0;
@@ -185,7 +193,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     TimeSpan.FromHours(8)
                 );
 
-                return new LoginResponse{Token = token,Nome = funcionario.Nome,PerfilId = funcionario.PerfilId.Value};
+                return new LoginResponse { Token = token, Nome = funcionario.Nome, PerfilId = funcionario.PerfilId.Value };
             }
             catch(BusinessLogicException ex)
             {
@@ -228,7 +236,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             // Coloca o token na blacklist até o vencimento
             if(tempoRestante > TimeSpan.Zero)
             {
-                await _redisService.SetAsync($"blacklist:{token}","logout",tempoRestante);
+                await _redisService.SetAsync($"blacklist:{token}", "logout", tempoRestante);
             }
 
             var historico = await _menuFastContext.HistoricoAcessos.FirstOrDefaultAsync(x => x.Token == token && x.SessaoAtiva);
@@ -258,10 +266,28 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
                 if(template == null) throw new BusinessLogicException("Não foi possível localizar o modelo de e-mail para recuperação de senha.");
 
+                var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+                var tokenRedefinicao = new TokenRedefinicaoSenha
+                {
+                    FuncionarioId = funcionario.Id,
+                    Token = token,
+                    DataCriacao = DateTime.UtcNow,
+                    DataExpiracao = DateTime.UtcNow.AddHours(1),
+                    Usado = false
+                };
+
+                _menuFastContext.TokenRedefinicaoSenhas.Add(tokenRedefinicao);
+
+                await _menuFastContext.SaveChangesAsync();
+
+                var link = $"{LinkEmail.LinkRecuperarSenha}?token={Uri.EscapeDataString(token)}";
+
+
                 var conteudo = template.Conteudo
                     .Replace("{NOME_USUARIO}", funcionario.Nome)
-                    .Replace("{LINK_REDEFINICAO}", LinkEmail.LinkRecuperarSenha)
-                    .Replace("{LOGO_MENUFAST}" , funcionario?.Loja?.Logo);
+                    .Replace("{LINK_REDEFINICAO}", link)
+                    .Replace("{LOGO_MENUFAST}", funcionario.Loja?.Logo);
 
                 await _emailService.EnviarAsync(email, template.Assunto, conteudo);
             }
@@ -281,9 +307,9 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             }
         }
 
-        private  async Task<bool> EstabelecimentoEstaFechado(int lojaId) {
+        private async Task<bool> EstabelecimentoEstaFechado(int lojaId) {
             var agora = DateTime.Now;
-            var horario =  await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(X => X.LojaId == lojaId && X.DiaSemana == agora.DayOfWeek);
+            var horario = await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(X => X.LojaId == lojaId && X.DiaSemana == agora.DayOfWeek);
             if(horario == null) return true;
             if(horario.Fechado) return true;
 
@@ -291,6 +317,44 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
             return horaAtual < horario.HoraAbertura || horaAtual > horario.HoraFechamento;
         }
+        public async Task AlterarSenhaAsync(int funcionarioId, string novaSenha, string confirmarSenha) {
+            if(string.IsNullOrWhiteSpace(novaSenha)) throw new BusinessLogicException("Informe a nova senha.");
+
+            if(novaSenha != confirmarSenha) throw new BusinessLogicException("As senhas não coincidem.");
+
+            if(novaSenha.Length < 8) throw new BusinessLogicException("A senha deve ter no mínimo 8 caracteres.");
+
+            var funcionario = await _menuFastContext.Funcionarios.FirstOrDefaultAsync(x => x.Id == funcionarioId);
+
+            if(funcionario == null) throw new BusinessLogicException("Funcionário não encontrado.");
+            funcionario.SenhaHash = SegurancaHelper.CriarHash(novaSenha);
+            await _menuFastContext.SaveChangesAsync();
+        }
+
+        public async Task RedefinirSenhaAsync(string token,string novaSenha,string confirmarSenha) {
+            var tokenRedefinicao = await _menuFastContext.TokenRedefinicaoSenhas.FirstOrDefaultAsync(x => x.Token == token);
+
+            if(tokenRedefinicao == null)throw new BusinessLogicException("Link de redefinição inválido.");
+
+            if(tokenRedefinicao.Usado) throw new BusinessLogicException("Este link de redefinição já foi utilizado.");
+
+            if(tokenRedefinicao.DataExpiracao <= DateTime.UtcNow)throw new BusinessLogicException("Este link de redefinição expirou.");
+
+            if(novaSenha != confirmarSenha)throw new BusinessLogicException("As senhas não coincidem.");
+
+            if(novaSenha.Length < 8)throw new BusinessLogicException("A senha deve ter no mínimo 8 caracteres.");
+
+            var funcionario = await _menuFastContext.Funcionarios.FirstOrDefaultAsync(x => x.Id == tokenRedefinicao.FuncionarioId);
+
+            if(funcionario == null)throw new BusinessLogicException("Funcionário não encontrado.");
+
+            funcionario.SenhaHash = SegurancaHelper.CriarHash(novaSenha);
+            tokenRedefinicao.Usado = true;
+
+            await _menuFastContext.SaveChangesAsync();
+        }
+
+
     }
 }
 

@@ -1,4 +1,6 @@
-﻿namespace MenuFast.Api.Api.Application.DTOs.Response {
+﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
+
+namespace MenuFast.Api.Api.Application.DTOs.Response {
     public class ConfiguracoesLojaResponse {
 
         public int Id { get; set; }
@@ -15,6 +17,8 @@
         public bool Ativo { get; set; } = false;
         public string  RazaoSocial { get; set; }
         public string  Email { get; set; }
+
+        public ICollection<HorarioFuncionamento> horarioFuncionamentos { get; set; }
 
     }
 }
