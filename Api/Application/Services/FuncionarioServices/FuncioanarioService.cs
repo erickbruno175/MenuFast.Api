@@ -1,5 +1,6 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
+using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
@@ -15,20 +16,9 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
         }
 
 
-        public async Task<List<Perfil>> GetPerfisAsync() {
-            return await _menuFastContext.Perfis.ToListAsync();
-        }
-        public async Task<List<Permissao>> GetPermissoesAsync() {
-            return await _menuFastContext.Permissoes.ToListAsync();
-
-        }
-        public async Task<List<PerfilPermissao>> GetPerfilPermissoesAsync() {
-            return await _menuFastContext.PerfilPermissoes.ToListAsync();
-        }
-   
         public async Task CadastrarFuncionario(CadastrarFuncionarioRequest request) {
 
-           
+
             var funcionario = new Domain.Entities.Models.Funcionario.Funcionario
             {
                 Nome = request.Nome,
@@ -42,6 +32,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
                 PrimeiroAcesso = true,
                 LojaId = request.LojaId,
                 Salario = request.Salario ?? null,
+                PerfilId = request.PerfilId,
                 Cpf = DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf),
                 DataExpiracaoSenha = _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoExpiracaoSessaoDias != null ? DateTime.Now.AddDays(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault().TempoExpiracaoSessaoDias) : (DateTime?)null,
             };
@@ -57,22 +48,27 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
             {
                 throw new Exception("Funcionário não encontrado.");
             }
-          
+
             funcionario.Nome = request.Nome;
             funcionario.Email = request.Email;
             funcionario.Ativo = request.Ativo;
             funcionario.LojaId = request.LojaId;
             funcionario.Salario = request.Salario;
+            funcionario.PerfilId = request.PerfilId;
             funcionario.Telefone = DocumentoHelper.RemoverCaracteresEspeciais(request.Telefone);
             funcionario.Cpf = DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf);
             funcionario.DataExpiracaoSenha = _menuFastContext.ConfiguracoesSeguranca.FirstOrDefault()?.TempoExpiracaoSessaoDias != null ? DateTime.Now.AddDays(_menuFastContext.ConfiguracoesSeguranca.FirstOrDefault().TempoExpiracaoSessaoDias) : (DateTime?)null;
 
             await _menuFastContext.SaveChangesAsync();
         }
-        public async Task<List<Domain.Entities.Models.Funcionario.Funcionario>> GetFuncionariosAsync() {
-            return await _menuFastContext.Funcionarios
-                 .Include(p => p.Perfil)
-                 .ToListAsync();
+        public async Task<List<Domain.Entities.Models.Funcionario.Funcionario>> ConsultarFuncionarios(int idLoja, string? nome = null, int? perfilId = null) {
+            var query = _menuFastContext.Funcionarios.Where(f => f.Ativo && f.LojaId == idLoja);
+            if(!string.IsNullOrWhiteSpace(nome)){query = query.Where(f => f.Nome.Contains(nome));}
+            if(perfilId.HasValue){query = query.Where(f => f.PerfilId == perfilId.Value);}
+            return await query
+                .OrderBy(f => f.Nome)
+                .ToListAsync();
         }
+
     }
 }

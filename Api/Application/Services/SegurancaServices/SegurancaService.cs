@@ -255,7 +255,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             await _menuFastContext.SaveChangesAsync();
         }
 
-        public async Task RedefinirSenhas(string email) {
+        public async Task EsqueciSenha(string email) {
             try
             {
                 var funcionario = await _menuFastContext.Funcionarios.FirstOrDefaultAsync(f => f.Email == email);
@@ -355,6 +355,43 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
         }
 
 
+        public async Task<ICollection<Perfil>> ListarPerfis() {
+            return await _menuFastContext.Perfis
+                .OrderBy(p=> p.Nome).ToListAsync();
+        }
+
+        public async Task<ICollection<Permissao>> ListarPermissoes() {
+            return await _menuFastContext.Permissoes
+                .OrderBy(p => p.Descricao).ToListAsync();
+        }
+
+        public async Task<IEnumerable<int>> ObterPermissoesDoPerfil(int perfilId) {
+            return await _menuFastContext.PerfilPermissoes
+                .Where(x => x.PerfilId == perfilId)
+                .Select(x => x.PermissaoId)
+                .ToListAsync();
+        }
+
+        public async Task AtualizarPermissoesPerfil(int perfilId,List<int> permissoesIds) {
+            var perfilExiste = await _menuFastContext.Perfis.AnyAsync(x => x.Id == perfilId);
+
+            if(!perfilExiste)throw new Exception("Perfil não encontrado.");
+            var permissoesAtuais = await _menuFastContext.PerfilPermissoes.Where(x => x.PerfilId == perfilId).ToListAsync();
+
+            _menuFastContext.PerfilPermissoes.RemoveRange(permissoesAtuais);
+
+            var novasPermissoes = permissoesIds
+                .Distinct()
+                .Select(permissaoId => new PerfilPermissao
+                {
+                    PerfilId = perfilId,
+                    PermissaoId = permissaoId
+                });
+
+            await _menuFastContext.PerfilPermissoes.AddRangeAsync(novasPermissoes);
+
+            await _menuFastContext.SaveChangesAsync();
+        }
     }
 }
 

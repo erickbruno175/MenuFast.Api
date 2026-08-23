@@ -37,8 +37,8 @@ namespace MenuFast.Api.Api.Controllers {
 
         [HttpPost("recuperar-senha")]
         public async Task<IActionResult> RecuperarSenha(string email) {
-            await _service.RedefinirSenhas(email);
-            return Ok(new { Mensagem = "E-mail de recuperação de senha enviado com sucesso." });
+            await _service.EsqueciSenha(email);
+            return Ok(new { Mensagem = "E-mail de recuperação de senha enviado com sucesso! Um link para criar uma nova senha foi enviado para o seu e-mail.." });
         }
         [HttpPut("alterar-senha")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -55,6 +55,45 @@ namespace MenuFast.Api.Api.Controllers {
         public async Task<OkResult> RedefinirSenha([FromBody] RedefinirSenhaRequest request) {
             await _service.RedefinirSenhaAsync(request.Token,request.NovaSenha,request.ConfirmarSenha);
             return Ok();
+        }
+        [HttpGet]
+        [Route("perfis")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ListarPerfis() {
+            var resultado = await _service.ListarPerfis();
+            return Ok(resultado);
+        }
+
+        [HttpGet]
+        [Route("permissoes")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ListarPermissoes() {
+            var resultado = await _service.ListarPermissoes();
+            return Ok(resultado);
+        }
+
+        [HttpGet]
+        [Route("perfil/{perfilId}/permissoes")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ObterPermissoesDoPerfil(int perfilId) {
+            var resultado = await _service.ObterPermissoesDoPerfil(perfilId);
+            return Ok(resultado);
+        }
+
+        [HttpPut]
+        [Route("perfil/{perfilId}/permissoes")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AtualizarPermissoesPerfil(int perfilId,[FromBody] List<int> permissoesIds) {
+            await _service.AtualizarPermissoesPerfil(perfilId,permissoesIds);
+            return Ok(new{mensagem = "Permissões do perfil atualizadas com sucesso."});
         }
 
     }

@@ -12,7 +12,7 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public bool Ativo { get; set; } = true;
         public DateTime DataAdmissao { get; set; }
         public decimal? Salario { get; set; }
-        public int FuncaoId { get; set; }
+        public int PerfilId { get; set; }
         public int? ResponsavelId { get; set; } = null!;
         public int LojaId { get; set; }
         public Loja Loja { get; set; }
