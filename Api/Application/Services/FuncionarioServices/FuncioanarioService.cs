@@ -18,6 +18,11 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
 
         public async Task CadastrarFuncionario(CadastrarFuncionarioRequest request) {
 
+            if(!DocumentoHelper.ValidarCpf(request.Cpf))
+            {
+                throw new Exception("Cpf Invalido.");
+
+            }
 
             var funcionario = new Domain.Entities.Models.Funcionario.Funcionario
             {
