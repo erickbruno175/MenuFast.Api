@@ -36,8 +36,9 @@
         public bool CobraTaxaServico { get; set; }
         public decimal PercentualTaxaServico { get; set; }
         public bool ExigirGarcomNaMesa { get; set; }
-        public bool ImprimirPedidoAutomaticamente { get; set; }
         public bool EnviarPedidoAutomaticamenteCozinha { get; set; }
         public bool EnviarPedidoAutomaticamenteBar { get; internal set; }
+        public bool AbilitarImpressoraTermica { get; set; } = false;
+        public bool AbilitarKDS { get; set; } = false;
     }
 }

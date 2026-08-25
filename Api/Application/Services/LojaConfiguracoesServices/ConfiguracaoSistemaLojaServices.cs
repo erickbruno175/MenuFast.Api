@@ -154,13 +154,14 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 CobraTaxaServico = request.CobraTaxaServico,
                 EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha,
                 ExigirGarcomNaMesa = request.ExigirGarcomNaMesa,
-                ImprimirPedidoAutomaticamente = request.ImprimirPedidoAutomaticamente,
                 PercentualTaxaServico = request.PercentualTaxaServico,
                 PermiteVendaSemEstoque = request.PermiteVendaSemEstoque,
                 TrabalhaComDelivery = request.TrabalhaComDelivery,
                 TrabalhaComMesa = request.TrabalhaComMesa,
                 TrabalhaComRetirada = request.TrabalhaComRetirada,
                 EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar,
+                AbilitarImpressoraTermica = request.AbilitarImpressoraTermica,
+                AbilitarKDS = request.AbilitarKDS,
                 LojaId = idLoja,
             };
             await _menuFastContext.AddAsync(confLoja);
@@ -181,6 +182,8 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             configuracaoLojaEditar.TrabalhaComDelivery = request.TrabalhaComDelivery;
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha;
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar;
+            configuracaoLojaEditar.AbilitarKDS = request.AbilitarKDS;
+            configuracaoLojaEditar.AbilitarImpressoraTermica = request.AbilitarImpressoraTermica;
             await _menuFastContext.SaveChangesAsync();
             return configuracaoLojaEditar;
         }
@@ -220,9 +223,10 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 CobraTaxaServico = loja.Configuracao.CobraTaxaServico,
                 PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico,
                 ExigirGarcomNaMesa = loja.Configuracao.ExigirGarcomNaMesa,
-                ImprimirPedidoAutomaticamente = loja.Configuracao.ImprimirPedidoAutomaticamente,
                 EnviarPedidoAutomaticamenteCozinha = loja.Configuracao.EnviarPedidoAutomaticamenteCozinha,
                 EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar,
+                AbilitarImpressoraTermica = loja.Configuracao.AbilitarImpressoraTermica,
+                AbilitarKDS = loja.Configuracao.AbilitarKDS,
                 horarioFuncionamentos = loja.Horarios.Select(x => new HorarioFuncionamento
                 {
                     DiaSemana = x.DiaSemana,

@@ -85,6 +85,18 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 
+    options.TagActionsBy(api =>
+    {
+        var controller = api.ActionDescriptor.RouteValues [ "controller" ];
+
+        return new [ ]
+        {
+            controller?.EndsWith("Controller") == true
+                ? controller[..^"Controller".Length]
+                : controller ?? "Default"
+        };
+    });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
