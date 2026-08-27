@@ -10,10 +10,10 @@ namespace MenuFast.Api.Api.Controllers {
 
     [ApiController]
     [Route("api/categoria")]
-    public class CategoriaControllers : ControllerBase {
+    public class CategoriaController : ControllerBase {
 
         private readonly CategoriaService _categoriaService;
-        public CategoriaControllers(CategoriaService categoriaService) { _categoriaService = categoriaService; }
+        public CategoriaController(CategoriaService categoriaService) { _categoriaService = categoriaService; }
 
         [HttpPost]
         [Route("cadastrar")]

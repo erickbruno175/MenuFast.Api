@@ -20,7 +20,7 @@ public class JwtService {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave!));
         var credentials = new SigningCredentials(key,SecurityAlgorithms.HmacSha256
         );var claims = new [ ]{
-        new Claim("id", funcionarioId.ToString()),
+        new Claim("funcionarioId", funcionarioId.ToString()),
         new Claim("lojaId", lojaId),
         new Claim(JwtRegisteredClaimNames.UniqueName, email),
         new Claim(ClaimTypes.Role, perfil),

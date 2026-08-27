@@ -15,7 +15,7 @@ namespace MenuFast.Api.Api.Application.Services.CategoriaServices {
         public CategoriaService(MenuFastContext menuFastContext) { _menuFastContext = menuFastContext; }
 
         public async Task<CategoriaResponse> CadastrarCategoria(CategoriaRequest request) {
-            if(await _menuFastContext.CategoriasProdutos.AnyAsync(c => c.Nome == request.Nome && c.LojaId == request.LojaId))
+            if(await _menuFastContext.CategoriasProdutos.AnyAsync(c => c.Nome.Trim().ToUpper() == request.Nome && c.LojaId == request.LojaId))
 {
                 throw new BusinessLogicException($"Categoria {request.Nome} já existe");
             }

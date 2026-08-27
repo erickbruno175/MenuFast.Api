@@ -30,7 +30,7 @@ public class MenuFastContext : DbContext {
     public DbSet<ChavePix> ChavesPix { get; set; }
     public DbSet<Caixa> Caixas { get; set; }
     public DbSet<ContaPagar> ContasPagar { get; set; }
-    public DbSet<ContaReceber> ContasReceber { get; set; }
+    public DbSet<ComissaoVenda> ComissaoVendas { get; set; }
     public DbSet<MovimentoCaixa> MovimentosCaixa { get; set; }
     public DbSet<Funcionario> Funcionarios { get; set; }
     public DbSet<Mesa> Mesas { get; set; }

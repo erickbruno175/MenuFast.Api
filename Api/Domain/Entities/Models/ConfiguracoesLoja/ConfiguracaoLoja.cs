@@ -10,7 +10,9 @@ public class ConfiguracaoLoja {
     public bool TrabalhaComRetirada { get; set; } = false;
     public bool PermiteVendaSemEstoque { get; set; } = false;
     public bool CobraTaxaServico { get; set; } = false;
-    public decimal PercentualTaxaServico { get; set; }
+    public bool CobraTaxaEntrega { get; set; } = false;
+    public decimal? PercentualTaxaServico { get; set; }
+    public decimal? TaxaEntrega { get; set; }
     public bool ExigirGarcomNaMesa { get; set; } = false;
     public bool EnviarPedidoAutomaticamenteCozinha { get; set; } = false;
     public bool EnviarPedidoAutomaticamenteBar { get; set; } = false;
