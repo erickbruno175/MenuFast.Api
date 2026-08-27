@@ -26,6 +26,10 @@ public class ConfiguracaoRestauranteConfig : IEntityTypeConfiguration<Configurac
         builder.Property(x => x.Ativo).HasComment("Indica se a configuração está ativa.");
         builder.Property(x => x.AbilitarKDS).HasComment("Indica se a configuração está ativa do KDS.");
         builder.Property(x => x.AbilitarImpressoraTermica).HasComment("Indica se a configuração está ativa da impressora termica.");
+        builder.Property(x => x.CobraTaxaEntrega).HasComment("Indica se a taxa de entrega.");
+        builder.Property(x => x.TaxaEntrega).HasComment("Indica o valor da taxa de entrega.");
+        builder.Property(x => x.PercentualTaxaServico).HasComment("Indica o valor da taxa  de serviço do garçom");
+
 
         builder.HasOne(x => x.Loja).WithOne(x => x.Configuracao).HasForeignKey<ConfiguracaoLoja>(x => x.LojaId).OnDelete(DeleteBehavior.Cascade);
     }

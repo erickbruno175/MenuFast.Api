@@ -24,7 +24,13 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             , EmailService emailService,
              ILogger<ProdutoServices> logger) { _menuFastContext = menuFastContext; _emailService = emailService;  _logger = _logger; }
 
-        public async Task<DetalheProdutosResponse> CadastrarProduto(ProdutoRequest request) {
+        public async Task<DetalheProdutosResponse> CadastrarProduto(ProdutoRequest request ) {
+
+            var jaExiste = _menuFastContext.Produtos.Any(p=> p.Nome.Trim().ToUpper() == request.Nome );
+            if(jaExiste)
+            {
+                throw new BusinessLogicException("Produto ja existe");
+            }
             var agora = DateTime.UtcNow;
 
             var produto = new Produto
@@ -38,15 +44,16 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 Codigo = UtilHelper.GerarCodigoProduto(_menuFastContext),
                 Descricao = request.Descricao,
                 Ativo = request.Ativo,
-                ControlaEstoque = request.ControlaEstoque
+                ControlaEstoque = request.ControlaEstoque,
+                Tamanho = request.Tamanho,
             };
 
             if(request.ControlaEstoque)
             {
                 var estoque = new EstoqueProduto
                 {
-                    Quantidade = request.QuantidadeEstoque,
-                    EstoqueMinimo = request.EstoqueMinimo,
+                    Quantidade = request.QuantidadeEstoque?? 0,
+                    EstoqueMinimo = request.EstoqueMinimo??0,
                     DataCadastro = agora,
                     DataAtualizacao = agora
                 };
@@ -54,9 +61,9 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 estoque.Movimentacoe.Add(new MovimentacaoEstoque
                 {
                     Tipo = TipoMovimentacaoEstoque.Entrada,
-                    Quantidade = request.QuantidadeEstoque,
+                    Quantidade = request.QuantidadeEstoque??0,
                     QuantidadeAnterior = 0,
-                    QuantidadeAtual = request.QuantidadeEstoque,
+                    QuantidadeAtual = request.QuantidadeEstoque??0,
                     Observacao = "Estoque inicial",
                     DataCadastro = agora
                 });
@@ -84,6 +91,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             produto.Descricao = request.Descricao;
             produto.Ativo = request.Ativo;
             produto.ControlaEstoque = request.ControlaEstoque;
+            produto.Tamanho = request.Tamanho;
 
             // Ativou o controle de estoque
             if(request.ControlaEstoque)
@@ -94,8 +102,8 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     var estoque = new EstoqueProduto
                     {
                         ProdutoId = produto.Id,
-                        Quantidade = request.QuantidadeEstoque,
-                        EstoqueMinimo = request.EstoqueMinimo,
+                        Quantidade = request.QuantidadeEstoque??0,
+                        EstoqueMinimo = request.EstoqueMinimo??0,
                         DataCadastro = agora,
                         DataAtualizacao = agora
                     };
@@ -103,9 +111,9 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     estoque.Movimentacoe.Add(new MovimentacaoEstoque
                     {
                         Tipo = TipoMovimentacaoEstoque.Entrada,
-                        Quantidade = request.QuantidadeEstoque,
+                        Quantidade = request.QuantidadeEstoque??0,
                         QuantidadeAnterior = 0,
-                        QuantidadeAtual = request.QuantidadeEstoque,
+                        QuantidadeAtual = request.QuantidadeEstoque??0,
                         Observacao = "Estoque inicial",
                         DataCadastro = agora
                     });
@@ -116,7 +124,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 {
                     var estoque = produto.EstoqueProduto;
 
-                    estoque.EstoqueMinimo = request.EstoqueMinimo;
+                    estoque.EstoqueMinimo = request.EstoqueMinimo??0;
 
                     // Só cria movimentação se a quantidade realmente mudou
                     if(estoque.Quantidade != request.QuantidadeEstoque)
@@ -124,7 +132,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                         var quantidadeAnterior = estoque.Quantidade;
                         var quantidadeAtual = request.QuantidadeEstoque;
 
-                        estoque.Quantidade = quantidadeAtual;
+                        estoque.Quantidade = quantidadeAtual??0;
                         estoque.DataAtualizacao = agora;
 
                         if(estoque.Quantidade > estoque.EstoqueMinimo) {
@@ -134,9 +142,9 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                         estoque.Movimentacoe.Add(new MovimentacaoEstoque
                         {
                             Tipo = TipoMovimentacaoEstoque.Ajuste,
-                            Quantidade = Math.Abs(quantidadeAtual - quantidadeAnterior),
+                            Quantidade = Math.Abs(quantidadeAtual - quantidadeAnterior??0),
                             QuantidadeAnterior = quantidadeAnterior,
-                            QuantidadeAtual = quantidadeAtual,
+                            QuantidadeAtual = quantidadeAtual??0,
                             Observacao = "Ajuste de estoque pelo cadastro do produto",
                             DataCadastro = agora
                         });
@@ -194,7 +202,8 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     Nome = p.Nome,
                     Preco = MoedaHelper.FormatarReal(p.Preco),
                     Descricao = p.Descricao,
-                    Ativo = p.Ativo
+                    Ativo = p.Ativo,
+                    Tamanho = p.Tamanho,
                 })
                 .ToListAsync();
         }
@@ -218,6 +227,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     Ativo = p.Ativo,
                     QuantidadeEstoque = p.ControlaEstoque ? p.EstoqueProduto!.Quantidade : null,
                     EstoqueMinimo = p.ControlaEstoque ? p.EstoqueProduto!.EstoqueMinimo : null,
+                    Tamanho = p.Tamanho,
                     StatusEstoque = !p.ControlaEstoque ? null : p.EstoqueProduto!.Quantidade == 0 ? "ESGOTADO" : p.EstoqueProduto.Quantidade <= p.EstoqueProduto.EstoqueMinimo ? "ESTOQUE_BAIXO" : "NORMAL"
                 })
                 .ToListAsync();
@@ -232,7 +242,10 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 Preco = MoedaHelper.FormatarReal(produto.Preco),
                 Codigo = produto.Codigo,
                 Descricao = produto.Descricao,
-                Ativo = produto.Ativo
+                Ativo = produto.Ativo,
+                Tamanho = produto.Tamanho,
+
+
             };
         }
 

@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuFast.Api.Migrations
 {
     [DbContext(typeof(MenuFastContext))]
-    partial class MenuFastContextModelSnapshot : ModelSnapshot
+    [Migration("20260825233111_teste")]
+    partial class teste
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,21 @@ namespace MenuFast.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ComplementoProduto", b =>
+                {
+                    b.Property<int>("ComplementosId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProdutosId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ComplementosId", "ProdutosId");
+
+                    b.HasIndex("ProdutosId");
+
+                    b.ToTable("ComplementoProduto");
+                });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.CategoriaProduto", b =>
                 {
@@ -47,100 +65,73 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("CategoriaProduto", (string)null);
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.EstoqueProduto", b =>
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Complemento", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasComment("Identificador único do estoque do produto.");
+                        .HasComment("Identificador único do complemento.");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
 
-                    b.Property<bool>("AlertaEstoqueEnviado")
+                    b.Property<bool>("Ativo")
                         .HasColumnType("bit")
-                        .HasComment("Indica se o alerta de estoque baixo já foi enviado.");
+                        .HasComment("Indica se o complemento está ativo.");
 
-                    b.Property<DateTime>("DataAtualizacao")
-                        .HasColumnType("datetime2")
-                        .HasComment("Data e hora da última atualização do estoque.");
+                    b.Property<int>("LojaId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2")
-                        .HasComment("Data e hora em que o controle de estoque foi cadastrado.");
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Nome do complemento.");
 
-                    b.Property<int>("EstoqueMinimo")
+                    b.Property<bool>("Obrigatorio")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se o complemento é obrigatório.");
+
+                    b.Property<decimal>("Preco")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Valor adicional do complemento.");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LojaId");
+
+                    b.ToTable("Complemento", (string)null);
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.OpcaoProduto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasComment("Quantidade mínima de estoque utilizada para gerar alerta de estoque baixo.");
+                        .HasComment("Identificador único da opção do produto.");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
+
+                    b.Property<decimal>("Acrescimo")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Valor de acréscimo da opção.");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Nome da opção do produto.");
 
                     b.Property<int>("ProdutoId")
                         .HasColumnType("int")
-                        .HasComment("Produto vinculado ao estoque.");
-
-                    b.Property<int>("Quantidade")
-                        .HasColumnType("int")
-                        .HasComment("Quantidade atual disponível em estoque.");
-
-                    b.Property<DateTime>("UltimoAlertaEstoque")
-                        .HasColumnType("datetime2")
-                        .HasComment("Data e hora do último alerta de estoque enviado.");
+                        .HasComment("Produto ao qual a opção pertence.");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProdutoId")
-                        .IsUnique();
+                    b.HasIndex("ProdutoId");
 
-                    b.ToTable("EstoqueProduto", (string)null);
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.MovimentacaoEstoque", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasComment("Identificador único da movimentação de estoque.");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
-
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2")
-                        .HasComment("Data e hora em que a movimentação foi registrada.");
-
-                    b.Property<int>("EstoqueProdutoId")
-                        .HasColumnType("int")
-                        .HasComment("Estoque do produto vinculado à movimentação.");
-
-                    b.Property<string>("Observacao")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Observação referente à movimentação de estoque.");
-
-                    b.Property<int?>("PedidoId")
-                        .HasColumnType("int")
-                        .HasComment("Pedido relacionado à movimentação, quando aplicável.");
-
-                    b.Property<int>("Quantidade")
-                        .HasColumnType("int")
-                        .HasComment("Quantidade movimentada no estoque.");
-
-                    b.Property<int>("QuantidadeAnterior")
-                        .HasColumnType("int")
-                        .HasComment("Quantidade disponível no estoque antes da movimentação.");
-
-                    b.Property<int>("QuantidadeAtual")
-                        .HasColumnType("int")
-                        .HasComment("Quantidade disponível no estoque após a movimentação.");
-
-                    b.Property<int>("Tipo")
-                        .HasColumnType("int")
-                        .HasComment("Tipo da movimentação realizada no estoque.");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EstoqueProdutoId");
-
-                    b.HasIndex("PedidoId");
-
-                    b.ToTable("MovimentacaoEstoque", (string)null);
+                    b.ToTable("OpcaoProduto", (string)null);
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Produto", b =>
@@ -164,7 +155,8 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("ControlaEstoque")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indica se o produto controla estoque.");
 
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime2");
@@ -192,9 +184,9 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Preço de venda do produto.");
 
-                    b.Property<string>("Tamanho")
-                        .HasColumnType("nvarchar(max)")
-                        .HasComment("Indica o tamanho do produto caso for pizza ex:");
+                    b.Property<bool>("ProdutoEsgotado")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se o produto está ativo.");
 
                     b.HasKey("Id");
 
@@ -340,25 +332,17 @@ namespace MenuFast.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1001L);
 
-                    b.Property<bool>("AbilitarImpressoraTermica")
-                        .HasColumnType("bit")
-                        .HasComment("Indica se a configuração está ativa da impressora termica.");
-
-                    b.Property<bool>("AbilitarKDS")
-                        .HasColumnType("bit")
-                        .HasComment("Indica se a configuração está ativa do KDS.");
-
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit")
                         .HasComment("Indica se a configuração está ativa.");
 
-                    b.Property<bool>("CobraTaxaEntrega")
-                        .HasColumnType("bit")
-                        .HasComment("Indica se a taxa de entrega.");
-
                     b.Property<bool>("CobraTaxaServico")
                         .HasColumnType("bit")
                         .HasComment("Indica se cobra taxa de serviço.");
+
+                    b.Property<bool>("ControlaEstoque")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se o restaurante utiliza controle de estoque.");
 
                     b.Property<bool>("EnviarPedidoAutomaticamenteBar")
                         .HasColumnType("bit")
@@ -372,22 +356,22 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("bit")
                         .HasComment("Indica se é obrigatório informar garçom responsável pela mesa.");
 
+                    b.Property<bool>("ImprimirPedidoAutomaticamente")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se o pedido deve ser impresso automaticamente.");
+
                     b.Property<int>("LojaId")
                         .HasColumnType("int")
                         .HasComment("Loja vinculada à configuração do restaurante.");
 
-                    b.Property<decimal?>("PercentualTaxaServico")
+                    b.Property<decimal>("PercentualTaxaServico")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)")
-                        .HasComment("Indica o valor da taxa  de serviço do garçom");
+                        .HasComment("Percentual aplicado para cobrança da taxa de serviço.");
 
                     b.Property<bool>("PermiteVendaSemEstoque")
                         .HasColumnType("bit")
                         .HasComment("Indica se permite realizar venda de produtos sem estoque.");
-
-                    b.Property<decimal?>("TaxaEntrega")
-                        .HasColumnType("decimal(18,2)")
-                        .HasComment("Indica o valor da taxa de entrega.");
 
                     b.Property<bool>("TrabalhaComDelivery")
                         .HasColumnType("bit")
@@ -583,44 +567,6 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("Caixa", (string)null);
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ComissaoVenda", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DataVenda")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("FuncionarioId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PedidoId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PercentualComissao")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
-
-                    b.Property<decimal>("ValorComissao")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("ValorVenda")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuncionarioId");
-
-                    b.HasIndex("PedidoId");
-
-                    b.ToTable("ComissaoVenda", (string)null);
-                });
-
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ContaPagar", b =>
                 {
                     b.Property<int>("Id")
@@ -669,6 +615,56 @@ namespace MenuFast.Api.Migrations
                     b.HasIndex("LojaId");
 
                     b.ToTable("ContaPagar", (string)null);
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ContaReceber", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasComment("Identificador único da conta a receber.");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 12001L);
+
+                    b.Property<DateTime?>("DataRecebimento")
+                        .HasColumnType("datetime2")
+                        .HasComment("Data de recebimento da conta.");
+
+                    b.Property<DateTime>("DataVencimento")
+                        .HasColumnType("datetime2")
+                        .HasComment("Data de vencimento da conta.");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("Descrição da conta a receber.");
+
+                    b.Property<int>("FuncionarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LojaId")
+                        .HasColumnType("int")
+                        .HasComment("Loja responsável pela conta a receber.");
+
+                    b.Property<bool>("Recebido")
+                        .HasColumnType("bit")
+                        .HasComment("Indica se a conta foi recebida.");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasComment("Status atual da conta financeira.");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Valor da conta a receber.");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LojaId");
+
+                    b.ToTable("ContaReceber", (string)null);
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.MovimentoCaixa", b =>
@@ -1490,37 +1486,6 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("Permissao", (string)null);
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.TokenRedefinicaoSenha", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataExpiracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("FuncionarioId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Usado")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuncionarioId");
-
-                    b.ToTable("TokenRedefinicaoSenhas");
-                });
-
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.TemplateEmail", b =>
                 {
                     b.Property<int>("Id")
@@ -1560,6 +1525,21 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("TemplatesEmail");
                 });
 
+            modelBuilder.Entity("ComplementoProduto", b =>
+                {
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Complemento", null)
+                        .WithMany()
+                        .HasForeignKey("ComplementosId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Produto", null)
+                        .WithMany()
+                        .HasForeignKey("ProdutosId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.CategoriaProduto", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
@@ -1571,26 +1551,26 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Loja");
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.EstoqueProduto", b =>
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Complemento", b =>
+                {
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
+                        .WithMany()
+                        .HasForeignKey("LojaId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Loja");
+                });
+
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.OpcaoProduto", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Produto", "Produto")
-                        .WithOne("EstoqueProduto")
-                        .HasForeignKey("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.EstoqueProduto", "ProdutoId")
+                        .WithMany()
+                        .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Produto");
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.MovimentacaoEstoque", b =>
-                {
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.EstoqueProduto", "EstoqueProduto")
-                        .WithMany("Movimentacoe")
-                        .HasForeignKey("EstoqueProdutoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EstoqueProduto");
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Produto", b =>
@@ -1675,26 +1655,18 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Loja");
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ComissaoVenda", b =>
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ContaPagar", b =>
                 {
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcionario", "Funcionario")
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
                         .WithMany()
-                        .HasForeignKey("FuncionarioId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("LojaId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Pedido.Pedido", "Pedido")
-                        .WithMany()
-                        .HasForeignKey("PedidoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Funcionario");
-
-                    b.Navigation("Pedido");
+                    b.Navigation("Loja");
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ContaPagar", b =>
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.ContaReceber", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
                         .WithMany()
@@ -1952,17 +1924,6 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Permissao");
                 });
 
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.TokenRedefinicaoSenha", b =>
-                {
-                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Funcionario.Funcionario", "Funcionario")
-                        .WithMany()
-                        .HasForeignKey("FuncionarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Funcionario");
-                });
-
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.TemplateEmail", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Loja.Loja", "Loja")
@@ -1977,16 +1938,6 @@ namespace MenuFast.Api.Migrations
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.CategoriaProduto", b =>
                 {
                     b.Navigation("Produtos");
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.EstoqueProduto", b =>
-                {
-                    b.Navigation("Movimentacoe");
-                });
-
-            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Cardapio.Produto", b =>
-                {
-                    b.Navigation("EstoqueProduto");
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Financeiro.Caixa", b =>

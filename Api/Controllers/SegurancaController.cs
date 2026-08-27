@@ -5,17 +5,20 @@ using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace MenuFast.Api.Api.Controllers {
     [ApiController]
     [Route("api/seguranca")]
-    public class SegurancaControllers : ControllerBase {
+    public class SegurancaController : ControllerBase {
 
         private readonly SegurancaService _service;
         private readonly UsuarioContextService _usuarioContextService;
-        public SegurancaControllers(SegurancaService service , UsuarioContextService usuarioContextService) {
+        private readonly MenuService _menuService;
+        public SegurancaController(SegurancaService service , UsuarioContextService usuarioContextService , MenuService menuService) {
             _service = service;
             _usuarioContextService = usuarioContextService;
+            _menuService = menuService;
         }
 
         [HttpPost("autenticar")]
@@ -95,6 +98,26 @@ namespace MenuFast.Api.Api.Controllers {
             await _service.AtualizarPermissoesPerfil(perfilId,permissoesIds);
             return Ok(new{mensagem = "Permissões do perfil atualizadas com sucesso."});
         }
+
+        [HttpGet]
+        [Route("menu/permissoes")]
+        [Authorize]
+        public async Task<IActionResult> ConsultarMenuPermisseos() {
+            var funcionarioId = _usuarioContextService.FuncionarioId();
+            if(!funcionarioId.HasValue)return Unauthorized();
+            var menu = await _menuService.ObterMenuAsync(funcionarioId.Value);
+
+            return Ok(menu);
+        }
+
+        [HttpGet]
+        [Route("teste-claims")]
+        [Authorize]
+        public IActionResult TestarClaims() {var claims = User.Claims.Select(x => new{x.Type,x.Value});
+            return Ok(claims);
+        }
+
+
 
     }
 }
