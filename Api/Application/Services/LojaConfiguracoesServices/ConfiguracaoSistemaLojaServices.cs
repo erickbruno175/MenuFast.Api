@@ -221,7 +221,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 TrabalhaComRetirada = loja.Configuracao.TrabalhaComRetirada,
                 PermiteVendaSemEstoque = loja.Configuracao.PermiteVendaSemEstoque,
                 CobraTaxaServico = loja.Configuracao.CobraTaxaServico,
-                PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico,
+                PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico?? 0,
                 ExigirGarcomNaMesa = loja.Configuracao.ExigirGarcomNaMesa,
                 EnviarPedidoAutomaticamenteCozinha = loja.Configuracao.EnviarPedidoAutomaticamenteCozinha,
                 EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar,

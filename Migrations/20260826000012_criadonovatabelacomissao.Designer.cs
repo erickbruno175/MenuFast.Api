@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuFast.Api.Migrations
 {
     [DbContext(typeof(MenuFastContext))]
-    partial class MenuFastContextModelSnapshot : ModelSnapshot
+    [Migration("20260826000012_criadonovatabelacomissao")]
+    partial class criadonovatabelacomissao
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,10 +195,6 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Preço de venda do produto.");
 
-                    b.Property<string>("Tamanho")
-                        .HasColumnType("nvarchar(max)")
-                        .HasComment("Indica o tamanho do produto caso for pizza ex:");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoriaProdutoId");
@@ -352,10 +351,6 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("bit")
                         .HasComment("Indica se a configuração está ativa.");
 
-                    b.Property<bool>("CobraTaxaEntrega")
-                        .HasColumnType("bit")
-                        .HasComment("Indica se a taxa de entrega.");
-
                     b.Property<bool>("CobraTaxaServico")
                         .HasColumnType("bit")
                         .HasComment("Indica se cobra taxa de serviço.");
@@ -376,18 +371,14 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("int")
                         .HasComment("Loja vinculada à configuração do restaurante.");
 
-                    b.Property<decimal?>("PercentualTaxaServico")
+                    b.Property<decimal>("PercentualTaxaServico")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)")
-                        .HasComment("Indica o valor da taxa  de serviço do garçom");
+                        .HasComment("Percentual aplicado para cobrança da taxa de serviço.");
 
                     b.Property<bool>("PermiteVendaSemEstoque")
                         .HasColumnType("bit")
                         .HasComment("Indica se permite realizar venda de produtos sem estoque.");
-
-                    b.Property<decimal?>("TaxaEntrega")
-                        .HasColumnType("decimal(18,2)")
-                        .HasComment("Indica o valor da taxa de entrega.");
 
                     b.Property<bool>("TrabalhaComDelivery")
                         .HasColumnType("bit")

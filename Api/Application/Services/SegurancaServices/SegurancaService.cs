@@ -367,8 +367,9 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
         public async Task<IEnumerable<int>> ObterPermissoesDoPerfil(int perfilId) {
             return await _menuFastContext.PerfilPermissoes
+                 
                 .Where(x => x.PerfilId == perfilId)
-                .Select(x => x.PermissaoId)
+                .Select(x => x.PermissaoId )
                 .ToListAsync();
         }
 

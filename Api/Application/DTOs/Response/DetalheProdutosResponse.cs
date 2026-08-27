@@ -7,7 +7,7 @@
         public string? FotoProduto { get; set; }
         public string Preco { get; set; } = string.Empty;
         public bool Ativo { get; set; }
-
+        public string? Tamanho { get; set; }
         public int? QuantidadeEstoque { get; set; }
         public int? EstoqueMinimo { get; set; }
         public string? StatusEstoque { get; set; }

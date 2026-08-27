@@ -1,5 +1,6 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Application.Services.ProdutoServices;
 using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
 using Microsoft.AspNetCore.Authorization;
@@ -8,11 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace MenuFast.Api.Api.Controllers {
     [ApiController]
     [Route("api/produto")]
-    public class ProdutoControle : ControllerBase {
+    public class ProdutoController : ControllerBase {
         private readonly ProdutoServices _produtoService;
+        private readonly UsuarioContextService _usuarioContextService;
 
-        public ProdutoControle(ProdutoServices produtoService) {
+        public ProdutoController(ProdutoServices produtoService , UsuarioContextService usuarioContextService) {
             _produtoService = produtoService;
+            _usuarioContextService = usuarioContextService;
         }
 
         [HttpPost]
