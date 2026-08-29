@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.InkML;
-using MenuFast.Api.Api.Application.DTOs.Request;
+﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
@@ -18,20 +16,19 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
         private readonly MenuFastContext _menuFastContext;
         private readonly IDistributedCache _cache;
+
         public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext, IDistributedCache redis) {
             _menuFastContext = menuFastContext;
             _cache = redis;
         }
 
-
         public async Task<Loja> CadastrarDadosLoja(DadosEmpresaRequest requestDadosEmpresa) {
-
 
             if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj))
             {
                 throw new BusinessLogicException("CNPJ inválido.");
-
             }
+
             var loja = new Loja
             {
                 Ativo = true,
@@ -63,6 +60,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
         }
 
         public async Task<Loja> AtualizarDadosLoja(int idLoja, DadosEmpresaRequest requestDadosEmpresa) {
+
             var lojaParaEdicao = await _menuFastContext.Lojas.FindAsync(idLoja);
 
             if(lojaParaEdicao == null)
@@ -71,7 +69,6 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj))
             {
                 throw new BusinessLogicException("CNPJ inválido.");
-
             }
 
             lojaParaEdicao.Slug = SlugHelper.GerarSlug(requestDadosEmpresa.NomeFantasia);
@@ -94,13 +91,15 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             lojaParaEdicao.DataAlteracao = DateTime.Now;
 
             await _menuFastContext.SaveChangesAsync();
+
             return lojaParaEdicao;
         }
+
+
         public async Task<IEnumerable<HorarioFuncionamento>> CadastrarHorarioFuncionemnto(int idLoja, List<CadastrarHorarioFuncionamentoRequest> horariosRequest) {
 
             var horarios = horariosRequest.Select(x => new HorarioFuncionamento
             {
-
                 DiaSemana = x.DiaSemana,
                 Fechado = x.Fechado,
                 HoraAbertura = x.HoraAbertura,
@@ -108,16 +107,17 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 LojaId = idLoja
 
             }).ToList();
+
             await _menuFastContext.HorariosFuncionamento.AddRangeAsync(horarios);
             await _menuFastContext.SaveChangesAsync();
 
-
             var configuracaoLoja = await _menuFastContext.ConfiguracoesLoja
-           .FirstOrDefaultAsync(x => x.LojaId == idLoja);
+                .FirstOrDefaultAsync(x => x.LojaId == idLoja);
 
             if(configuracaoLoja != null)
             {
-                var loja = await _menuFastContext.Lojas.FirstOrDefaultAsync(x => x.Id == idLoja);
+                var loja = await _menuFastContext.Lojas
+                    .FirstOrDefaultAsync(x => x.Id == idLoja);
 
                 if(loja != null)
                 {
@@ -129,14 +129,14 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
             return horarios;
         }
+
+
         public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionamento(List<CadastrarHorarioFuncionamentoRequest> horariosRequest, int idHorario) {
+
             foreach(var request in horariosRequest)
             {
                 var horario = await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(x => x.Id == idHorario);
-
-                if(horario == null)
-                    continue;
-
+                if(horario == null)continue;
                 horario.DiaSemana = request.DiaSemana;
                 horario.Fechado = request.Fechado;
                 horario.HoraAbertura = request.HoraAbertura;
@@ -145,16 +145,28 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
             await _menuFastContext.SaveChangesAsync();
 
-            return await _menuFastContext.HorariosFuncionamento.Where(x => horariosRequest.Select(r => idHorario).Contains(x.Id)).ToListAsync();
+            return await _menuFastContext.HorariosFuncionamento
+                .Where(x => horariosRequest.Select(r => idHorario).Contains(x.Id))
+                .ToListAsync();
         }
 
+
         public async Task<ConfiguracaoLoja> CadastrarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {
+
             var confLoja = new ConfiguracaoLoja
             {
                 CobraTaxaServico = request.CobraTaxaServico,
+                PercentualTaxaServico = request.PercentualTaxaServico,
+
+                CobraTaxaEntrega = request.CobraTaxaEntrega,
+                TipoTaxaEntrega = request.TipoTaxaEntrega,
+                TaxaEntrega = request.TaxaEntrega,
+                TaxaBaseEntrega = request.TaxaBaseEntrega,
+                ValorPorKm = request.ValorPorKm,
+                DistanciaMaximaEntregaKm = request.DistanciaMaximaEntregaKm,
+
                 EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha,
                 ExigirGarcomNaMesa = request.ExigirGarcomNaMesa,
-                PercentualTaxaServico = request.PercentualTaxaServico,
                 PermiteVendaSemEstoque = request.PermiteVendaSemEstoque,
                 TrabalhaComDelivery = request.TrabalhaComDelivery,
                 TrabalhaComMesa = request.TrabalhaComMesa,
@@ -164,36 +176,55 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 AbilitarKDS = request.AbilitarKDS,
                 LojaId = idLoja,
             };
+
             await _menuFastContext.AddAsync(confLoja);
             await _menuFastContext.SaveChangesAsync();
+
             return confLoja;
         }
+
 
         public async Task<ConfiguracaoLoja> AtualizarConfiguracaoLoja(int idConfig, CadastrarConfiguracaoLojaRequest request) {
 
             var configuracaoLojaEditar = await _menuFastContext.ConfiguracoesLoja.FirstOrDefaultAsync(f => f.LojaId == idConfig);
 
-            if(configuracaoLojaEditar == null) return null;
+            if(configuracaoLojaEditar == null)return null;
 
             configuracaoLojaEditar.TrabalhaComRetirada = request.TrabalhaComRetirada;
             configuracaoLojaEditar.TrabalhaComMesa = request.TrabalhaComMesa;
-            configuracaoLojaEditar.ExigirGarcomNaMesa = request.ExigirGarcomNaMesa;
-            configuracaoLojaEditar.CobraTaxaServico = request.CobraTaxaServico;
             configuracaoLojaEditar.TrabalhaComDelivery = request.TrabalhaComDelivery;
+            configuracaoLojaEditar.PermiteVendaSemEstoque = request.PermiteVendaSemEstoque;
+
+            configuracaoLojaEditar.ExigirGarcomNaMesa = request.ExigirGarcomNaMesa;
+
+            configuracaoLojaEditar.CobraTaxaServico = request.CobraTaxaServico;
+            configuracaoLojaEditar.PercentualTaxaServico = request.PercentualTaxaServico;
+
+            configuracaoLojaEditar.CobraTaxaEntrega = request.CobraTaxaEntrega;
+            configuracaoLojaEditar.TipoTaxaEntrega = request.TipoTaxaEntrega;
+            configuracaoLojaEditar.TaxaEntrega = request.TaxaEntrega;
+            configuracaoLojaEditar.TaxaBaseEntrega = request.TaxaBaseEntrega;
+            configuracaoLojaEditar.ValorPorKm = request.ValorPorKm;
+            configuracaoLojaEditar.DistanciaMaximaEntregaKm = request.DistanciaMaximaEntregaKm;
+
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha;
             configuracaoLojaEditar.EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar;
             configuracaoLojaEditar.AbilitarKDS = request.AbilitarKDS;
             configuracaoLojaEditar.AbilitarImpressoraTermica = request.AbilitarImpressoraTermica;
+
             await _menuFastContext.SaveChangesAsync();
+
+            await _cache.RemoveAsync($"configuracoes-loja:{idConfig}");
+
             return configuracaoLojaEditar;
         }
-
         public async Task<ConfiguracoesLojaResponse> ConsultarConfiguracoesLoja(int lojaId) {
 
             var cacheKey = $"configuracoes-loja:{lojaId}";
             await _cache.RemoveAsync(cacheKey);
 
             var cache = await _cache.GetStringAsync(cacheKey);
+
             if(!string.IsNullOrEmpty(cache))
             {
                 return JsonSerializer.Deserialize<ConfiguracoesLojaResponse>(cache)!;
@@ -204,9 +235,11 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 .Include(h => h.Horarios)
                 .FirstOrDefaultAsync(x => x.Id == lojaId);
 
-            if(loja == null) throw new BusinessLogicException("Loja não encontrada.");
+            if(loja == null)
+                throw new BusinessLogicException("Loja não encontrada.");
 
-            if(loja.Configuracao == null) throw new BusinessLogicException("Configurações da loja não encontradas.");
+            if(loja.Configuracao == null)
+                throw new BusinessLogicException("Configurações da loja não encontradas.");
 
             var response = new ConfiguracoesLojaResponse
             {
@@ -220,13 +253,23 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 TrabalhaComDelivery = loja.Configuracao.TrabalhaComDelivery,
                 TrabalhaComRetirada = loja.Configuracao.TrabalhaComRetirada,
                 PermiteVendaSemEstoque = loja.Configuracao.PermiteVendaSemEstoque,
+
                 CobraTaxaServico = loja.Configuracao.CobraTaxaServico,
-                PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico?? 0,
+                PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico ?? 0,
+
+                CobraTaxaEntrega = loja.Configuracao.CobraTaxaEntrega,
+                TipoTaxaEntrega = loja.Configuracao.TipoTaxaEntrega,
+                TaxaEntrega = loja.Configuracao.TaxaEntrega,
+                TaxaBaseEntrega = loja.Configuracao.TaxaBaseEntrega,
+                ValorPorKm = loja.Configuracao.ValorPorKm,
+                DistanciaMaximaEntregaKm = loja.Configuracao.DistanciaMaximaEntregaKm,
+
                 ExigirGarcomNaMesa = loja.Configuracao.ExigirGarcomNaMesa,
                 EnviarPedidoAutomaticamenteCozinha = loja.Configuracao.EnviarPedidoAutomaticamenteCozinha,
                 EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar,
                 AbilitarImpressoraTermica = loja.Configuracao.AbilitarImpressoraTermica,
                 AbilitarKDS = loja.Configuracao.AbilitarKDS,
+
                 horarioFuncionamentos = loja.Horarios.Select(x => new HorarioFuncionamento
                 {
                     DiaSemana = x.DiaSemana,
@@ -236,8 +279,9 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 }).ToList(),
             };
 
-
-            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(response),
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(response),
                 new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
@@ -246,20 +290,19 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             return response;
         }
         public async Task<bool> LembrarFinalizarCadastroConfiguracoesLoja(int idFuncionario) {
-            var funcionario = await _menuFastContext.Funcionarios
-                .Include(f => f.Loja)
+
+            var funcionario = await _menuFastContext.Funcionarios.Include(f => f.Loja)
                 .FirstOrDefaultAsync(f =>
                     f.Id == idFuncionario &&
                     f.PerfilId == (int)PerfilUsuario.Administrador &&
                     f.Ativo);
 
+            if(funcionario.Loja.ConfiguracaoFinalizada)return false;
 
-            if(funcionario.Loja.ConfiguracaoFinalizada) return false;
             var possuiConfiguracao = await _menuFastContext.ConfiguracoesLoja.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
             var possuiHorario = await _menuFastContext.HorariosFuncionamento.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
+
             return !possuiConfiguracao || !possuiHorario;
         }
-    
-
     }
 }

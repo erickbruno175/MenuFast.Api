@@ -18,13 +18,10 @@ public class PedidoConfig : IEntityTypeConfiguration<Pedido> {
         builder.Property(x => x.TipoPedido).HasComment("Tipo do pedido realizado.");
         builder.Property(x => x.Subtotal).HasPrecision(18, 2).HasComment("Valor subtotal dos itens do pedido.");
         builder.Property(x => x.Desconto).HasPrecision(18, 2).HasComment("Valor de desconto aplicado.");
-        builder.Property(x => x.TaxaServico).HasPrecision(18, 2).HasComment("Taxa de serviço aplicada.");
-        builder.Property(x => x.TaxaEntrega).HasPrecision(18, 2).HasComment("Taxa de entrega aplicada.");
         builder.Property(x => x.Total).HasPrecision(18, 2).HasComment("Valor total do pedido.");
         builder.Property(x => x.DataPedidoHora).HasComment("Data e hora da criação do pedido.");
         builder.Property(x => x.Observacao).HasMaxLength(500).HasComment("Observações do pedido.");
         builder.HasMany(x => x.Itens).WithOne(x => x.Pedido).HasForeignKey(x => x.PedidoId).OnDelete(DeleteBehavior.Cascade);
-        builder.HasMany(x => x.Pagamentos).WithOne(x => x.Pedido).HasForeignKey(x => x.PedidoId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(x => x.Entrega).WithOne(x => x.Pedido).HasForeignKey<Entrega>(x => x.PedidoId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(x => x.Mesa).WithMany(x => x.Pedidos).HasForeignKey(x => x.MesaId).OnDelete(DeleteBehavior.Restrict);
     }

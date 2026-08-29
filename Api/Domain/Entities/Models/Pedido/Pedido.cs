@@ -6,7 +6,6 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 
 public class Pedido {
     public int Id { get; set; }
-
     public int LojaId { get; set; }
     public int? MesaId { get; set; }
     public int? ClienteId { get; set; }
@@ -17,8 +16,6 @@ public class Pedido {
     public string? Observacao { get; set; }
     public decimal Subtotal { get; set; }
     public decimal Desconto { get; set; }
-    public decimal TaxaServico { get; set; }
-    public decimal TaxaEntrega { get; set; }
     public decimal Total { get; set; }
     public Loja.Loja Loja { get; set; } = null!;
     public Mesa.Mesa? Mesa { get; set; }
@@ -26,5 +23,6 @@ public class Pedido {
     public Funcionario.Funcionario? Funcionario { get; set; }
     public Entrega? Entrega { get; set; }
     public ICollection<ItemPedido> Itens { get; set; } = [ ];
-    public ICollection<PagamentoPedido> Pagamentos { get; set; } = [ ];
+    public decimal TaxaServico { get; internal set; }
+    public decimal TaxaEntrega { get; internal set; }
 }

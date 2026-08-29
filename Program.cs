@@ -1,12 +1,17 @@
 using MenuFast.Api.Api.Application.Services.CategoriaServices;
+using MenuFast.Api.Api.Application.Services.ClienteServices;
 using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Application.Services.Email;
+using MenuFast.Api.Api.Application.Services.KdsServices;
 using MenuFast.Api.Api.Application.Services.LojaConfiguracoes;
 using MenuFast.Api.Api.Application.Services.MesaServices;
+using MenuFast.Api.Api.Application.Services.PedidoServices;
 using MenuFast.Api.Api.Application.Services.ProdutoServices;
 using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
+using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
+using MenuFast.Api.Api.Hubs;
 using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
@@ -134,8 +139,12 @@ builder.Services.AddScoped<ConfiguracaoSistemaLojaServices>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<MesaService>();
+builder.Services.AddScoped<ClienteService>();
+builder.Services.AddScoped<PedidoService>();
+builder.Services.AddScoped<KdsService>();
+builder.Services.AddHttpClient<OpenRouteServices>();
 builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
-
+builder.Services.AddSignalR();
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
@@ -156,7 +165,7 @@ app.UseSwaggerUI(options =>
         "/swagger/v1/swagger.json",
         "MenuFast API v1");
 });
-
+app.MapHub<KdsHub>("/hubs/kds");
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
