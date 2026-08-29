@@ -18,6 +18,8 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Cardapio {
         public CategoriaProduto? CategoriaProduto { get; set; }
         public EstoqueProduto? EstoqueProduto { get; set; }
         public string? Tamanho { get; set; }
-       
+
+        public bool EnviaParaProducao { get; set; } = false;
+
     }
 }

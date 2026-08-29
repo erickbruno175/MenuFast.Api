@@ -29,7 +29,7 @@ public class ItemPedidoResponse {
     public decimal Desconto { get; set; }
     public decimal Total { get; set; }
     public string? Observacao { get; set; }
-    public string Nome { get; set; }
+    public string Nome { get; internal set; }
 }
 
 

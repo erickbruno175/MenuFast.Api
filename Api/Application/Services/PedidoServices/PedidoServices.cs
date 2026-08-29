@@ -180,6 +180,7 @@ public class PedidoService {
         await _context.SaveChangesAsync();
 
         var pedidoProducao = MontarPedidoProducao(pedido);
+        
 
         await _kdsService.EnviarPedidoAsync(pedidoProducao);
 
@@ -244,7 +245,8 @@ public class PedidoService {
 
     // 9. LISTAR PEDIDOS DA MESA
     public async Task<List<PedidoResponse>> ListarPorMesaAsync(int mesaId, int lojaId) {
-        var mesaExiste = await _context.Mesas.AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
+        var mesaExiste = await _context.Mesas.
+            AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
 
         if(!mesaExiste)
             throw new BusinessLogicException("Mesa não encontrada.");
@@ -324,7 +326,7 @@ public class PedidoService {
 
     // 18. BUSCAR PEDIDO
     private async Task<Pedido> BuscarPedidoAsync(int pedidoId, int lojaId) {
-        var pedido = await _context.Pedidos.Include(x => x.Itens).FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
+        var pedido = await _context.Pedidos.Include(x => x.Itens).ThenInclude(x => x.Produto).FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
 
         if(pedido == null)
             throw new BusinessLogicException("Pedido não encontrado.");
@@ -367,7 +369,7 @@ public class PedidoService {
             ValorUnitario = valorUnitario,
             Desconto = desconto,
             Total = totalItem,
-            Observacao = itemRequest.Observacao
+            Observacao = itemRequest.Observacao,
         });
     }
 
@@ -407,12 +409,15 @@ public class PedidoService {
             TipoPedido = pedido.TipoPedido,
             DataPedidoHora = pedido.DataPedidoHora,
             Observacao = pedido.Observacao,
-            Itens = pedido.Itens.Select(x => new ItemPedidoProducaoResponse
+            Itens = pedido.Itens.
+            Where(p=> p.Produto != null && p.Produto.EnviaParaProducao == true).
+            Select(x => new ItemPedidoProducaoResponse
             {
                 ItemPedidoId = x.Id,
                 ProdutoId = x.ProdutoId,
                 Quantidade = x.Quantidade,
-                Observacao = x.Observacao
+                Observacao = x.Observacao,
+                NomeProduto = x.Produto.Nome
             }).ToList()
         };
     }
@@ -443,7 +448,8 @@ public class PedidoService {
                 ValorUnitario = x.ValorUnitario,
                 Desconto = x.Desconto,
                 Total = x.Total,
-                Observacao = x.Observacao
+                Observacao = x.Observacao,
+                Nome = x.Produto.Nome,
             }).ToList()
         };
     }
