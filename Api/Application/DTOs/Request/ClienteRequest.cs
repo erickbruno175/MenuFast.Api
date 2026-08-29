@@ -15,8 +15,7 @@
             public string Estado { get; set; } = string.Empty;
             public string PontoReferencia { get; set; } = string.Empty;
             public string Observacao { get; set; } = string.Empty;
-            public decimal Latitude { get; set; }
-            public decimal Longitude { get; set; }
+         
         
     }
 }

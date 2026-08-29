@@ -4,5 +4,6 @@
         Livre = 0,
         Ocupada = 1,
         Reservada = 2,
+        Bloqueada = 3,
     }
 }

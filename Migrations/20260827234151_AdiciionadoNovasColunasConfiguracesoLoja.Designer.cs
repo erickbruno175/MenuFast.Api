@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuFast.Api.Migrations
 {
     [DbContext(typeof(MenuFastContext))]
-    partial class MenuFastContextModelSnapshot : ModelSnapshot
+    [Migration("20260827234151_AdiciionadoNovasColunasConfiguracesoLoja")]
+    partial class AdiciionadoNovasColunasConfiguracesoLoja
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1242,10 +1245,6 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Desconto aplicado no item.");
 
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Observacao")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
@@ -1281,6 +1280,41 @@ namespace MenuFast.Api.Migrations
                     b.ToTable("ItemPedido", (string)null);
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Pedido.PagamentoPedido", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasComment("Identificador único do pagamento do pedido.");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 2001L);
+
+                    b.Property<DateTime>("DataPagamento")
+                        .HasColumnType("datetime2")
+                        .HasComment("Data e hora do pagamento.");
+
+                    b.Property<int>("FormaPagamentoId")
+                        .HasColumnType("int")
+                        .HasComment("Forma de pagamento utilizada.");
+
+                    b.Property<int>("PedidoId")
+                        .HasColumnType("int")
+                        .HasComment("Pedido vinculado ao pagamento.");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Valor pago.");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FormaPagamentoId");
+
+                    b.HasIndex("PedidoId");
+
+                    b.ToTable("PagamentoPedido", (string)null);
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Pedido.Pedido", b =>
                 {
                     b.Property<int>("Id")
@@ -1314,10 +1348,6 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("int")
                         .HasComment("Mesa vinculada ao pedido.");
 
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Observacao")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
@@ -1333,10 +1363,14 @@ namespace MenuFast.Api.Migrations
                         .HasComment("Valor subtotal dos itens do pedido.");
 
                     b.Property<decimal>("TaxaEntrega")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Taxa de entrega aplicada.");
 
                     b.Property<decimal>("TaxaServico")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Taxa de serviço aplicada.");
 
                     b.Property<int>("TipoPedido")
                         .HasColumnType("int")
@@ -1843,6 +1877,25 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Pedido");
                 });
 
+            modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Pedido.PagamentoPedido", b =>
+                {
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja.FormaPagamento", "FormaPagamento")
+                        .WithMany()
+                        .HasForeignKey("FormaPagamentoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Pedido.Pedido", "Pedido")
+                        .WithMany("Pagamentos")
+                        .HasForeignKey("PedidoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FormaPagamento");
+
+                    b.Navigation("Pedido");
+                });
+
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Pedido.Pedido", b =>
                 {
                     b.HasOne("MenuFast.Api.Api.Domain.Entities.Models.Cliente.Cliente", "Cliente")
@@ -1993,6 +2046,8 @@ namespace MenuFast.Api.Migrations
                     b.Navigation("Entrega");
 
                     b.Navigation("Itens");
+
+                    b.Navigation("Pagamentos");
                 });
 
             modelBuilder.Entity("MenuFast.Api.Api.Domain.Entities.Models.Seguranca.Permissao", b =>

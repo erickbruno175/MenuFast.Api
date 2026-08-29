@@ -36,7 +36,6 @@ public class MenuFastContext : DbContext {
     public DbSet<Mesa> Mesas { get; set; }
     public DbSet<Pedido> Pedidos { get; set; }
     public DbSet<ItemPedido> ItensPedido { get; set; }
-    public DbSet<PagamentoPedido> PagamentosPedido { get; set; }
     public DbSet<HistoricoPedido> HistoricosPedido { get; set; }
     public DbSet<Entrega> Entregas { get; set; }
     public DbSet<HistoricoPedido> HistoricoPedidos { get; set; }

@@ -1,4 +1,6 @@
-﻿namespace MenuFast.Api.Api.Application.DTOs.Request {
+﻿using MenuFast.Api.Api.Domain.Enum;
+
+namespace MenuFast.Api.Api.Application.DTOs.Request {
     public class DadosEmpresaRequest {
         public string RazaoSocial { get; set; } = string.Empty;
         public string NomeFantasia { get; set; } = string.Empty;
@@ -33,11 +35,19 @@
         public bool TrabalhaComRetirada { get; set; }
         public bool ControlaEstoque { get; set; }
         public bool PermiteVendaSemEstoque { get; set; }
+
         public bool CobraTaxaServico { get; set; }
         public decimal PercentualTaxaServico { get; set; }
+        public bool CobraTaxaEntrega { get; set; }
+        public TipoTaxaEntrega TipoTaxaEntrega { get; set; }
+        public decimal? TaxaEntrega { get; set; }
+        public decimal? TaxaBaseEntrega { get; set; }
+        public decimal? ValorPorKm { get; set; }
+        public decimal? DistanciaMaximaEntregaKm { get; set; }
+
         public bool ExigirGarcomNaMesa { get; set; }
         public bool EnviarPedidoAutomaticamenteCozinha { get; set; }
-        public bool EnviarPedidoAutomaticamenteBar { get; internal set; }
+        public bool EnviarPedidoAutomaticamenteBar { get; set; }
         public bool AbilitarImpressoraTermica { get; set; } = false;
         public bool AbilitarKDS { get; set; } = false;
     }

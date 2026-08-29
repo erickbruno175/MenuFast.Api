@@ -1,6 +1,6 @@
-﻿using Google;
-using MenuFast.Api.Api.Application.DTOs.Request;
+﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
 using MenuFast.Api.Api.Domain.Entities.Models.Cliente;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
@@ -9,22 +9,42 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MenuFast.Api.Api.Application.Services.ClienteServices {
     public class ClienteService {
+
         private readonly MenuFastContext _context;
+        private readonly OpenRouteServices _openRouteServices;
 
-        public ClienteService(MenuFastContext context) {
+        public ClienteService(
+            MenuFastContext context,
+            OpenRouteServices openRouteServices) {
+
             _context = context;
+            _openRouteServices = openRouteServices;
         }
+        public async Task<ClienteResponse> CadastrarAsync(
+            ClienteRequest request,
+            int lojaId) {
 
-        // CADASTRAR
-        public async Task<ClienteResponse> CadastrarAsync(ClienteRequest request,int lojaId) {
+            if(!DocumentoHelper.ValidarCpf(request.CPF))
+            {
+                throw new BusinessLogicException("CPF inválido.");
+            }
+
+            var coordenadas = await _openRouteServices.BuscarCoordenadasAsync(
+                request.CEP,
+                request.Logradouro,
+                request.Numero,
+                request.Bairro,
+                request.Cidade,
+                request.Estado);
+
             var cliente = new Cliente
             {
                 LojaId = lojaId,
                 Nome = request.Nome,
-                CPF = request.CPF,
+                CPF = DocumentoHelper.RemoverCaracteresEspeciais(request.CPF),
                 DataNascimento = request.DataNascimento,
-                Telefone = request.Telefone,
-                WhatsApp = request.WhatsApp,
+                Telefone = DocumentoHelper.RemoverMascaraTelefone(request.Telefone),
+                WhatsApp = DocumentoHelper.RemoverMascaraTelefone(request.WhatsApp),
                 Email = request.Email,
                 CEP = request.CEP,
                 Logradouro = request.Logradouro,
@@ -35,35 +55,50 @@ namespace MenuFast.Api.Api.Application.Services.ClienteServices {
                 Estado = request.Estado,
                 PontoReferencia = request.PontoReferencia,
                 Observacao = request.Observacao,
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
+                Latitude = coordenadas?.Latitude ?? 0m,         
+                Longitude = coordenadas?.Longitude ?? 0m,
                 Ativo = true,
                 DataCadastro = DateTime.UtcNow
             };
 
             _context.Clientes.Add(cliente);
-
             await _context.SaveChangesAsync();
-
             return MapearResponse(cliente);
         }
-
-
-        // LISTAR TODOS
         public async Task<List<ClienteResponse>> ListarAsync(int lojaId) {
-            var clientes = await _context.Clientes.Where(x => x.LojaId == lojaId).OrderBy(x => x.Nome).ToListAsync();
-            return clientes.Select(MapearResponse).ToList();
+
+            var clientes = await _context.Clientes
+                .Where(x => x.LojaId == lojaId)
+                .OrderBy(x => x.Nome)
+                .ToListAsync();
+
+            return clientes
+                .Select(MapearResponse)
+                .ToList();
         }
         public async Task<ClienteResponse?> BuscarPorIdAsync(int id,int lojaId) {
             var cliente = await _context.Clientes.FirstOrDefaultAsync(x =>x.Id == id &&x.LojaId == lojaId);
             if(cliente == null)return null;
             return MapearResponse(cliente);
         }
-
         public async Task<ClienteResponse?> AtualizarAsync(int id,ClienteRequest request,int lojaId) {
-            if(!DocumentoHelper.ValidarCpf(request.CPF)) {  throw new  BusinessLogicException("Cpf invalido"); }
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(x =>x.Id == id &&x.LojaId == lojaId);
+
+            if(!DocumentoHelper.ValidarCpf(request.CPF))
+            {
+                throw new BusinessLogicException("CPF inválido.");
+            }
+
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(x =>x.Id == id && x.LojaId == lojaId);
+
             if(cliente == null)return null;
+
+            var coordenadas = await _openRouteServices.BuscarCoordenadasAsync(
+                request.CEP,
+                request.Logradouro,
+                request.Numero,
+                request.Bairro,
+                request.Cidade,
+                request.Estado);
 
             cliente.Nome = request.Nome;
             cliente.CPF = DocumentoHelper.RemoverCaracteresEspeciais(request.CPF);
@@ -80,43 +115,63 @@ namespace MenuFast.Api.Api.Application.Services.ClienteServices {
             cliente.Estado = request.Estado;
             cliente.PontoReferencia = request.PontoReferencia;
             cliente.Observacao = request.Observacao;
-            cliente.Latitude = request.Latitude;
-            cliente.Longitude = request.Longitude;
+
+            cliente.Latitude = coordenadas?.Latitude ?? 0m;
+            cliente.Longitude = coordenadas?.Longitude ?? 0m;
             await _context.SaveChangesAsync();
+
             return MapearResponse(cliente);
         }
 
+        public async Task<bool> AlterarStatusAsync(
+            int id,
+            int lojaId) {
 
-        // ATIVAR / DESATIVAR
-        public async Task<bool> AlterarStatusAsync(int id,int lojaId) {
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(x =>x.Id == id &&x.LojaId == lojaId);
-            if(cliente == null)return false;
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(x =>
+                    x.Id == id &&
+                    x.LojaId == lojaId);
+
+            if(cliente == null)
+                return false;
+
             cliente.Ativo = !cliente.Ativo;
+
             await _context.SaveChangesAsync();
+
             return true;
         }
+        public async Task<List<ClienteResponse>> PesquisarAsync(string pesquisa,int lojaId) {
 
-        public async Task<List<ClienteResponse>> PesquisarAsync(string pesquisa,int lojaId) 
-            {
-            var clientes = await _context.Clientes.Where(x =>x.LojaId == lojaId &&(
+            var clientes = await _context.Clientes.Where(x =>x.LojaId == lojaId &&
+                    (
                         x.Nome.Contains(pesquisa) ||
                         x.CPF.Contains(pesquisa) ||
                         x.Telefone.Contains(pesquisa) ||
-                        x.WhatsApp.Contains(pesquisa)))
+                        x.WhatsApp.Contains(pesquisa)
+                    ))
                 .OrderBy(x => x.Nome)
                 .ToListAsync();
 
-            return clientes.Select(MapearResponse).ToList();
+            return clientes
+                .Select(MapearResponse)
+                .ToList();
         }
         public async Task<bool> ExcluirAsync(int id,int lojaId) {
             var cliente = await _context.Clientes.FirstOrDefaultAsync(x =>x.Id == id &&x.LojaId == lojaId);
-            if(cliente == null)return false;
+
+            if(cliente == null)
+                return false;
+
             _context.Clientes.Remove(cliente);
+
             await _context.SaveChangesAsync();
+
             return true;
         }
 
         private static ClienteResponse MapearResponse(Cliente cliente) {
+
             return new ClienteResponse
             {
                 Id = cliente.Id,
