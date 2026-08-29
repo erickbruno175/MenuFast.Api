@@ -165,7 +165,7 @@ public class PedidoService {
     }
 
     // 5. ENVIAR PEDIDO
-    public async Task<PedidoResponse> EnviarPedidoAsync(int pedidoId, int lojaId) {
+    public async Task<PedidoProducaoResponse> EnviarPedidoAsync(int pedidoId, int lojaId) {
         var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
         ValidarPedidoAberto(pedido);
@@ -180,11 +180,10 @@ public class PedidoService {
         await _context.SaveChangesAsync();
 
         var pedidoProducao = MontarPedidoProducao(pedido);
-        
 
         await _kdsService.EnviarPedidoAsync(pedidoProducao);
 
-        return MapearResponse(pedido);
+        return pedidoProducao;
     }
 
     // 6. CANCELAR PEDIDO
@@ -235,7 +234,9 @@ public class PedidoService {
 
     // 8. BUSCAR PEDIDO POR ID
     public async Task<PedidoResponse> BuscarPorIdAsync(int pedidoId, int lojaId) {
-        var pedido = await _context.Pedidos.Include(x => x.Itens).FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
+        var pedido = await _context.Pedidos.Include(x => x.Itens)
+                                           .ThenInclude(p => p.Produto)
+            .FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
 
         if(pedido == null)
             throw new BusinessLogicException("Pedido não encontrado.");
@@ -251,35 +252,45 @@ public class PedidoService {
         if(!mesaExiste)
             throw new BusinessLogicException("Mesa não encontrada.");
 
-        var pedidos = await _context.Pedidos.Include(x => x.Itens).Where(x => x.MesaId == mesaId && x.LojaId == lojaId).OrderBy(x => x.DataPedidoHora).ToListAsync();
+        var pedidos = await _context.Pedidos.Include(x => x.Itens)
+                                            .ThenInclude(p => p.Produto)
+                                            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId).OrderBy(x => x.DataPedidoHora).ToListAsync();
 
         return pedidos.Select(MapearResponse).ToList();
     }
 
     // 10. LISTAR PEDIDOS
     public async Task<List<PedidoResponse>> ListarAsync(int lojaId) {
-        var pedidos = await _context.Pedidos.Include(x => x.Itens).Where(x => x.LojaId == lojaId).OrderByDescending(x => x.DataPedidoHora).ToListAsync();
+        var pedidos = await _context.Pedidos.Include(x => x.Itens)
+                                            .ThenInclude(p => p.Produto)
+                                            .Where(x => x.LojaId == lojaId).OrderByDescending(x => x.DataPedidoHora).ToListAsync();
 
         return pedidos.Select(MapearResponse).ToList();
     }
 
     // 11. LISTAR POR STATUS
     public async Task<List<PedidoResponse>> ListarPorStatusAsync(int lojaId, StatusPedido status) {
-        var pedidos = await _context.Pedidos.Include(x => x.Itens).Where(x => x.LojaId == lojaId && x.Status == status).OrderBy(x => x.DataPedidoHora).ToListAsync();
+        var pedidos = await _context.Pedidos.Include(x => x.Itens)
+                                             .ThenInclude(p => p.Produto)
+                                             .Where(x => x.LojaId == lojaId && x.Status == status).OrderBy(x => x.DataPedidoHora).ToListAsync();
 
         return pedidos.Select(MapearResponse).ToList();
     }
 
     // 12. LISTAR PEDIDOS ABERTOS DA MESA
     public async Task<List<PedidoResponse>> ListarPedidosAbertosMesaAsync(int mesaId, int lojaId) {
-        var pedidos = await _context.Pedidos.Include(x => x.Itens).Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status == StatusPedido.Aberto).OrderBy(x => x.DataPedidoHora).ToListAsync();
+        var pedidos = await _context.Pedidos.Include(x => x.Itens)
+                                            .ThenInclude(p => p.Produto)
+                                            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status == StatusPedido.Aberto).OrderBy(x => x.DataPedidoHora).ToListAsync();
 
         return pedidos.Select(MapearResponse).ToList();
     }
 
     // 13. LISTAR PEDIDOS ATIVOS DA MESA
     public async Task<List<PedidoResponse>> ListarPedidosAtivosMesaAsync(int mesaId, int lojaId) {
-        var pedidos = await _context.Pedidos.Include(x => x.Itens).Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado).OrderBy(x => x.DataPedidoHora).ToListAsync();
+        var pedidos = await _context.Pedidos.Include(x => x.Itens)
+                                            .ThenInclude(p => p.Produto)
+                                            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado).OrderBy(x => x.DataPedidoHora).ToListAsync();
 
         return pedidos.Select(MapearResponse).ToList();
     }
@@ -410,7 +421,7 @@ public class PedidoService {
             DataPedidoHora = pedido.DataPedidoHora,
             Observacao = pedido.Observacao,
             Itens = pedido.Itens.
-            Where(p=> p.Produto != null && p.Produto.EnviaParaProducao == true).
+            Where(p => p.Produto != null && p.Produto.EnviaParaProducao == true).
             Select(x => new ItemPedidoProducaoResponse
             {
                 ItemPedidoId = x.Id,
