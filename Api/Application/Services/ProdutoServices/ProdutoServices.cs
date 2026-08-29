@@ -46,6 +46,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 Ativo = request.Ativo,
                 ControlaEstoque = request.ControlaEstoque,
                 Tamanho = request.Tamanho,
+                EnviaParaProducao = request.EnviaParaProducao
             };
 
             if(request.ControlaEstoque)
@@ -92,6 +93,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             produto.Ativo = request.Ativo;
             produto.ControlaEstoque = request.ControlaEstoque;
             produto.Tamanho = request.Tamanho;
+            produto.EnviaParaProducao = request.EnviaParaProducao;
 
             // Ativou o controle de estoque
             if(request.ControlaEstoque)

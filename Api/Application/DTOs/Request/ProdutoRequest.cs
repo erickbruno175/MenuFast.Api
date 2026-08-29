@@ -16,6 +16,7 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public int? QuantidadeEstoque { get; set; }
         public int? EstoqueMinimo { get; set; }
         public string? Tamanho { get; set; }
+        public bool EnviaParaProducao { get; internal set; }
     }
 
     public class FiltroProdutoRequest {

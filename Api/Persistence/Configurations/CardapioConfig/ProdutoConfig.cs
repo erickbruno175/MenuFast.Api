@@ -14,6 +14,8 @@ public class ProdutoConfig : IEntityTypeConfiguration<Produto> {
         builder.Property(x => x.Preco).HasPrecision(18, 2).HasComment("Preço de venda do produto.");
         builder.Property(x => x.Descricao).HasComment("Indica os igredientes ");
         builder.Property(x => x.FotoProduto).HasMaxLength(500).HasComment("Caminho ou URL da foto do produto.");
+        builder.Property(x => x.EnviaParaProducao).HasMaxLength(500).HasComment("Indica se esse produto ira para produção.");
+
         builder.HasOne(x => x.CategoriaProduto).WithMany(x => x.Produtos).HasForeignKey(x => x.CategoriaProdutoId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne(x => x.Loja).WithMany().HasForeignKey(x => x.LojaId).OnDelete(DeleteBehavior.NoAction);
     }

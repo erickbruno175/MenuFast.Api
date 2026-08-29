@@ -11,6 +11,7 @@
         public int? QuantidadeEstoque { get; set; }
         public int? EstoqueMinimo { get; set; }
         public string? StatusEstoque { get; set; }
+        public bool EnviaParaProducao { get; set; }
     }
     public class CategoriaResponse {
         public int Id { get; set; }
