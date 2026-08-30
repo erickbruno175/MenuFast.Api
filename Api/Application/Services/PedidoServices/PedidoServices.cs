@@ -1,4 +1,5 @@
-﻿using MenuFast.Api.Api.Application.DTOs.Request;
+﻿using AutoMapper;
+using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.KdsServices;
 using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
@@ -14,10 +15,11 @@ namespace MenuFast.Api.Api.Application.Services.PedidoServices;
 public class PedidoService {
     private readonly MenuFastContext _context;
     private readonly KdsService _kdsService;
-
-    public PedidoService(MenuFastContext context, KdsService kdsService) {
+    private readonly IMapper _mapper;
+    public PedidoService(MenuFastContext context, KdsService kdsService , IMapper mapper) {
         _context = context;
         _kdsService = kdsService;
+        _mapper = mapper;
     }
 
     // 1. CRIAR PEDIDO
@@ -186,7 +188,33 @@ public class PedidoService {
         return pedidoProducao;
     }
 
-    // 6. CANCELAR PEDIDO
+    public async Task<PedidoProducaoResponse> IniciarProducaoAsync(int pedidoId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
+
+        if(pedido.Status != StatusPedido.Enviado)
+            throw new BusinessLogicException("O pedido precisa estar enviado para iniciar a produção.");
+
+        pedido.Status = StatusPedido.EmProducao;
+
+        await _context.SaveChangesAsync();
+
+        var pedidoProducao = _mapper.Map<PedidoProducaoResponse>(pedido);
+
+        await _kdsService.AtualizarStatusAsync(pedido.LojaId,pedido.Id,pedido.Status);
+        return pedidoProducao;
+    }
+
+    public async Task<PedidoProducaoResponse> FinalizarProducaoAsync(int pedidoId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
+
+        if(pedido.Status != StatusPedido.EmProducao)throw new BusinessLogicException("O pedido precisa estar em produção para ser finalizado.");
+
+        pedido.Status = StatusPedido.Pronto;
+        await _context.SaveChangesAsync();
+        var pedidoProducao = _mapper.Map<PedidoProducaoResponse>(pedido);
+        await _kdsService.AtualizarStatusAsync(pedido.LojaId,pedido.Id,pedido.Status);
+        return pedidoProducao;
+    }
     public async Task<PedidoResponse> CancelarAsync(int pedidoId, int lojaId) {
         var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
@@ -218,17 +246,12 @@ public class PedidoService {
         if(pedido.Status != StatusPedido.Enviado)
             throw new BusinessLogicException("Somente pedidos enviados podem ser finalizados.");
 
-        if(!pedido.Itens.Any())
-            throw new BusinessLogicException("Não é possível finalizar um pedido sem itens.");
+        if(!pedido.Itens.Any())throw new BusinessLogicException("Não é possível finalizar um pedido sem itens.");
 
         RecalcularPedido(pedido);
-
         pedido.Status = StatusPedido.Finalizado;
-
         await VerificarLiberacaoMesaAsync(pedido);
-
         await _context.SaveChangesAsync();
-
         return await BuscarPorIdAsync(pedidoId, lojaId);
     }
 

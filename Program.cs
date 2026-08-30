@@ -12,6 +12,7 @@ using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
 using MenuFast.Api.Api.Hubs;
+using MenuFast.Api.Api.Mappings;
 using MenuFast.Api.Api.Middlewares;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Api.Util.Helpers;
@@ -127,7 +128,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
     options.InstanceName = "MenuFast:";
 });
-
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsuarioContextService>();
 builder.Services.AddScoped<SegurancaService>();
@@ -153,6 +153,10 @@ builder.Services.AddDbContext<MenuFastContext>(options =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
     return ConnectionMultiplexer.Connect("localhost:6379");
+});
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MappingsProfile>();
 });
 
 var app = builder.Build();

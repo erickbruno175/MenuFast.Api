@@ -1,4 +1,5 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Domain.Enum;
 using MenuFast.Api.Api.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
@@ -12,6 +13,17 @@ public class KdsService {
     }
 
     public async Task EnviarPedidoAsync(PedidoProducaoResponse pedido) {
-        await _hubContext.Clients.All.SendAsync("PedidoEnviado",pedido);
+        await _hubContext.Clients.All.SendAsync("PedidoEnviado", pedido);
+    }
+
+    public async Task AtualizarStatusAsync(int lojaId, int id, StatusPedido status) {
+        await _hubContext.Clients.All.SendAsync(
+            "StatusPedidoAtualizado",
+            new
+            {
+                PedidoId = id,
+                LojaId = lojaId,
+                Status = status
+            });
     }
 }

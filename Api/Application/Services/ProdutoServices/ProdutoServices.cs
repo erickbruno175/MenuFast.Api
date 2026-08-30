@@ -209,7 +209,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 })
                 .ToListAsync();
         }
-        public async Task RemoverProdutoCardapio(int idProduto) {
+        public async Task RemoverProduto(int idProduto) {
             var produto = await _menuFastContext.Produtos.FirstOrDefaultAsync(p => p.Id == idProduto);
 
             if(produto == null) throw new BusinessLogicException("Produto não encontrado");

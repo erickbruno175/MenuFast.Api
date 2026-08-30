@@ -57,10 +57,28 @@ public class PedidoController : ControllerBase {
 
     [HttpPost("{pedidoId}/enviar")]
     [Authorize]
-    [ProducesResponseType(typeof(PedidoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PedidoProducaoResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> EnviarPedido(int pedidoId) {
         var pedido = await _pedidoService.EnviarPedidoAsync(pedidoId, _usuarioContextService.LojaId().Value);
+        return Ok(pedido);
+    }
+
+    [HttpPost("{pedidoId}/iniciar-producao")]
+    [Authorize]
+    [ProducesResponseType(typeof(PedidoProducaoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> IniciarProducaoPedido(int pedidoId) {
+        var pedido = await _pedidoService.IniciarProducaoAsync(pedidoId, _usuarioContextService.LojaId().Value);
+        return Ok(pedido);
+    }
+
+    [HttpPost("{pedidoId}/finalizar-producao")]
+    [Authorize]
+    [ProducesResponseType(typeof(PedidoProducaoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> FinalizarProducaoPedido(int pedidoId) {
+        var pedido = await _pedidoService.FinalizarProducaoAsync(pedidoId, _usuarioContextService.LojaId().Value);
         return Ok(pedido);
     }
 
