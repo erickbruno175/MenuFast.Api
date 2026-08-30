@@ -61,7 +61,7 @@ namespace MenuFast.Api.Api.Controllers {
         [HttpDelete("deletar/{id}")]
         [Authorize]
         public async Task<ActionResult> RemoverProduto(int id) {
-            await _produtoService.RemoverProdutoCardapio(id);
+            await _produtoService.RemoverProduto(id);
 
             return Ok(new
             {
