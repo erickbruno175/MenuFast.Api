@@ -34,6 +34,8 @@ public class LojaConfig : IEntityTypeConfiguration<Loja> {
         builder.Property(x => x.Instagram).HasComment("URL do perfil da empresa no Instagram.");
         builder.Property(x => x.WhatsApp).HasComment("Número ou link do WhatsApp da empresa.");
         builder.Property(x => x.Site).HasComment("Site oficial da empresa.");
+        builder.Property(x => x.Latitude).HasComment("Latitude da localização da empresa."); 
+        builder.Property(x => x.Longitude).HasComment("Longitude da localização da empresa.");
         builder.Property(x => x.ConfiguracaoFinalizada).HasComment("Verifica se todas as configurações iniciai foram cadastradas");
        
     }

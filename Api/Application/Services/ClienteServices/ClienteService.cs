@@ -193,8 +193,8 @@ namespace MenuFast.Api.Api.Application.Services.ClienteServices {
                 Observacao = cliente.Observacao,
                 Ativo = cliente.Ativo,
                 DataCadastro = cliente.DataCadastro,
-                Latitude = cliente.Latitude,
-                Longitude = cliente.Longitude
+                Latitude = cliente.Latitude.Value,
+                Longitude = cliente.Longitude.Value
             };
         }
     }

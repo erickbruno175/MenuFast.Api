@@ -27,6 +27,8 @@ public class Loja {
     public string? Site { get; set; }
     public string Uf { get; set; } = string.Empty;
     public string? Logo { get; set; }
+    public decimal? Latitude { get; set; }
+    public decimal? Longitude { get; set; }
     public bool ConfiguracaoFinalizada { get; set; } = false;
     public ConfiguracaoLoja? Configuracao { get; set; }
     public ICollection<HorarioFuncionamento> Horarios { get; set; } = new List<HorarioFuncionamento>();

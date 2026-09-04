@@ -25,7 +25,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Autenticar([FromBody] LoginRequest request) {
-            var usuario = await _service.AutenticarFuncionario(request,_usuarioContextService.LojaId()!.Value);
+            var usuario = await _service.AutenticarFuncionario(request);
             return Ok(usuario);
         }
 

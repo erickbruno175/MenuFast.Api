@@ -1,6 +1,7 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.Redis;
+using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Enum;
@@ -9,6 +10,7 @@ using MenuFast.Api.Api.Util.Helpers;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Text.Json;
 
 namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
@@ -16,10 +18,12 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
 
         private readonly MenuFastContext _menuFastContext;
         private readonly IDistributedCache _cache;
+        private readonly OpenRouteServices _openRouteServices;
 
-        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext, IDistributedCache redis) {
+        public ConfiguracaoSistemaLojaServices(MenuFastContext menuFastContext, IDistributedCache redis , OpenRouteServices openRouteServices) {
             _menuFastContext = menuFastContext;
             _cache = redis;
+            _openRouteServices = openRouteServices;
         }
 
         public async Task<Loja> CadastrarDadosLoja(DadosEmpresaRequest requestDadosEmpresa) {
@@ -28,6 +32,14 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             {
                 throw new BusinessLogicException("CNPJ inválido.");
             }
+
+            var coordenadas = await _openRouteServices.BuscarCoordenadasAsync(
+                 requestDadosEmpresa.Cep,
+                 requestDadosEmpresa.Logradouro,
+                 requestDadosEmpresa.Numero,
+                 requestDadosEmpresa.Bairro,
+                 requestDadosEmpresa.Cidade,
+                 requestDadosEmpresa.Estado);
 
             var loja = new Loja
             {
@@ -50,7 +62,10 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 Sigla = requestDadosEmpresa.Sigla,
                 WhatsApp = requestDadosEmpresa.WhatsApp,
                 Site = requestDadosEmpresa.Site,
-                Logo = requestDadosEmpresa.Logo
+                Logo = requestDadosEmpresa.Logo,
+                Longitude = coordenadas?.Longitude,
+                Latitude = coordenadas?.Latitude
+
             };
 
             await _menuFastContext.Lojas.AddAsync(loja);
@@ -164,14 +179,10 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 TaxaBaseEntrega = request.TaxaBaseEntrega,
                 ValorPorKm = request.ValorPorKm,
                 DistanciaMaximaEntregaKm = request.DistanciaMaximaEntregaKm,
-
-                EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha,
-                ExigirGarcomNaMesa = request.ExigirGarcomNaMesa,
                 PermiteVendaSemEstoque = request.PermiteVendaSemEstoque,
                 TrabalhaComDelivery = request.TrabalhaComDelivery,
                 TrabalhaComMesa = request.TrabalhaComMesa,
                 TrabalhaComRetirada = request.TrabalhaComRetirada,
-                EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar,
                 AbilitarImpressoraTermica = request.AbilitarImpressoraTermica,
                 AbilitarKDS = request.AbilitarKDS,
                 LojaId = idLoja,
@@ -195,7 +206,6 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             configuracaoLojaEditar.TrabalhaComDelivery = request.TrabalhaComDelivery;
             configuracaoLojaEditar.PermiteVendaSemEstoque = request.PermiteVendaSemEstoque;
 
-            configuracaoLojaEditar.ExigirGarcomNaMesa = request.ExigirGarcomNaMesa;
 
             configuracaoLojaEditar.CobraTaxaServico = request.CobraTaxaServico;
             configuracaoLojaEditar.PercentualTaxaServico = request.PercentualTaxaServico;
@@ -207,8 +217,6 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             configuracaoLojaEditar.ValorPorKm = request.ValorPorKm;
             configuracaoLojaEditar.DistanciaMaximaEntregaKm = request.DistanciaMaximaEntregaKm;
 
-            configuracaoLojaEditar.EnviarPedidoAutomaticamenteCozinha = request.EnviarPedidoAutomaticamenteCozinha;
-            configuracaoLojaEditar.EnviarPedidoAutomaticamenteBar = request.EnviarPedidoAutomaticamenteBar;
             configuracaoLojaEditar.AbilitarKDS = request.AbilitarKDS;
             configuracaoLojaEditar.AbilitarImpressoraTermica = request.AbilitarImpressoraTermica;
 
@@ -264,9 +272,6 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 ValorPorKm = loja.Configuracao.ValorPorKm,
                 DistanciaMaximaEntregaKm = loja.Configuracao.DistanciaMaximaEntregaKm,
 
-                ExigirGarcomNaMesa = loja.Configuracao.ExigirGarcomNaMesa,
-                EnviarPedidoAutomaticamenteCozinha = loja.Configuracao.EnviarPedidoAutomaticamenteCozinha,
-                EnviarPedidoAutomaticamenteBar = loja.Configuracao.EnviarPedidoAutomaticamenteBar,
                 AbilitarImpressoraTermica = loja.Configuracao.AbilitarImpressoraTermica,
                 AbilitarKDS = loja.Configuracao.AbilitarKDS,
 
@@ -303,6 +308,18 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             var possuiHorario = await _menuFastContext.HorariosFuncionamento.AnyAsync(x => x.LojaId == funcionario.Loja.Id);
 
             return !possuiConfiguracao || !possuiHorario;
+        }
+
+
+        public async Task<IEnumerable<DTOs.Response.FormaPagamento>> ConsultarFormasPagamento() {
+
+            var pagamento  = await _menuFastContext.FormasPagamento.AsNoTracking().Where(x => x.Ativo).Select(x => new DTOs.Response.FormaPagamento {
+                Id = x.Id,
+                Descricao = x.Descricao
+            }).ToListAsync();
+            
+            return pagamento;
+
         }
     }
 }

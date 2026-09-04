@@ -22,7 +22,7 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Cliente {
         public string Observacao { get; set; } = string.Empty;
         public bool Ativo { get; set; } = true;
         public DateTime DataCadastro { get; set; } = DateTime.UtcNow;
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
     }
 }

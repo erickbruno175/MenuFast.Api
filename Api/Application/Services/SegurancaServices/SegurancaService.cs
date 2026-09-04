@@ -48,11 +48,11 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             _configuration = configuration;
         }
 
-        public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest , int lojaId) {
+        public async Task<LoginResponse> AutenticarFuncionario(LoginRequest loginRequest) {
             try
             {
                 var hoje = DateTime.Now;
-                var configuracao = await _menuFastContext.ConfiguracoesSeguranca.FirstOrDefaultAsync(l=> l.LojaId == lojaId);
+                var configuracao = await _menuFastContext.ConfiguracoesSeguranca.FirstOrDefaultAsync();
 
                 var maxTentativas = configuracao?.MaxTentativasLogin ?? 5;
                 var tempoBloqueio = configuracao?.TempoBloqueioMinutos ?? 30;
