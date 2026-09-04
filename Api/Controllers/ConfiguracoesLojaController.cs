@@ -113,5 +113,15 @@ namespace MenuFast.Api.Api.Controllers {
             var configuracoesLoja = await _configuracaoSistemaLoja.ConsultarConfiguracoesLoja(_usuarioContextService.LojaId()!.Value);
             return Ok(configuracoesLoja);
         }
+            
+        [HttpGet]
+        [Route("consultar-formas-pagamento")]
+        [Authorize]
+        [ProducesResponseType(typeof(IEnumerable<Application.DTOs.Response.FormaPagamento>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ConsultarFormasPagamento() {
+            var formasPagamento = await _configuracaoSistemaLoja.ConsultarFormasPagamento();
+            return Ok(formasPagamento);
+        }
     }
 }

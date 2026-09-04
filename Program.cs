@@ -152,7 +152,10 @@ builder.Services.AddDbContext<MenuFastContext>(options =>
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
-    return ConnectionMultiplexer.Connect("localhost:6379");
+    var redisConnection =
+        builder.Configuration.GetConnectionString("Redis");
+
+    return ConnectionMultiplexer.Connect(redisConnection!);
 });
 builder.Services.AddAutoMapper(cfg =>
 {

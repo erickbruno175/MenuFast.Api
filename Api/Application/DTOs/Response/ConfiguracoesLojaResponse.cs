@@ -17,17 +17,20 @@ namespace MenuFast.Api.Api.Application.DTOs.Response {
         public decimal? TaxaBaseEntrega { get; set; }
         public decimal? ValorPorKm { get; set; }
         public decimal? DistanciaMaximaEntregaKm { get; set; }
-        public bool ExigirGarcomNaMesa { get; set; } = false;
-        public bool EnviarPedidoAutomaticamenteCozinha { get; set; } = false;
-        public bool EnviarPedidoAutomaticamenteBar { get; set; } = false;
+       
         public bool AbilitarImpressoraTermica { get; set; } = false;
         public bool AbilitarKDS { get; set; } = false;
         public bool Ativo { get; set; } = false;
-
         public string RazaoSocial { get; set; }
         public string Email { get; set; }
 
         public ICollection<HorarioFuncionamento> horarioFuncionamentos { get; set; }
     }
 
+
+    public class  FormaPagamento {
+        public int Id { get; set; }
+        public string Descricao { get; set; }
+
+    }
 }

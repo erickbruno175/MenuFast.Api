@@ -28,9 +28,6 @@ public class ConfiguracaoRestauranteConfig : IEntityTypeConfiguration<Configurac
         builder.Property(x => x.ValorPorKm).HasPrecision(18, 2).HasComment("Valor adicional cobrado por quilômetro percorrido.");
         builder.Property(x => x.DistanciaMaximaEntregaKm).HasPrecision(10, 2).HasComment("Distância máxima em quilômetros permitida para entrega.");
 
-        builder.Property(x => x.ExigirGarcomNaMesa).HasComment("Indica se é obrigatório informar garçom responsável pela mesa.");
-        builder.Property(x => x.EnviarPedidoAutomaticamenteCozinha).HasComment("Indica se o pedido deve ser enviado automaticamente para a cozinha.");
-        builder.Property(x => x.EnviarPedidoAutomaticamenteBar).HasComment("Indica se o pedido deve ser enviado automaticamente para o bar.");
         builder.Property(x => x.Ativo).HasComment("Indica se a configuração está ativa.");
         builder.Property(x => x.AbilitarKDS).HasComment("Indica se a configuração está ativa do KDS.");
         builder.Property(x => x.AbilitarImpressoraTermica).HasComment("Indica se a configuração está ativa da impressora térmica.");
