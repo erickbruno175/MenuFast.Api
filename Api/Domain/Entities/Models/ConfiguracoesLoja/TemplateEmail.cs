@@ -1,6 +1,6 @@
 ﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 
-namespace MenuFast.Api.Api.Domain.Entities.Models {
+namespace MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja {
     public class TemplateEmail {
         public int Id { get; set; }
         public int LojaId { get; set; }

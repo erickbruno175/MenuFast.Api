@@ -20,6 +20,7 @@ public class ConfiguracaoRestauranteConfig : IEntityTypeConfiguration<Configurac
         builder.Property(x => x.PermiteVendaSemEstoque).HasComment("Indica se permite realizar venda de produtos sem estoque.");
         builder.Property(x => x.CobraTaxaServico).HasComment("Indica se cobra taxa de serviço.");
         builder.Property(x => x.PercentualTaxaServico).HasPrecision(5, 2).HasComment("Percentual aplicado para cobrança da taxa de serviço.");
+        builder.Property(x => x.ValorAberturaCaixa).HasPrecision(5, 2).HasComment("Valor de abertura de caixa.");
 
         builder.Property(x => x.CobraTaxaEntrega).HasComment("Indica se o restaurante cobra taxa de entrega.");
         builder.Property(x => x.TipoTaxaEntrega).HasConversion<int>().HasComment("Define se a taxa de entrega é fixa ou calculada por distância.");

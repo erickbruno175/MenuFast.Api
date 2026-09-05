@@ -1,6 +1,7 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.CategoriaServices;
+using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -13,7 +14,11 @@ namespace MenuFast.Api.Api.Controllers {
     public class CategoriaController : ControllerBase {
 
         private readonly CategoriaService _categoriaService;
-        public CategoriaController(CategoriaService categoriaService) { _categoriaService = categoriaService; }
+        private readonly UsuarioContextService _usuarioContextService;
+        public CategoriaController(CategoriaService categoriaService, UsuarioContextService usuarioContextService) {
+            _categoriaService = categoriaService;
+            _usuarioContextService = usuarioContextService;
+        }
 
         [HttpPost]
         [Route("cadastrar")]
@@ -40,8 +45,8 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(CategoriaResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> ListarCategorias(int idLoja) {
-            return Ok(await _categoriaService.ListarCategorias(idLoja));
+        public async Task<ActionResult> ListarCategorias() {
+            return Ok(await _categoriaService.ListarCategorias(_usuarioContextService.LojaId()!.Value));
         }
 
         [HttpDelete("deletar/{id}")]

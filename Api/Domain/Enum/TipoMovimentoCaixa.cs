@@ -5,6 +5,8 @@
         Suprimento = 2,
         Recebimento = 3,
         Pagamento = 4,
-        Estorno = 5
+        Estorno = 5,
+        Entrada = 6,
+        Saida = 7
     }
 }
