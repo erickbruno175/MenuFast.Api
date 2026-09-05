@@ -2,6 +2,7 @@ using MenuFast.Api.Api.Application.Services.CategoriaServices;
 using MenuFast.Api.Api.Application.Services.ClienteServices;
 using MenuFast.Api.Api.Application.Services.ContextUser;
 using MenuFast.Api.Api.Application.Services.Email;
+using MenuFast.Api.Api.Application.Services.EstoqueService;
 using MenuFast.Api.Api.Application.Services.KdsServices;
 using MenuFast.Api.Api.Application.Services.LojaConfiguracoes;
 using MenuFast.Api.Api.Application.Services.MesaServices;
@@ -128,6 +129,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
     options.InstanceName = "MenuFast:";
 });
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UsuarioContextService>();
 builder.Services.AddScoped<SegurancaService>();
@@ -144,6 +146,7 @@ builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<KdsService>();
 builder.Services.AddHttpClient<OpenRouteServices>();
 builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
+builder.Services.AddScoped<EstoqueServices>();
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(

@@ -117,7 +117,7 @@ namespace MenuFast.Api.Api.Controllers {
         [HttpGet]
         [Route("consultar-formas-pagamento")]
         [Authorize]
-        [ProducesResponseType(typeof(IEnumerable<Application.DTOs.Response.FormaPagamento>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<Application.DTOs.Response.FormaPagamentoResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ConsultarFormasPagamento() {
             var formasPagamento = await _configuracaoSistemaLoja.ConsultarFormasPagamento();

@@ -141,10 +141,8 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
             }
 
             await _menuFastContext.SaveChangesAsync();
-
             return horarios;
         }
-
 
         public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionamento(List<CadastrarHorarioFuncionamentoRequest> horariosRequest, int idHorario) {
 
@@ -256,24 +254,22 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 Ativo = loja.Ativo,
                 RazaoSocial = loja.RazaoSocial,
                 Email = loja.Email,
-
                 TrabalhaComMesa = loja.Configuracao.TrabalhaComMesa,
                 TrabalhaComDelivery = loja.Configuracao.TrabalhaComDelivery,
                 TrabalhaComRetirada = loja.Configuracao.TrabalhaComRetirada,
                 PermiteVendaSemEstoque = loja.Configuracao.PermiteVendaSemEstoque,
-
                 CobraTaxaServico = loja.Configuracao.CobraTaxaServico,
                 PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico ?? 0,
-
                 CobraTaxaEntrega = loja.Configuracao.CobraTaxaEntrega,
                 TipoTaxaEntrega = loja.Configuracao.TipoTaxaEntrega,
                 TaxaEntrega = loja.Configuracao.TaxaEntrega,
                 TaxaBaseEntrega = loja.Configuracao.TaxaBaseEntrega,
                 ValorPorKm = loja.Configuracao.ValorPorKm,
                 DistanciaMaximaEntregaKm = loja.Configuracao.DistanciaMaximaEntregaKm,
-
                 AbilitarImpressoraTermica = loja.Configuracao.AbilitarImpressoraTermica,
                 AbilitarKDS = loja.Configuracao.AbilitarKDS,
+                ValorAberturaCaixa = loja.Configuracao.ValorAberturaCaixa,
+                
 
                 horarioFuncionamentos = loja.Horarios.Select(x => new HorarioFuncionamento
                 {
@@ -284,13 +280,7 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
                 }).ToList(),
             };
 
-            await _cache.SetStringAsync(
-                cacheKey,
-                JsonSerializer.Serialize(response),
-                new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-                });
+            await _cache.SetStringAsync(cacheKey,JsonSerializer.Serialize(response),new DistributedCacheEntryOptions{AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)});
 
             return response;
         }
@@ -311,9 +301,9 @@ namespace MenuFast.Api.Api.Application.Services.LojaConfiguracoes {
         }
 
 
-        public async Task<IEnumerable<DTOs.Response.FormaPagamento>> ConsultarFormasPagamento() {
+        public async Task<IEnumerable<DTOs.Response.FormaPagamentoResponse>> ConsultarFormasPagamento() {
 
-            var pagamento  = await _menuFastContext.FormasPagamento.AsNoTracking().Where(x => x.Ativo).Select(x => new DTOs.Response.FormaPagamento {
+            var pagamento  = await _menuFastContext.FormasPagamento.AsNoTracking().Where(x => x.Ativo).Select(x => new DTOs.Response.FormaPagamentoResponse {
                 Id = x.Id,
                 Descricao = x.Descricao
             }).ToListAsync();

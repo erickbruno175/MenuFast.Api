@@ -19,14 +19,13 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
         private readonly EmailService _emailService;
         public readonly ILogger<ProdutoServices> _logger;
 
-        public ProdutoServices(
-             MenuFastContext menuFastContext
-            , EmailService emailService,
-             ILogger<ProdutoServices> logger) { _menuFastContext = menuFastContext; _emailService = emailService;  _logger = _logger; }
+        public ProdutoServices(MenuFastContext menuFastContext, EmailService emailService, ILogger<ProdutoServices> logger) {
+            _menuFastContext = menuFastContext; _emailService = emailService; _logger = _logger;
+        }
 
-        public async Task<DetalheProdutosResponse> CadastrarProduto(ProdutoRequest request ) {
+        public async Task<DetalheProdutosResponse> CadastrarProduto(ProdutoRequest request) {
 
-            var jaExiste = _menuFastContext.Produtos.Any(p=> p.Nome.Trim().ToUpper() == request.Nome );
+            var jaExiste = _menuFastContext.Produtos.Any(p => p.Nome.Trim().ToUpper() == request.Nome);
             if(jaExiste)
             {
                 throw new BusinessLogicException("Produto ja existe");
@@ -53,8 +52,8 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             {
                 var estoque = new EstoqueProduto
                 {
-                    Quantidade = request.QuantidadeEstoque?? 0,
-                    EstoqueMinimo = request.EstoqueMinimo??0,
+                    Quantidade = request.QuantidadeEstoque ?? 0,
+                    EstoqueMinimo = request.EstoqueMinimo ?? 0,
                     DataCadastro = agora,
                     DataAtualizacao = agora
                 };
@@ -62,9 +61,9 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 estoque.Movimentacoe.Add(new MovimentacaoEstoque
                 {
                     Tipo = TipoMovimentacaoEstoque.Entrada,
-                    Quantidade = request.QuantidadeEstoque??0,
+                    Quantidade = request.QuantidadeEstoque ?? 0,
                     QuantidadeAnterior = 0,
-                    QuantidadeAtual = request.QuantidadeEstoque??0,
+                    QuantidadeAtual = request.QuantidadeEstoque ?? 0,
                     Observacao = "Estoque inicial",
                     DataCadastro = agora
                 });
@@ -104,8 +103,8 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     var estoque = new EstoqueProduto
                     {
                         ProdutoId = produto.Id,
-                        Quantidade = request.QuantidadeEstoque??0,
-                        EstoqueMinimo = request.EstoqueMinimo??0,
+                        Quantidade = request.QuantidadeEstoque ?? 0,
+                        EstoqueMinimo = request.EstoqueMinimo ?? 0,
                         DataCadastro = agora,
                         DataAtualizacao = agora
                     };
@@ -113,9 +112,9 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     estoque.Movimentacoe.Add(new MovimentacaoEstoque
                     {
                         Tipo = TipoMovimentacaoEstoque.Entrada,
-                        Quantidade = request.QuantidadeEstoque??0,
+                        Quantidade = request.QuantidadeEstoque ?? 0,
                         QuantidadeAnterior = 0,
-                        QuantidadeAtual = request.QuantidadeEstoque??0,
+                        QuantidadeAtual = request.QuantidadeEstoque ?? 0,
                         Observacao = "Estoque inicial",
                         DataCadastro = agora
                     });
@@ -126,7 +125,7 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 {
                     var estoque = produto.EstoqueProduto;
 
-                    estoque.EstoqueMinimo = request.EstoqueMinimo??0;
+                    estoque.EstoqueMinimo = request.EstoqueMinimo ?? 0;
 
                     // Só cria movimentação se a quantidade realmente mudou
                     if(estoque.Quantidade != request.QuantidadeEstoque)
@@ -134,19 +133,20 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                         var quantidadeAnterior = estoque.Quantidade;
                         var quantidadeAtual = request.QuantidadeEstoque;
 
-                        estoque.Quantidade = quantidadeAtual??0;
+                        estoque.Quantidade = quantidadeAtual ?? 0;
                         estoque.DataAtualizacao = agora;
 
-                        if(estoque.Quantidade > estoque.EstoqueMinimo) {
+                        if(estoque.Quantidade > estoque.EstoqueMinimo)
+                        {
                             estoque.AlertaEstoqueEnviado = false;
                         }
 
                         estoque.Movimentacoe.Add(new MovimentacaoEstoque
                         {
                             Tipo = TipoMovimentacaoEstoque.Ajuste,
-                            Quantidade = Math.Abs(quantidadeAtual - quantidadeAnterior??0),
+                            Quantidade = Math.Abs(quantidadeAtual - quantidadeAnterior ?? 0),
                             QuantidadeAnterior = quantidadeAnterior,
-                            QuantidadeAtual = quantidadeAtual??0,
+                            QuantidadeAtual = quantidadeAtual ?? 0,
                             Observacao = "Ajuste de estoque pelo cadastro do produto",
                             DataCadastro = agora
                         });
@@ -157,19 +157,15 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                     }
                 }
             }
-
             await _menuFastContext.SaveChangesAsync();
-
             return ConverterParaDetalhe(produto);
         }
-
         public async Task<DetalheProdutosResponse> DetalharProduto(int idProduto) {
             var produto = await _menuFastContext.Produtos.AsNoTracking().FirstOrDefaultAsync(x => x.Id == idProduto);
 
             if(produto == null) throw new BusinessLogicException("Produto não encontrado");
             return ConverterParaDetalhe(produto);
         }
-
 
         public async Task<List<DetalheProdutosResponse>> BuscarProdutos(int idLoja, FiltroProdutoRequest? filtro, string tipoFiltro) {
             var produtos = _menuFastContext.Produtos.AsNoTracking().Where(p => p.LojaId == idLoja);
@@ -246,16 +242,13 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                 Descricao = produto.Descricao,
                 Ativo = produto.Ativo,
                 Tamanho = produto.Tamanho,
-
-
             };
         }
-
         public async Task EnviarProdutosEsgotadosEmail() {
             try
             {
                 var funcionario = await _menuFastContext.Funcionarios
-                    .FirstOrDefaultAsync(f =>f.PerfilId == (int)PerfilUsuario.Administrador && f.Ativo);
+                    .FirstOrDefaultAsync(f => f.PerfilId == (int) PerfilUsuario.Administrador ||  f.PerfilId == (int) PerfilUsuario.Gerente  && f.Ativo);
 
                 if(funcionario == null || string.IsNullOrWhiteSpace(funcionario.Email))
                     return;
@@ -275,28 +268,28 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
 
                 var templateEmail = await _menuFastContext.TemplatesEmail.FirstOrDefaultAsync(e => e.Nome == "ALERTA DE ESTOQUE" && e.Ativo);
 
-                if(templateEmail == null)throw new BusinessLogicException("Não foi possível localizar o modelo de e-mail para alerta de estoque.");
+                if(templateEmail == null) throw new BusinessLogicException("Não foi possível localizar o modelo de e-mail para alerta de estoque.");
 
                 var produtosEstoque = string.Join("<br>", produtos.Select(p =>
                 {
                     var quantidade = p.EstoqueProduto!.Quantidade;
-                    var status = quantidade == 0? "ACABOU": "QUASE ACABANDO";
+                    var status = quantidade == 0 ? "ACABOU" : "QUASE ACABANDO";
                     return $"{p.Nome} - Quantidade: {quantidade} - Status: {status}";
                 }));
 
                 var conteudo = templateEmail.Conteudo.Replace("{{PRODUTOS_ESTOQUE}}", produtosEstoque);
 
-                foreach( var produto in produtos)
+                foreach(var produto in produtos)
                 {
 
                     if(produto.EstoqueProduto.Quantidade <= 0 && !produto.EstoqueProduto.AlertaEstoqueEnviado)
 
-                    await _emailService.EnviarAsync(funcionario.Email,templateEmail.Assunto,conteudo);
+                        await _emailService.EnviarAsync(funcionario.Email, templateEmail.Assunto, conteudo);
                     produto!.EstoqueProduto!.AlertaEstoqueEnviado = true;
-                    produto!.EstoqueProduto!.UltimoAlertaEstoque = DateTime.Now ;
+                    produto!.EstoqueProduto!.UltimoAlertaEstoque = DateTime.Now;
 
                 }
-               await  _menuFastContext.SaveChangesAsync();
+                await _menuFastContext.SaveChangesAsync();
             }
             catch(BusinessLogicException)
             {
