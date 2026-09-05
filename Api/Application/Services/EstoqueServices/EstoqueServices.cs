@@ -5,7 +5,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
 
-namespace MenuFast.Api.Api.Application.Services.EstoqueService;
+namespace MenuFast.Api.Api.Application.Services.EstoqueServices;
 
 public class EstoqueServices {
     private readonly MenuFastContext _context;

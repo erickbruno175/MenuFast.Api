@@ -2,7 +2,7 @@
 using DocumentFormat.OpenXml.Bibliography;
 using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
-using MenuFast.Api.Api.Application.Services.EstoqueService;
+using MenuFast.Api.Api.Application.Services.EstoqueServices;
 using MenuFast.Api.Api.Application.Services.KdsServices;
 using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
 using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
@@ -22,18 +22,21 @@ public class PedidoService {
     private readonly KdsService _kdsService;
     private readonly IMapper _mapper;
     private readonly OpenRouteServices _openRouteServices;
-    private readonly EstoqueServices _estoqueService;
+    private readonly EstoqueServices.EstoqueServices _estoqueServices;
+
     public PedidoService(
         MenuFastContext context,
         KdsService kdsService,
         IMapper mapper,
         OpenRouteServices openRouteServices,
-        EstoqueServices estoqueService) {
+        EstoqueServices.EstoqueServices estoqueServices
+
+      ) {
         _context = context;
         _kdsService = kdsService;
         _mapper = mapper;
         _openRouteServices = openRouteServices;
-        _estoqueService = estoqueService;
+        _estoqueServices = estoqueServices;
     }
 
     // 1. CRIAR PEDIDO
@@ -264,7 +267,7 @@ public class PedidoService {
         
         pedido.Status = StatusPedido.Finalizado;
         await VerificarLiberacaoMesaAsync(pedido);
-        await _estoqueService.BaixaEstoqueProduto(pedido);
+        await _estoqueServices.BaixaEstoqueProduto(pedido);
         await _context.SaveChangesAsync();
         return await BuscarPorIdAsync(pedidoId,lojaId);
     }
