@@ -94,6 +94,7 @@
 
 
 	<ItemGroup>
+	  <Folder Include="Logs\" />
 	  <Folder Include="NovaPasta\" />
 	</ItemGroup>
 

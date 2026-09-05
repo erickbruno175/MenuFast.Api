@@ -28,7 +28,7 @@ namespace MenuFast.Api.Api.Application.DTOs.Response {
     }
 
 
-    public class  FormaPagamento {
+    public class  FormaPagamentoResponse {
         public int Id { get; set; }
         public string Descricao { get; set; }
 
