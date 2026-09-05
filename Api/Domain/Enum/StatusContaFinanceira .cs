@@ -5,6 +5,7 @@
         Recebido = 3,
         Vencido = 4,
         Cancelado = 5,
-        Parcial = 6
+        Parcial = 6,
+        Ativo = 7
     }
 }

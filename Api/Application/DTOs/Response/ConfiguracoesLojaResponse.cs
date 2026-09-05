@@ -17,7 +17,7 @@ namespace MenuFast.Api.Api.Application.DTOs.Response {
         public decimal? TaxaBaseEntrega { get; set; }
         public decimal? ValorPorKm { get; set; }
         public decimal? DistanciaMaximaEntregaKm { get; set; }
-       
+        public decimal? ValorAberturaCaixa { get; set; } = 0;
         public bool AbilitarImpressoraTermica { get; set; } = false;
         public bool AbilitarKDS { get; set; } = false;
         public bool Ativo { get; set; } = false;

@@ -24,4 +24,5 @@ public class ConfiguracaoLoja {
     public bool AbilitarKDS { get; set; } = false;
     public Loja.Loja Loja { get; set; }
     public int TaxaEntregaMinima { get; internal set; }
+    public decimal? ValorAberturaCaixa { get; set; } = 0;
 }

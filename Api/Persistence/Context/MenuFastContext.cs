@@ -9,7 +9,6 @@ using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
 using Microsoft.EntityFrameworkCore;
-using MenuFast.Api.Api.Domain.Entities.Models;
 
 namespace MenuFast.Api.Api.Persistence.Context;
 
