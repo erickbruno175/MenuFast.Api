@@ -5,6 +5,7 @@ using MenuFast.Api.Api.Application.Services.PedidoServices;
 using MenuFast.Api.Api.Domain.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Win32;
 
 namespace MenuFast.Api.Api.Controllers;
 
@@ -91,14 +92,16 @@ public class PedidoController : ControllerBase {
         return Ok(pedido);
     }
 
-    [HttpPut("{pedidoId}/finalizar")]
+    [HttpPut("iniciar-fechamento")]
     [Authorize]
-    [ProducesResponseType(typeof(PedidoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<PedidoResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> FinalizarPedido(int pedidoId) {
-        var pedido = await _pedidoService.FinalizarPedidoAsync(pedidoId, _usuarioContextService.LojaId().Value);
-        return Ok(pedido);
+    public async Task<IActionResult> IniciarFechamento([FromQuery] int? pedidoId, [FromQuery] int? mesaId) {
+        var pedidos = await _pedidoService.IniciarFechamentoAsync(_usuarioContextService.LojaId().Value, pedidoId, mesaId);
+        return Ok(pedidos);
     }
+
+
 
     [HttpGet("buscar/{pedidoId}")]
     [Authorize]

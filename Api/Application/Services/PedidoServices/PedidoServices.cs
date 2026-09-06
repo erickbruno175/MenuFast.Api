@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using DocumentFormat.OpenXml.Bibliography;
+﻿
+using AutoMapper;
 using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.EstoqueServices;
@@ -24,14 +24,7 @@ public class PedidoService {
     private readonly OpenRouteServices _openRouteServices;
     private readonly EstoqueServices.EstoqueServices _estoqueServices;
 
-    public PedidoService(
-        MenuFastContext context,
-        KdsService kdsService,
-        IMapper mapper,
-        OpenRouteServices openRouteServices,
-        EstoqueServices.EstoqueServices estoqueServices
-
-      ) {
+    public PedidoService(MenuFastContext context, KdsService kdsService, IMapper mapper, OpenRouteServices openRouteServices, EstoqueServices.EstoqueServices estoqueServices) {
         _context = context;
         _kdsService = kdsService;
         _mapper = mapper;
@@ -39,21 +32,19 @@ public class PedidoService {
         _estoqueServices = estoqueServices;
     }
 
-    // 1. CRIAR PEDIDO
-    public async Task<PedidoResponse> CriarPedidoAsync(
-        CriarPedidoRequest request, int lojaId, int funcionarioId) {
-        if(request.Itens == null || request.Itens.Count == 0) throw new BusinessLogicException("O pedido deve possuir pelo menos um item.");
+    public async Task<PedidoResponse> CriarPedidoAsync(CriarPedidoRequest request, int lojaId, int funcionarioId) {
+        if(request.Itens == null || request.Itens.Count == 0)
+            throw new BusinessLogicException("O pedido deve possuir pelo menos um item.");
 
         var configuracaoLoja = await _context.ConfiguracoesLoja.FirstOrDefaultAsync(x => x.LojaId == lojaId);
 
         decimal taxaEntrega = 0;
-        decimal distanciaEntregaKm = 0;
-
         Mesa? mesa = null;
 
         if(request.TipoPedido == TipoPedido.Mesa)
         {
-            if(!request.MesaId.HasValue) throw new BusinessLogicException("A mesa é obrigatória para pedido de mesa.");
+            if(!request.MesaId.HasValue)
+                throw new BusinessLogicException("A mesa é obrigatória para pedido de mesa.");
 
             mesa = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == request.MesaId.Value && x.LojaId == lojaId);
 
@@ -64,43 +55,32 @@ public class PedidoService {
                 throw new BusinessLogicException("A mesa está bloqueada.");
         }
 
-        // PEDIDO DELIVERY
         if(request.TipoPedido == TipoPedido.Delivery)
         {
-            if(configuracaoLoja == null ||
-               !configuracaoLoja.TrabalhaComDelivery)
-            {
+            if(configuracaoLoja == null || !configuracaoLoja.TrabalhaComDelivery)
                 throw new BusinessLogicException("Esta loja não trabalha com delivery.");
-            }
 
             if(!request.ClienteId.HasValue)
                 throw new BusinessLogicException("O cliente é obrigatório para delivery.");
 
-            var cliente = await _context.Clientes
-                .FirstOrDefaultAsync(x => x.Id == request.ClienteId.Value && x.LojaId == lojaId);
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(x => x.Id == request.ClienteId.Value && x.LojaId == lojaId);
 
             if(cliente == null)
                 throw new BusinessLogicException("Cliente não encontrado.");
 
             var resultadoTaxa = await CalcularTaxaEntregaAsync(lojaId, cliente, configuracaoLoja);
-
             taxaEntrega = resultadoTaxa.Taxa;
-            distanciaEntregaKm = resultadoTaxa.DistanciaKm;
         }
 
         var produtoIds = request.Itens.Select(x => x.ProdutoId).Distinct().ToList();
 
         var produtos = await _context.Produtos
-            .Where(x =>
-                produtoIds.Contains(x.Id) &&
-                x.LojaId == lojaId &&
-                x.Ativo)
+            .Where(x => produtoIds.Contains(x.Id) && x.LojaId == lojaId && x.Ativo)
             .ToListAsync();
 
         if(produtos.Count != produtoIds.Count)
-            throw new BusinessLogicException( "Um ou mais produtos não foram encontrados ou estão inativos.");
+            throw new BusinessLogicException("Um ou mais produtos não foram encontrados ou estão inativos.");
 
-        // CRIAR PEDIDO
         var pedido = new Pedido
         {
             LojaId = lojaId,
@@ -111,7 +91,6 @@ public class PedidoService {
             Status = StatusPedido.Aberto,
             DataPedidoHora = DateTime.Now,
             Observacao = request.Observacao,
-
             Subtotal = 0,
             Desconto = 0,
             TaxaServico = 0,
@@ -120,196 +99,241 @@ public class PedidoService {
         };
 
         foreach(var itemRequest in request.Itens)
-        {
-            AdicionarItemAoPedido(pedido,itemRequest,produtos);
-        }
+            AdicionarItemAoPedido(pedido, itemRequest, produtos);
 
         RecalcularPedido(pedido);
 
-        if(mesa != null)mesa.StatusMesa = StatusMesa.Ocupada;
+        if(mesa != null)
+            mesa.StatusMesa = StatusMesa.Ocupada;
 
         await _context.Pedidos.AddAsync(pedido);
         await _context.SaveChangesAsync();
-        return await BuscarPorIdAsync(pedido.Id,lojaId);
+
+        return await BuscarPorIdAsync(pedido.Id, lojaId);
     }
 
-    // 2. ADICIONAR ITENS AO PEDIDO ABERTO
-    public async Task<PedidoResponse> AdicionarItensAsync(int pedidoId,AdicionarItensPedidoRequest request,int lojaId) {
-        if(request.Itens == null || request.Itens.Count == 0)throw new BusinessLogicException("Informe pelo menos um item.");
+    public async Task<PedidoResponse> AdicionarItensAsync(int pedidoId, AdicionarItensPedidoRequest request, int lojaId) {
+        if(request.Itens == null || request.Itens.Count == 0)
+            throw new BusinessLogicException("Informe pelo menos um item.");
 
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
         ValidarPedidoAberto(pedido);
 
         var produtoIds = request.Itens.Select(x => x.ProdutoId).Distinct().ToList();
 
         var produtos = await _context.Produtos
-            .Where(x =>
-                produtoIds.Contains(x.Id) &&
-                x.LojaId == lojaId &&
-                x.Ativo)
+            .Where(x => produtoIds.Contains(x.Id) && x.LojaId == lojaId && x.Ativo)
             .ToListAsync();
 
         if(produtos.Count != produtoIds.Count)
             throw new BusinessLogicException("Um ou mais produtos não foram encontrados ou estão inativos.");
 
         foreach(var itemRequest in request.Itens)
-        {
-            AdicionarItemAoPedido(pedido,itemRequest,produtos);
-        }
+            AdicionarItemAoPedido(pedido, itemRequest, produtos);
 
         RecalcularPedido(pedido);
+
         await _context.SaveChangesAsync();
-        return await BuscarPorIdAsync(pedidoId,lojaId);
+
+        return await BuscarPorIdAsync(pedidoId, lojaId);
     }
 
-    public async Task<PedidoResponse> AlterarQuantidadeItemAsync(int pedidoId,int itemId,AlterarQuantidadeItemPedidoRequest request,int lojaId) {
-        if(request.Quantidade <= 0)throw new BusinessLogicException("A quantidade deve ser maior que zero.");
+    public async Task<PedidoResponse> AlterarQuantidadeItemAsync(int pedidoId, int itemId, AlterarQuantidadeItemPedidoRequest request, int lojaId) {
+        if(request.Quantidade <= 0)
+            throw new BusinessLogicException("A quantidade deve ser maior que zero.");
 
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
+
         ValidarPedidoAberto(pedido);
 
         var item = pedido.Itens.FirstOrDefault(x => x.Id == itemId);
-        if(item == null)throw new BusinessLogicException("Item não encontrado.");
+
+        if(item == null)
+            throw new BusinessLogicException("Item não encontrado.");
 
         item.Quantidade = request.Quantidade;
+        item.Total = (item.ValorUnitario * item.Quantidade) - item.Desconto;
 
-        item.Total =(item.ValorUnitario * item.Quantidade)- item.Desconto;
-
-        if(item.Total < 0)item.Total = 0;
+        if(item.Total < 0)
+            item.Total = 0;
 
         RecalcularPedido(pedido);
+
         await _context.SaveChangesAsync();
-        return await BuscarPorIdAsync(pedidoId,lojaId);
+
+        return await BuscarPorIdAsync(pedidoId, lojaId);
     }
 
-    // 3. REMOVER ITEM DO PEDIDO ABERTO
-    public async Task<PedidoResponse> RemoverItemAsync(int pedidoId,int itemId,int lojaId) {
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+    public async Task<PedidoResponse> RemoverItemAsync(int pedidoId, int itemId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
         ValidarPedidoAberto(pedido);
+
         var item = pedido.Itens.FirstOrDefault(x => x.Id == itemId);
 
-        if(item == null)throw new BusinessLogicException("Item não encontrado.");
+        if(item == null)
+            throw new BusinessLogicException("Item não encontrado.");
 
         _context.ItensPedido.Remove(item);
         pedido.Itens.Remove(item);
+
         RecalcularPedido(pedido);
+
         await _context.SaveChangesAsync();
-        return await BuscarPorIdAsync(pedidoId,lojaId);
+
+        return await BuscarPorIdAsync(pedidoId, lojaId);
     }
-    // 4 ENVIAR PEDIDO PARA PRODUÇÃO
-    public async Task<PedidoProducaoResponse> EnviarPedidoAsync(int pedidoId,int lojaId) {
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+
+    public async Task<PedidoProducaoResponse> EnviarPedidoAsync(int pedidoId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
         ValidarPedidoAberto(pedido);
-        if(!pedido.Itens.Any())throw new BusinessLogicException("Não é possível enviar um pedido sem itens.");
+
+        if(!pedido.Itens.Any())
+            throw new BusinessLogicException("Não é possível enviar um pedido sem itens.");
 
         RecalcularPedido(pedido);
         pedido.Status = StatusPedido.Enviado;
+
         await _context.SaveChangesAsync();
-        var pedidoProducao =MontarPedidoProducao(pedido);
+
+        var pedidoProducao = MontarPedidoProducao(pedido);
+
         await _kdsService.EnviarPedidoAsync(pedidoProducao);
+
         return pedidoProducao;
     }
 
-    // 6. INICIAR PRODUÇÃO
-    public async Task<PedidoProducaoResponse> IniciarProducaoAsync(int pedidoId,int lojaId) {
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+    public async Task<PedidoProducaoResponse> IniciarProducaoAsync(int pedidoId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
-        if(pedido.Status != StatusPedido.Enviado)throw new BusinessLogicException("O pedido precisa estar enviado para iniciar a produção.");
+        if(pedido.Status != StatusPedido.Enviado)
+            throw new BusinessLogicException("O pedido precisa estar enviado para iniciar a produção.");
 
         pedido.Status = StatusPedido.EmProducao;
-        await _context.SaveChangesAsync();
-        var pedidoProducao =_mapper.Map<PedidoProducaoResponse>(pedido);
 
-        await _kdsService.AtualizarStatusAsync(pedido.LojaId,pedido.Id,pedido.Status);
+        await _context.SaveChangesAsync();
+
+        var pedidoProducao = _mapper.Map<PedidoProducaoResponse>(pedido);
+
+        await _kdsService.AtualizarStatusAsync(pedido.LojaId, pedido.Id, pedido.Status);
+
         return pedidoProducao;
     }
 
-    // 7. FINALIZAR PRODUÇÃO
-    public async Task<PedidoProducaoResponse> FinalizarProducaoAsync(int pedidoId,int lojaId) {
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
-        if(pedido.Status != StatusPedido.EmProducao)throw new BusinessLogicException("O pedido precisa estar em produção para ser finalizado.");
+    public async Task<PedidoProducaoResponse> FinalizarProducaoAsync(int pedidoId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
+
+        if(pedido.Status != StatusPedido.EmProducao)
+            throw new BusinessLogicException("O pedido precisa estar em produção para ser finalizado.");
+
         pedido.Status = StatusPedido.Pronto;
+
         await _context.SaveChangesAsync();
-        var pedidoProducao =_mapper.Map<PedidoProducaoResponse>(pedido);
-        await _kdsService.AtualizarStatusAsync(pedido.LojaId,pedido.Id,pedido.Status);
+
+        var pedidoProducao = _mapper.Map<PedidoProducaoResponse>(pedido);
+
+        await _kdsService.AtualizarStatusAsync(pedido.LojaId, pedido.Id, pedido.Status);
+
         return pedidoProducao;
     }
 
-    // 8. CANCELAR
-    public async Task<PedidoResponse> CancelarAsync(int pedidoId,int lojaId) {
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+    public async Task<PedidoResponse> CancelarAsync(int pedidoId, int lojaId) {
+        var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
-        if(pedido.Status == StatusPedido.Cancelado)throw new BusinessLogicException("O pedido já está cancelado.");
+        if(pedido.Status == StatusPedido.Cancelado)
+            throw new BusinessLogicException("O pedido já está cancelado.");
 
-        if(pedido.Status == StatusPedido.Finalizado)throw new BusinessLogicException("Não é possível cancelar um pedido finalizado.");
+        if(pedido.Status == StatusPedido.Finalizado)
+            throw new BusinessLogicException("Não é possível cancelar um pedido finalizado.");
+
         pedido.Status = StatusPedido.Cancelado;
-        await VerificarLiberacaoMesaAsync(pedido);
 
+        await VerificarLiberacaoMesaAsync(pedido);
         await _context.SaveChangesAsync();
-        return await BuscarPorIdAsync(pedidoId,lojaId);
+
+        return await BuscarPorIdAsync(pedidoId, lojaId);
     }
 
-    // 9. FINALIZAR PEDIDO PARA PAGAMENTO
-    public async Task<PedidoResponse> FinalizarPedidoAsync(int pedidoId,int lojaId) {
-        var pedido = await BuscarPedidoAsync(pedidoId,lojaId);
+    public async Task<List<PedidoResponse>> IniciarFechamentoAsync(int lojaId, int? pedidoId = null, int? mesaId = null) {
+        List<Pedido> pedidos;
 
-        if(pedido.Status == StatusPedido.Cancelado)throw new BusinessLogicException("Não é possível finalizar um pedido cancelado.");
+        if(pedidoId.HasValue)
+        {
+            var pedido = await BuscarPedidoAsync(pedidoId.Value, lojaId);
 
-        if(pedido.Status == StatusPedido.Finalizado)throw new BusinessLogicException("O pedido já está finalizado.");
+            pedidos = [ pedido ];
+        }
+        else if(mesaId.HasValue)
+        {
+            var mesaExiste = await _context.Mesas.AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
 
-        if(pedido.Status != StatusPedido.Enviado)throw new BusinessLogicException("Somente pedidos enviados podem ser finalizados.");
+            if(!mesaExiste)
+                throw new BusinessLogicException("Mesa não encontrada.");
 
-        if(!pedido.Itens.Any())throw new BusinessLogicException("Não é possível finalizar um pedido sem itens.");
+            pedidos = await _context.Pedidos
+                .Include(x => x.Itens)
+                .ThenInclude(x => x.Produto)
+                .Where(x => x.MesaId == mesaId && x.LojaId == lojaId &&
+                            x.Status != StatusPedido.Finalizado &&
+                            x.Status != StatusPedido.Cancelado)
+                .OrderBy(x => x.DataPedidoHora)
+                .ToListAsync();
 
-        
-        pedido.Status = StatusPedido.Finalizado;
-        await VerificarLiberacaoMesaAsync(pedido);
-        await _estoqueServices.BaixaEstoqueProduto(pedido);
+            if(!pedidos.Any())
+                throw new BusinessLogicException("Não existem pedidos ativos para esta mesa.");
+        }
+        else
+        {
+            throw new BusinessLogicException("Informe o pedido ou a mesa para iniciar o fechamento.");
+        }
+
+        foreach(var pedido in pedidos)
+        {
+            if(!pedido.Itens.Any())
+                throw new BusinessLogicException($"O pedido {pedido.Id} não possui itens.");
+
+            if(pedido.Status != StatusPedido.Pronto && pedido.Status != StatusPedido.AguardandoPagamento)
+                throw new BusinessLogicException($"O pedido {pedido.Id} ainda não está pronto para fechamento.");
+
+            pedido.Status = StatusPedido.AguardandoPagamento;
+        }
+
         await _context.SaveChangesAsync();
-        return await BuscarPorIdAsync(pedidoId,lojaId);
+
+        return pedidos.Select(MapearResponse).ToList();
     }
 
-    // 10. BUSCAR PEDIDO POR ID
-    public async Task<PedidoResponse> BuscarPorIdAsync(int pedidoId,int lojaId) {
+    public async Task<PedidoResponse> BuscarPorIdAsync(int pedidoId, int lojaId) {
         var pedido = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
-            .FirstOrDefaultAsync(x =>
-                x.Id == pedidoId &&
-                x.LojaId == lojaId);
+            .FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
 
-        if(pedido == null)throw new BusinessLogicException("Pedido não encontrado.");
+        if(pedido == null)
+            throw new BusinessLogicException("Pedido não encontrado.");
 
         return MapearResponse(pedido);
     }
 
-    // 11. LISTAR PEDIDOS DA MESA
-    public async Task<List<PedidoResponse>> ListarPorMesaAsync(int mesaId,int lojaId) {
-        var mesaExiste = await _context.Mesas
-            .AnyAsync(x =>
-                x.Id == mesaId &&
-                x.LojaId == lojaId);
+    public async Task<List<PedidoResponse>> ListarPorMesaAsync(int mesaId, int lojaId) {
+        var mesaExiste = await _context.Mesas.AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
 
-        if(!mesaExiste)throw new BusinessLogicException("Mesa não encontrada.");
+        if(!mesaExiste)
+            throw new BusinessLogicException("Mesa não encontrada.");
 
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
-            .Where(x =>
-                x.MesaId == mesaId &&
-                x.LojaId == lojaId)
+            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId)
             .OrderBy(x => x.DataPedidoHora)
             .ToListAsync();
 
         return pedidos.Select(MapearResponse).ToList();
     }
 
-    // 12. LISTAR PEDIDOS
-    public async Task<List<PedidoResponse>> ListarAsync(
-        int lojaId) {
+    public async Task<List<PedidoResponse>> ListarAsync(int lojaId) {
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
@@ -320,172 +344,120 @@ public class PedidoService {
         return pedidos.Select(MapearResponse).ToList();
     }
 
-    // 13. LISTAR POR STATUS
-    public async Task<List<PedidoResponse>> ListarPorStatusAsync(int lojaId,StatusPedido status) {
+    public async Task<List<PedidoResponse>> ListarPorStatusAsync(int lojaId, StatusPedido status) {
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
-            .Where(x =>
-                x.LojaId == lojaId &&
-                x.Status == status)
+            .Where(x => x.LojaId == lojaId && x.Status == status)
             .OrderBy(x => x.DataPedidoHora)
             .ToListAsync();
 
-        return pedidos
-            .Select(MapearResponse)
-            .ToList();
+        return pedidos.Select(MapearResponse).ToList();
     }
 
-    // 14. LISTAR PEDIDOS ABERTOS DA MESA
-    public async Task<List<PedidoResponse>> ListarPedidosAbertosMesaAsync(int mesaId,int lojaId) {
+    public async Task<List<PedidoResponse>> ListarPedidosAbertosMesaAsync(int mesaId, int lojaId) {
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
-            .Where(x =>
-                x.MesaId == mesaId &&
-                x.LojaId == lojaId &&
-                x.Status == StatusPedido.Aberto)
+            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status == StatusPedido.Aberto)
             .OrderBy(x => x.DataPedidoHora)
             .ToListAsync();
 
-        return pedidos
-            .Select(MapearResponse)
-            .ToList();
+        return pedidos.Select(MapearResponse).ToList();
     }
 
-    // 15. LISTAR PEDIDOS ATIVOS DA MESA
-    public async Task<List<PedidoResponse>> ListarPedidosAtivosMesaAsync(int mesaId,int lojaId) {
+    public async Task<List<PedidoResponse>> ListarPedidosAtivosMesaAsync(int mesaId, int lojaId) {
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
-            .Where(x =>
-                x.MesaId == mesaId &&
-                x.LojaId == lojaId &&
-                x.Status != StatusPedido.Finalizado &&
-                x.Status != StatusPedido.Cancelado)
+            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado)
             .OrderBy(x => x.DataPedidoHora)
             .ToListAsync();
 
-        return pedidos
-            .Select(MapearResponse)
-            .ToList();
+        return pedidos.Select(MapearResponse).ToList();
     }
 
-    // 16. TOTAL DOS PEDIDOS DA MESA
-    public async Task<decimal> CalcularTotalMesaAsync(int mesaId,int lojaId) {
-        var mesaExiste = await _context.Mesas
-            .AnyAsync(x =>
-                x.Id == mesaId &&
-                x.LojaId == lojaId);
+    public async Task<decimal> CalcularTotalMesaAsync(int mesaId, int lojaId) {
+        var mesaExiste = await _context.Mesas.AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
 
         if(!mesaExiste)
-            throw new BusinessLogicException(
-                "Mesa não encontrada.");
+            throw new BusinessLogicException("Mesa não encontrada.");
 
         return await _context.Pedidos
-            .Where(x =>
-                x.MesaId == mesaId &&
-                x.LojaId == lojaId &&
-                x.Status != StatusPedido.Cancelado)
+            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status != StatusPedido.Cancelado)
             .SumAsync(x => x.Total);
     }
 
-    // 17. TOTAL DOS PEDIDOS ATIVOS DA MESA
-    public async Task<decimal> CalcularTotalMesaAtivaAsync(int mesaId,int lojaId) {
-        var mesaExiste = await _context.Mesas
-            .AnyAsync(x =>
-                x.Id == mesaId &&
-                x.LojaId == lojaId);
+    public async Task<decimal> CalcularTotalMesaAtivaAsync(int mesaId, int lojaId) {
+        var mesaExiste = await _context.Mesas.AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
 
         if(!mesaExiste)
-            throw new BusinessLogicException(
-                "Mesa não encontrada.");
+            throw new BusinessLogicException("Mesa não encontrada.");
 
         return await _context.Pedidos
-            .Where(x =>
-                x.MesaId == mesaId &&
-                x.LojaId == lojaId &&
-                x.Status != StatusPedido.Finalizado &&
-                x.Status != StatusPedido.Cancelado)
+            .Where(x => x.MesaId == mesaId && x.LojaId == lojaId && x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado)
             .SumAsync(x => x.Total);
     }
 
-    // 18. TOTAL DOS PEDIDOS DO CLIENTE
-    public async Task<decimal> CalcularTotalClienteAsync(int clienteId,int lojaId) {
-        var clienteExiste = await _context.Clientes
-            .AnyAsync(x =>
-                x.Id == clienteId &&
-                x.LojaId == lojaId);
+    public async Task<decimal> CalcularTotalClienteAsync(int clienteId, int lojaId) {
+        var clienteExiste = await _context.Clientes.AnyAsync(x => x.Id == clienteId && x.LojaId == lojaId);
 
         if(!clienteExiste)
-            throw new BusinessLogicException(
-                "Cliente não encontrado.");
+            throw new BusinessLogicException("Cliente não encontrado.");
 
         return await _context.Pedidos
-            .Where(x =>
-                x.ClienteId == clienteId &&
-                x.LojaId == lojaId &&
-                x.Status != StatusPedido.Cancelado)
+            .Where(x => x.ClienteId == clienteId && x.LojaId == lojaId && x.Status != StatusPedido.Cancelado)
             .SumAsync(x => x.Total);
     }
 
-    // 19. TOTAL DOS PEDIDOS ATIVOS DO CLIENTE
-    public async Task<decimal> CalcularTotalClienteAtivoAsync(int clienteId,int lojaId) {
-        var clienteExiste = await _context.Clientes
-            .AnyAsync(x =>
-                x.Id == clienteId &&
-                x.LojaId == lojaId);
+    public async Task<decimal> CalcularTotalClienteAtivoAsync(int clienteId, int lojaId) {
+        var clienteExiste = await _context.Clientes.AnyAsync(x => x.Id == clienteId && x.LojaId == lojaId);
 
-        if(!clienteExiste)throw new BusinessLogicException("Cliente não encontrado.");
+        if(!clienteExiste)
+            throw new BusinessLogicException("Cliente não encontrado.");
 
         return await _context.Pedidos
-            .Where(x =>
-                x.ClienteId == clienteId &&
-                x.LojaId == lojaId &&
-                x.Status != StatusPedido.Finalizado &&
-                x.Status != StatusPedido.Cancelado)
+            .Where(x => x.ClienteId == clienteId && x.LojaId == lojaId && x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado)
             .SumAsync(x => x.Total);
     }
 
-    // 20. BUSCAR PEDIDO
-    private async Task<Pedido> BuscarPedidoAsync(int pedidoId,int lojaId) {
+    private async Task<Pedido> BuscarPedidoAsync(int pedidoId, int lojaId) {
         var pedido = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(x => x.Produto)
-            .FirstOrDefaultAsync(x =>
-                x.Id == pedidoId &&
-                x.LojaId == lojaId);
+            .FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
 
-        if(pedido == null)throw new BusinessLogicException("Pedido não encontrado.");
+        if(pedido == null)
+            throw new BusinessLogicException("Pedido não encontrado.");
+
         return pedido;
     }
 
-    // 21. VALIDAR PEDIDO ABERTO
-    private static void ValidarPedidoAberto(
-        Pedido pedido) {
-        if(pedido.Status != StatusPedido.Aberto)throw new BusinessLogicException(
-                "Essa operação só pode ser realizada em um pedido aberto.");
+    private static void ValidarPedidoAberto(Pedido pedido) {
+        if(pedido.Status != StatusPedido.Aberto)
+            throw new BusinessLogicException("Essa operação só pode ser realizada em um pedido aberto.");
     }
 
-    // 22. ADICIONAR ITEM
-    private static void AdicionarItemAoPedido(Pedido pedido,ItemPedidoRequest itemRequest,List<Produto> produtos) {
-        if(itemRequest.Quantidade <= 0)throw new BusinessLogicException("A quantidade do produto deve ser maior que zero.");
+    private static void AdicionarItemAoPedido(Pedido pedido, ItemPedidoRequest itemRequest, List<Produto> produtos) {
+        if(itemRequest.Quantidade <= 0)
+            throw new BusinessLogicException("A quantidade do produto deve ser maior que zero.");
 
-        var produto = produtos
-            .FirstOrDefault(x =>x.Id == itemRequest.ProdutoId);
+        var produto = produtos.FirstOrDefault(x => x.Id == itemRequest.ProdutoId);
 
-        if(produto == null)throw new BusinessLogicException("Produto não encontrado.");
+        if(produto == null)
+            throw new BusinessLogicException("Produto não encontrado.");
 
         var valorUnitario = produto.Preco;
         var subtotalItem = valorUnitario * itemRequest.Quantidade;
-
         var desconto = itemRequest.Desconto;
 
-        if(desconto < 0)desconto = 0;
+        if(desconto < 0)
+            desconto = 0;
 
-        if(desconto > subtotalItem)desconto = subtotalItem;
+        if(desconto > subtotalItem)
+            desconto = subtotalItem;
 
-        var totalItem =subtotalItem - desconto;
+        var totalItem = subtotalItem - desconto;
 
         pedido.Itens.Add(new ItemPedido
         {
@@ -498,126 +470,77 @@ public class PedidoService {
         });
     }
 
-    // 23. RECALCULAR PEDIDO
     private static void RecalcularPedido(Pedido pedido) {
         pedido.Subtotal = pedido.Itens.Sum(x => x.ValorUnitario * x.Quantidade);
-
         pedido.Desconto = pedido.Itens.Sum(x => x.Desconto);
+        pedido.Total = pedido.Subtotal - pedido.Desconto + pedido.TaxaServico + pedido.TaxaEntrega;
 
-        pedido.Total =
-            pedido.Subtotal
-            - pedido.Desconto
-            + pedido.TaxaServico
-            + pedido.TaxaEntrega;
-
-        if(pedido.Total < 0)pedido.Total = 0;
+        if(pedido.Total < 0)
+            pedido.Total = 0;
     }
 
-    // 24. CALCULAR TAXA DE ENTREGA
-    private async Task<(decimal Taxa, decimal DistanciaKm)>
-        CalcularTaxaEntregaAsync(int lojaId,Cliente cliente,ConfiguracaoLoja configuracao) {
-        if(!configuracao.CobraTaxaEntrega)return (0, 0);
+    private async Task<(decimal Taxa, decimal DistanciaKm)> CalcularTaxaEntregaAsync(int lojaId, Cliente cliente, ConfiguracaoLoja configuracao) {
+        if(!configuracao.CobraTaxaEntrega)
+            return (0, 0);
 
-        // TAXA FIXA
         if(configuracao.TipoTaxaEntrega == TipoTaxaEntrega.Fixa)
         {
             var taxaFixa = configuracao.TaxaEntrega ?? 0;
-
-            return (
-                Math.Round(taxaFixa, 2),
-                0
-            );
+            return (Math.Round(taxaFixa, 2), 0);
         }
 
-        // TAXA POR DISTÂNCIA
-        if(configuracao.TipoTaxaEntrega ==
-           TipoTaxaEntrega.PorDistancia)
+        if(configuracao.TipoTaxaEntrega == TipoTaxaEntrega.PorDistancia)
         {
-            var loja = await _context.Lojas
-                .FirstOrDefaultAsync(x =>
-                    x.Id == lojaId);
+            var loja = await _context.Lojas.FirstOrDefaultAsync(x => x.Id == lojaId);
 
             if(loja == null)
-                throw new BusinessLogicException(
-                    "Loja não encontrada.");
+                throw new BusinessLogicException("Loja não encontrada.");
 
-            if(!loja.Latitude.HasValue ||
-               !loja.Longitude.HasValue)
-            {
-                throw new BusinessLogicException(
-                    "A localização da loja não está cadastrada.");
-            }
+            if(!loja.Latitude.HasValue || !loja.Longitude.HasValue)
+                throw new BusinessLogicException("A localização da loja não está cadastrada.");
 
-            if(!cliente.Latitude.HasValue ||
-               !cliente.Longitude.HasValue)
-            {
-                throw new BusinessLogicException(
-                    "A localização do cliente não está cadastrada.");
-            }
+            if(!cliente.Latitude.HasValue || !cliente.Longitude.HasValue)
+                throw new BusinessLogicException("A localização do cliente não está cadastrada.");
 
-            var distanciaKm =
-                await _openRouteServices.CalcularDistanciaAsync(
-                    loja.Latitude.Value,
-                    loja.Longitude.Value,
-                    cliente.Latitude.Value,
-                    cliente.Longitude.Value);
+            var distanciaKm = await _openRouteServices.CalcularDistanciaAsync(
+                loja.Latitude.Value,
+                loja.Longitude.Value,
+                cliente.Latitude.Value,
+                cliente.Longitude.Value);
 
-            if(configuracao.DistanciaMaximaEntregaKm.HasValue &&
-               distanciaKm >
-               configuracao.DistanciaMaximaEntregaKm.Value)
-            {
-                throw new BusinessLogicException(
-                    $"O endereço está fora da área de entrega. " +
-                    $"Distância máxima: " +
-                    $"{configuracao.DistanciaMaximaEntregaKm.Value:N2} km.");
-            }
+            if(configuracao.DistanciaMaximaEntregaKm.HasValue && distanciaKm > configuracao.DistanciaMaximaEntregaKm.Value)
+                throw new BusinessLogicException($"O endereço está fora da área de entrega. Distância máxima: {configuracao.DistanciaMaximaEntregaKm.Value:N2} km.");
 
-            var taxaBase =
-                configuracao.TaxaBaseEntrega ?? 0;
+            var taxaBase = configuracao.TaxaBaseEntrega ?? 0;
+            var valorPorKm = configuracao.ValorPorKm ?? 0;
+            var taxa = taxaBase + distanciaKm * valorPorKm;
 
-            var valorPorKm =
-                configuracao.ValorPorKm ?? 0;
-
-            var taxa =
-                taxaBase +
-                (distanciaKm * valorPorKm);
-
-            return (
-                Math.Round((decimal)taxa, 2),
-                Math.Round((decimal)distanciaKm, 2)
-            );
+            return (Math.Round((decimal)taxa, 2), Math.Round((decimal)distanciaKm, 2));
         }
 
-        throw new BusinessLogicException(
-            "Tipo de taxa de entrega inválido.");
+        throw new BusinessLogicException("Tipo de taxa de entrega inválido.");
     }
 
-    // 25. LIBERAR MESA
-    private async Task VerificarLiberacaoMesaAsync(
-        Pedido pedido) {
+    private async Task VerificarLiberacaoMesaAsync(Pedido pedido) {
         if(!pedido.MesaId.HasValue)
             return;
 
-        var existeOutroPedidoAtivo =
-            await _context.Pedidos.AnyAsync(x =>
-                x.Id != pedido.Id &&
-                x.MesaId == pedido.MesaId &&
-                x.LojaId == pedido.LojaId &&
-                x.Status != StatusPedido.Finalizado &&
-                x.Status != StatusPedido.Cancelado);
+        var existeOutroPedidoAtivo = await _context.Pedidos.AnyAsync(x =>
+            x.Id != pedido.Id &&
+            x.MesaId == pedido.MesaId &&
+            x.LojaId == pedido.LojaId &&
+            x.Status != StatusPedido.Finalizado &&
+            x.Status != StatusPedido.Cancelado);
 
         if(existeOutroPedidoAtivo)
             return;
 
-        var mesa = await _context.Mesas
-            .FirstOrDefaultAsync(x =>
-                x.Id == pedido.MesaId.Value &&
-                x.LojaId == pedido.LojaId);
+        var mesa = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == pedido.MesaId.Value && x.LojaId == pedido.LojaId);
 
-        if(mesa != null) mesa.StatusMesa = StatusMesa.Livre;
+        if(mesa != null)
+            mesa.StatusMesa = StatusMesa.Livre;
     }
 
-    // 26. MONTAR PEDIDO PARA PRODUÇÃO
     private static PedidoProducaoResponse MontarPedidoProducao(Pedido pedido) {
         return new PedidoProducaoResponse
         {
@@ -627,25 +550,20 @@ public class PedidoService {
             TipoPedido = pedido.TipoPedido,
             DataPedidoHora = pedido.DataPedidoHora,
             Observacao = pedido.Observacao,
-
             Itens = pedido.Itens
-                .Where(p =>
-                    p.Produto != null &&
-                    p.Produto.EnviaParaProducao)
-                .Select(x =>
-                    new ItemPedidoProducaoResponse
-                    {
-                        ItemPedidoId = x.Id,
-                        ProdutoId = x.ProdutoId,
-                        Quantidade = x.Quantidade,
-                        Observacao = x.Observacao,
-                        NomeProduto = x.Produto.Nome
-                    })
+                .Where(p => p.Produto != null && p.Produto.EnviaParaProducao)
+                .Select(x => new ItemPedidoProducaoResponse
+                {
+                    ItemPedidoId = x.Id,
+                    ProdutoId = x.ProdutoId,
+                    Quantidade = x.Quantidade,
+                    Observacao = x.Observacao,
+                    NomeProduto = x.Produto.Nome
+                })
                 .ToList()
         };
     }
 
-    // 27. MAPEAR RESPONSE
     private static PedidoResponse MapearResponse(Pedido pedido) {
         return new PedidoResponse
         {
@@ -658,27 +576,23 @@ public class PedidoService {
             TipoPedido = pedido.TipoPedido,
             DataPedidoHora = pedido.DataPedidoHora,
             Observacao = pedido.Observacao,
-
             Subtotal = pedido.Subtotal,
             Desconto = pedido.Desconto,
             TaxaServico = pedido.TaxaServico,
             TaxaEntrega = pedido.TaxaEntrega,
             Total = pedido.Total,
-
-            Itens = pedido.Itens
-                .Select(x =>
-                    new ItemPedidoResponse
-                    {
-                        Id = x.Id,
-                        ProdutoId = x.ProdutoId,
-                        Quantidade = x.Quantidade,
-                        ValorUnitario = x.ValorUnitario,
-                        Desconto = x.Desconto,
-                        Total = x.Total,
-                        Observacao = x.Observacao,
-                        Nome = x.Produto.Nome
-                    })
-                .ToList()
+            Itens = pedido.Itens.Select(x => new ItemPedidoResponse
+            {
+                Id = x.Id,
+                ProdutoId = x.ProdutoId,
+                Quantidade = x.Quantidade,
+                ValorUnitario = x.ValorUnitario,
+                Desconto = x.Desconto,
+                Total = x.Total,
+                Observacao = x.Observacao,
+                Nome = x.Produto.Nome
+            }).ToList()
         };
     }
 }
+

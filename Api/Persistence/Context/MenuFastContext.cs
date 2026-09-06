@@ -48,6 +48,8 @@ public class MenuFastContext : DbContext {
     public DbSet<EstoqueProduto> EstoqueProdutos { get; set; }
     public DbSet<MovimentacaoEstoque> MovimentoEstoques { get; set; }
     public DbSet<TokenRedefinicaoSenha> TokenRedefinicaoSenhas { get; set; }
+    public DbSet<PagamentoVenda> PagamentosVenda { get; set; }
+    public DbSet<Venda> Vendas { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 
