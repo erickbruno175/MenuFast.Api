@@ -38,7 +38,9 @@ public class CaixaService {
             DataAbertura = DateTime.Now,
             FuncioanrioId = funcionarioId,
             Terminal = Environment.MachineName,
-            IpTerminal = _applicationContextServices.Ip()
+            IpTerminal = _applicationContextServices.Ip(),
+ 
+
         };
 
         _contexto.Caixas.Add(caixa);
@@ -50,7 +52,7 @@ public class CaixaService {
 
 
     public async Task<Caixa?> BuscarCaixaAbertoAsync(int lojaId) {
-        return await _contexto.Caixas.Include(x => x.Movimentos).FirstOrDefaultAsync(x =>x.LojaId == lojaId &&x.Aberto);
+        return await _contexto.Caixas.Include(x => x.Movimentos).FirstOrDefaultAsync(x =>x.LojaId == lojaId && x.Aberto);
     }
 
 
