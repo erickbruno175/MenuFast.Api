@@ -13,6 +13,8 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
         public StatusPagamento StatusPagamento { get; set; }
         public ICollection<PagamentoVenda> Pagamentos { get; set; } = [ ];
         public ICollection<Pedido.Pedido> Pedidos { get; set; } = [ ];
+
+     
     }
 }
 

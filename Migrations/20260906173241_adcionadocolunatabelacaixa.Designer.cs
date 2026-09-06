@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuFast.Api.Migrations
 {
     [DbContext(typeof(MenuFastContext))]
-    partial class MenuFastContextModelSnapshot : ModelSnapshot
+    [Migration("20260906173241_adcionadocolunatabelacaixa")]
+    partial class adcionadocolunatabelacaixa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace MenuFast.Api.Api.Persistence.Context;
 
 public class MenuFastContext : DbContext {
+
     public MenuFastContext(DbContextOptions<MenuFastContext> options)
         : base(options) {
     }
@@ -50,6 +51,7 @@ public class MenuFastContext : DbContext {
     public DbSet<TokenRedefinicaoSenha> TokenRedefinicaoSenhas { get; set; }
     public DbSet<PagamentoVenda> PagamentosVenda { get; set; }
     public DbSet<Venda> Vendas { get; set; }
+    public DbSet<ComissaoVenda> ComissoesVenda { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 

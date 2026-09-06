@@ -1,5 +1,5 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
-using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Application.Services.MesaServices;
 using MenuFast.Api.Api.Domain.Enum;
 using Microsoft.AspNetCore.Authorization;
@@ -11,14 +11,14 @@ namespace MenuFast.Api.Api.Controllers {
     [Authorize]
     public class MesaController : ControllerBase {
         private readonly MesaService _mesaService;
-        private readonly UsuarioContextService _usuarioContext;
+        private readonly ApplicationContextService _applicationContext;
 
         public MesaController(
             MesaService mesaService,
-            UsuarioContextService usuarioContextService) {
+            ApplicationContextService applicationContextService) {
 
             _mesaService = mesaService;
-            _usuarioContext = usuarioContextService;
+            _applicationContext = applicationContextService;
         }
 
         [HttpPost]
@@ -26,7 +26,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CadastrarMesa([FromBody] MesaRequest request) {
-            request.LojaId = _usuarioContext.LojaId()!.Value;
+            request.LojaId = _applicationContext.LojaId()!.Value;
             var mesa = await _mesaService.CadastrarMesa(request);
             return Ok(new{mensagem = "Mesa cadastrada com sucesso.",mesa});
         }
@@ -38,7 +38,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> AtualizarMesa(int id,[FromBody] MesaRequest request) {
 
-            request.LojaId = _usuarioContext.LojaId()!.Value;
+            request.LojaId = _applicationContext.LojaId()!.Value;
             var mesa = await _mesaService.AtualizarMesa(id,request);
             if(mesa == null)return NotFound(new{mensagem = "Mesa não encontrada."});
 
@@ -49,7 +49,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Route("listar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> ListarMesas() {
-            var mesas = await _mesaService.ListarMesas(_usuarioContext.LojaId().Value);
+            var mesas = await _mesaService.ListarMesas(_applicationContext.LojaId().Value);
             return Ok(mesas);
         }
 

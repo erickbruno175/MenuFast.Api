@@ -85,6 +85,30 @@ public class VendaService {
             foreach(var pedido in pedidos)
             {
                 await _estoqueServices.BaixaEstoqueProduto(pedido);
+
+                if(pedido.FuncionarioId.HasValue)
+                {
+                    var funcionario = await _context.Funcionarios
+                         .Include(l=> l.Loja)
+                         .ThenInclude(c=> c.Configuracao)
+                        .FirstOrDefaultAsync(f=> f.Id == pedido.FuncionarioId.Value && f.LojaId == lojaId && f.PerfilId == (int) PerfilUsuario.Garcom);
+
+                    if(funcionario != null && funcionario.PercentualComissao >0) {
+                        var valorComissao = pedido.Total * funcionario.PercentualComissao / funcionario.Loja?.Configuracao?.PercentualTaxaServico;
+                        var comissao = new ComissaoVenda
+                        {
+                            FuncionarioId = funcionario.Id,
+                            PedidoId = pedido.Id,
+                            ValorVenda = pedido.Total,
+                            PercentualComissao = funcionario.PercentualComissao,
+                            ValorComissao = valorComissao!.Value,
+                            DataVenda = DateTime.Now,
+                            StatusComissao = StatusComissao.Pendente
+                        };
+
+                        _context.ComissoesVenda.Add(comissao);
+                    }
+                }
                 pedido.Status = StatusPedido.Finalizado;
             }
 

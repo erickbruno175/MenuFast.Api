@@ -160,6 +160,75 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
             await _menuFastContext.SaveChangesAsync();
             return ConverterParaDetalhe(produto);
         }
+
+        public async Task<List<DetalheProdutosResponse>> CadastrarProdutosEmMassa(List<ProdutoRequest> requests) {
+            if(requests == null || !requests.Any())
+                throw new BusinessLogicException("Informe pelo menos um produto.");
+
+            var agora = DateTime.UtcNow;
+            var produtos = new List<Produto>();
+
+            foreach(var request in requests)
+            {
+                var nome = request.Nome.Trim();
+
+                var jaExiste = await _menuFastContext.Produtos.AnyAsync(p =>
+                    p.LojaId == request.LojaId &&
+                    p.Nome.Trim().ToUpper() == nome.ToUpper() &&
+                    p.Tamanho == request.Tamanho);
+
+                if(jaExiste)
+                    throw new BusinessLogicException($"O produto '{nome}' já existe.");
+
+                var produto = new Produto
+                {
+                    CategoriaProdutoId = request.CategoriaProdutoId,
+                    LojaId = request.LojaId,
+                    FotoProduto = request.FotoProduto,
+                    Preco = request.Preco,
+                    Nome = nome,
+                    DataCadastro = agora,
+                    Codigo = UtilHelper.GerarCodigoProduto(_menuFastContext),
+                    Descricao = request.Descricao,
+                    Ativo = request.Ativo,
+                    ControlaEstoque = request.ControlaEstoque,
+                    Tamanho = request.Tamanho,
+                    EnviaParaProducao = request.EnviaParaProducao
+                };
+
+                if(request.ControlaEstoque)
+                {
+                    var quantidadeInicial = request.QuantidadeEstoque ?? 0;
+
+                    var estoque = new EstoqueProduto
+                    {
+                        Quantidade = quantidadeInicial,
+                        EstoqueMinimo = request.EstoqueMinimo ?? 0,
+                        DataCadastro = agora,
+                        DataAtualizacao = agora
+                    };
+
+                    estoque.Movimentacoe.Add(new MovimentacaoEstoque
+                    {
+                        Tipo = TipoMovimentacaoEstoque.EntradaInicial,
+                        Quantidade = quantidadeInicial,
+                        QuantidadeAnterior = 0,
+                        QuantidadeAtual = quantidadeInicial,
+                        Observacao = "Estoque inicial",
+                        DataCadastro = agora
+                    });
+
+                    produto.EstoqueProduto = estoque;
+                }
+
+                produtos.Add(produto);
+            }
+
+            await _menuFastContext.Produtos.AddRangeAsync(produtos);
+            await _menuFastContext.SaveChangesAsync();
+
+            return produtos.Select(ConverterParaDetalhe).ToList();
+        }
         public async Task<DetalheProdutosResponse> DetalharProduto(int idProduto) {
             var produto = await _menuFastContext.Produtos.AsNoTracking().FirstOrDefaultAsync(x => x.Id == idProduto);
 
@@ -259,7 +328,8 @@ namespace MenuFast.Api.Api.Application.Services.ProdutoServices {
                         p.Ativo &&
                         p.ControlaEstoque &&
                         p.EstoqueProduto != null &&
-                        p.EstoqueProduto.Quantidade <= p.EstoqueProduto.EstoqueMinimo)
+                        p.EstoqueProduto.Quantidade <= p.EstoqueProduto.EstoqueMinimo
+                        && !p.EnviaParaProducao)
                     .OrderBy(p => p.EstoqueProduto.Quantidade)
                     .ToListAsync();
 
