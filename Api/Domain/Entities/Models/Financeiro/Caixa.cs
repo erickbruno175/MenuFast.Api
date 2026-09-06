@@ -15,5 +15,7 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Financeiro {
         public ICollection<MovimentoCaixa> Movimentos { get; set; } = [ ];
         public int FuncioanrioId { get; set; }
         public Funcionario.Funcionario Funcionario{  get; set; }
+        public string? Terminal { get; set; }
+        public string? IpTerminal { get; set; }
     }
 }

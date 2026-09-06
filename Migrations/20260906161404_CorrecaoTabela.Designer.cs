@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MenuFast.Api.Migrations
 {
     [DbContext(typeof(MenuFastContext))]
-    partial class MenuFastContextModelSnapshot : ModelSnapshot
+    [Migration("20260906161404_CorrecaoTabela")]
+    partial class CorrecaoTabela
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -610,11 +613,6 @@ namespace MenuFast.Api.Migrations
                         .HasColumnType("int")
                         .HasComment("Funcionário responsável pelo caixa.");
 
-                    b.Property<string>("IpTerminal")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasComment("Endereço IP do terminal onde o caixa foi aberto.");
-
                     b.Property<int>("LojaId")
                         .HasColumnType("int");
 
@@ -623,11 +621,6 @@ namespace MenuFast.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
                         .HasComment("Nome do caixa.");
-
-                    b.Property<string>("Terminal")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasComment("Nome do terminal onde o caixa foi aberto.");
 
                     b.Property<decimal>("ValorAbertura")
                         .HasPrecision(18, 2)

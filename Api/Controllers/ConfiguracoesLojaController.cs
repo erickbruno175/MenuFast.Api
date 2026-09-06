@@ -1,5 +1,5 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
-using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Application.Services.LojaConfiguracoes;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
@@ -12,11 +12,11 @@ namespace MenuFast.Api.Api.Controllers {
     [Route("api/configuracoes")]
     public class ConfiguracaoSistemaLojaController : ControllerBase {
         private readonly ConfiguracaoSistemaLojaServices _configuracaoSistemaLoja;
-        private readonly UsuarioContextService _usuarioContextService;
+        private readonly ApplicationContextService _applicationContextService;
         public ConfiguracaoSistemaLojaController(
-            ConfiguracaoSistemaLojaServices configuracaoSistemaLoja , UsuarioContextService usuarioContextService) {
+            ConfiguracaoSistemaLojaServices configuracaoSistemaLoja , ApplicationContextService applicationContextService) {
             _configuracaoSistemaLoja = configuracaoSistemaLoja;
-            _usuarioContextService = usuarioContextService;
+            _applicationContextService = applicationContextService;
         }
 
         [HttpPost]
@@ -95,7 +95,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> LembrarFinalizarCadastro() {
-            var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(_usuarioContextService.FuncionarioId().Value);
+            var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(_applicationContextService.FuncionarioId().Value);
             return Ok(lembrar);
         }
         [HttpGet]
@@ -105,12 +105,12 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ConsultarConfiguracoesLoja() {
        
-            if(!_usuarioContextService.LojaId().HasValue)
+            if(!_applicationContextService.LojaId().HasValue)
             {
                 return Unauthorized("Funcionario não identificado");
             }
 
-            var configuracoesLoja = await _configuracaoSistemaLoja.ConsultarConfiguracoesLoja(_usuarioContextService.LojaId()!.Value);
+            var configuracoesLoja = await _configuracaoSistemaLoja.ConsultarConfiguracoesLoja(_applicationContextService.LojaId()!.Value);
             return Ok(configuracoesLoja);
         }
             

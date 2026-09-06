@@ -1,6 +1,7 @@
+using MenuFast.Api.Api.Application.Services.CaixaServices;
 using MenuFast.Api.Api.Application.Services.CategoriaServices;
 using MenuFast.Api.Api.Application.Services.ClienteServices;
-using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.EstoqueServices;
 using MenuFast.Api.Api.Application.Services.KdsServices;
@@ -131,7 +132,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 builder.Services.AddScoped<JwtService>();
-builder.Services.AddScoped<UsuarioContextService>();
+builder.Services.AddScoped<ApplicationContextService>();
 builder.Services.AddScoped<SegurancaService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<RedisService>();
@@ -147,6 +148,7 @@ builder.Services.AddScoped<KdsService>();
 builder.Services.AddHttpClient<OpenRouteServices>();
 builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
 builder.Services.AddScoped<EstoqueServices>();
+builder.Services.AddScoped<CaixaService>();
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(

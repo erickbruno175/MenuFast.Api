@@ -1,6 +1,6 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
-using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Application.Services.Email;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +13,11 @@ namespace MenuFast.Api.Api.Controllers {
     public class SegurancaController : ControllerBase {
 
         private readonly SegurancaService _service;
-        private readonly UsuarioContextService _usuarioContextService;
+        private readonly ApplicationContextService _applicationContextService;
         private readonly MenuService _menuService;
-        public SegurancaController(SegurancaService service , UsuarioContextService usuarioContextService , MenuService menuService) {
+        public SegurancaController(SegurancaService service , ApplicationContextService applicationContextService , MenuService menuService) {
             _service = service;
-            _usuarioContextService = usuarioContextService;
+            _applicationContextService = applicationContextService;
             _menuService = menuService;
         }
 
@@ -48,7 +48,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [Authorize]
         public async Task<OkResult> AlterarSenha([FromBody] AlterarSenhaRequest request) {
-            await _service.AlterarSenhaAsync(_usuarioContextService.FuncionarioId().Value,request.NovaSenha,request.ConfirmarSenha);
+            await _service.AlterarSenhaAsync(_applicationContextService.FuncionarioId().Value,request.NovaSenha,request.ConfirmarSenha);
             return Ok();
         }
 
@@ -103,7 +103,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Route("menu/permissoes")]
         [Authorize]
         public async Task<IActionResult> ConsultarMenuPermisseos() {
-            var funcionarioId = _usuarioContextService.FuncionarioId();
+            var funcionarioId = _applicationContextService.FuncionarioId();
             if(!funcionarioId.HasValue)return Unauthorized();
             var menu = await _menuService.ObterMenuAsync(funcionarioId.Value);
 

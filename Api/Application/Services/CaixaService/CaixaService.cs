@@ -1,4 +1,5 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
+﻿using MenuFast.Api.Api.Application.Services.ContextApplication;
+using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Enum;
 using MenuFast.Api.Api.Persistence.Context;
@@ -8,14 +9,16 @@ namespace MenuFast.Api.Api.Application.Services.CaixaServices;
 
 public class CaixaService {
     private readonly MenuFastContext _contexto;
+    private readonly ApplicationContextService _applicationContextServices;
 
-    public CaixaService(MenuFastContext contexto) {
+    public CaixaService(MenuFastContext contexto, ApplicationContextService applicationContextServices) {
         _contexto = contexto;
+        _applicationContextServices = applicationContextServices;
     }
 
   
     public async Task<Caixa> AbrirCaixaAsync(int lojaId,int funcionarioId,string nome = "Caixa") {
-        var caixaAberto = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId &&x.Aberto);
+        var caixaAberto = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId && x.Aberto);
 
         if(caixaAberto != null)
             throw new Exception("Já existe um caixa aberto para esta loja.");
@@ -25,16 +28,17 @@ public class CaixaService {
 
         if(configuracao == null)
             throw new Exception("Configuração da loja não encontrada.");
-
         var caixa = new Caixa
         {
             LojaId = lojaId,
             Nome = nome,
             Aberto = true,
-            ValorAbertura = configuracao.ValorAberturaCaixa!.Value,
+            ValorAbertura = configuracao.ValorAberturaCaixa ?? 0,
             ValorFechamento = 0,
             DataAbertura = DateTime.Now,
-            FuncioanrioId = funcionarioId
+            FuncioanrioId = funcionarioId,
+            Terminal = Environment.MachineName,
+            IpTerminal = _applicationContextServices.Ip()
         };
 
         _contexto.Caixas.Add(caixa);

@@ -1,4 +1,5 @@
-﻿using MenuFast.Api.Api.Domain.Entities.Models.Loja;
+﻿using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
+using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Enum;
 
@@ -25,4 +26,6 @@ public class Pedido {
     public ICollection<ItemPedido> Itens { get; set; } = [ ];
     public decimal TaxaServico { get; internal set; }
     public decimal TaxaEntrega { get; internal set; }
+    public int? VendaId { get; set; }
+    public Venda? Venda { get; set; }
 }

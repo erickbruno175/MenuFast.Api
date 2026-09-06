@@ -1,7 +1,7 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.CategoriaServices;
-using MenuFast.Api.Api.Application.Services.ContextUser;
+using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,10 +14,10 @@ namespace MenuFast.Api.Api.Controllers {
     public class CategoriaController : ControllerBase {
 
         private readonly CategoriaService _categoriaService;
-        private readonly UsuarioContextService _usuarioContextService;
-        public CategoriaController(CategoriaService categoriaService, UsuarioContextService usuarioContextService) {
+        private readonly ApplicationContextService _contextApplication;
+        public CategoriaController(CategoriaService categoriaService, ApplicationContextService contextApplicationService) {
             _categoriaService = categoriaService;
-            _usuarioContextService = usuarioContextService;
+            _contextApplication = contextApplicationService;
         }
 
         [HttpPost]
@@ -46,7 +46,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(CategoriaResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> ListarCategorias() {
-            return Ok(await _categoriaService.ListarCategorias(_usuarioContextService.LojaId()!.Value));
+            return Ok(await _categoriaService.ListarCategorias(_contextApplication.LojaId()!.Value));
         }
 
         [HttpDelete("deletar/{id}")]

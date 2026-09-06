@@ -18,7 +18,7 @@ public class EstoqueServices {
         {
             var pedidoProduto = await _context.Produtos
                 .Include(p => p.EstoqueProduto)
-                .FirstOrDefaultAsync(p => p.Id == item.ProdutoId && p.LojaId == pedido.LojaId);
+                .FirstOrDefaultAsync(p => p.Id == item.ProdutoId && !p.EnviaParaProducao && p.LojaId == pedido.LojaId );
 
             if(pedidoProduto == null)
                 throw new BusinessLogicException($"Produto {item.ProdutoId} não encontrado.");
