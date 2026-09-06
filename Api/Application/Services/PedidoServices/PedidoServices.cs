@@ -564,6 +564,32 @@ public class PedidoService {
         };
     }
 
+    public async Task TransferirPedidosMesaAsync(int mesaOrigemId, int mesaDestinoId, int lojaId) {
+        if(mesaOrigemId == mesaDestinoId)
+            throw new BusinessLogicException("A mesa de origem e destino não podem ser a mesma.");
+        var mesaOrigem = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == mesaOrigemId && x.LojaId == lojaId);
+        var mesaDestino = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == mesaDestinoId && x.LojaId == lojaId);
+        if(mesaOrigem == null)
+            throw new BusinessLogicException("Mesa de origem não encontrada.");
+        if(mesaDestino == null)
+            throw new BusinessLogicException("Mesa de destino não encontrada.");
+        var pedidosAtivos = await _context.Pedidos
+            .Where(x => x.MesaId == mesaOrigemId && x.LojaId == lojaId &&
+                        x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado)
+            .ToListAsync();
+        if(!pedidosAtivos.Any())
+            throw new BusinessLogicException("Não existem pedidos ativos na mesa de origem.");
+        foreach(var pedido in pedidosAtivos)
+            pedido.MesaId = mesaDestinoId;
+        mesaDestino.StatusMesa = StatusMesa.Ocupada;
+        var existeOutroPedidoAtivoNaOrigem = await _context.Pedidos.AnyAsync(x =>
+            x.MesaId == mesaOrigemId && x.LojaId == lojaId &&
+            x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado);
+        if(!existeOutroPedidoAtivoNaOrigem)
+            mesaOrigem.StatusMesa = StatusMesa.Livre;
+        await _context.SaveChangesAsync();
+    }
+
     private static PedidoResponse MapearResponse(Pedido pedido) {
         return new PedidoResponse
         {
