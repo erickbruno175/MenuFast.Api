@@ -13,6 +13,7 @@ using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
+using MenuFast.Api.Api.Application.Services.VendaService;
 using MenuFast.Api.Api.Hubs;
 using MenuFast.Api.Api.Mappings;
 using MenuFast.Api.Api.Middlewares;
@@ -145,10 +146,12 @@ builder.Services.AddScoped<MesaService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<KdsService>();
+builder.Services.AddScoped<MesaAtualizarHub>();
 builder.Services.AddHttpClient<OpenRouteServices>();
 builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
 builder.Services.AddScoped<EstoqueServices>();
 builder.Services.AddScoped<CaixaService>();
+builder.Services.AddScoped<VendaService>();
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(
@@ -177,7 +180,8 @@ app.UseSwaggerUI(options =>
         "/swagger/v1/swagger.json",
         "MenuFast API v1");
 });
-app.MapHub<KdsHub>("/hubs/kds");
+app.MapHub<KdsHub>("/chegar-pedido/kds");
+app.MapHub<MesaHub>("/atualizar-mesa");
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();

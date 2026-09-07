@@ -1,21 +1,25 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
+using MenuFast.Api.Api.Application.Services.MesaServices;
 using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 using MenuFast.Api.Api.Domain.Enum;
+using MenuFast.Api.Api.Hubs;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace MenuFast.Api.Api.Application.Services.VendaService;
 
 public class VendaService {
     private readonly MenuFastContext _context;
     private readonly EstoqueServices.EstoqueServices _estoqueServices;
-
-    public VendaService(MenuFastContext context, EstoqueServices.EstoqueServices estoqueServices) {
+    private readonly MesaAtualizarHub _mesaHub;
+    public VendaService(MenuFastContext context, EstoqueServices.EstoqueServices estoqueServices, MesaAtualizarHub mesaHub) {
         _context = context;
         _estoqueServices = estoqueServices;
+        _mesaHub = mesaHub;
     }
 
     public async Task<VendaResponse> FinalizarVendaAsync(int lojaId, ConfirmarPagamentoRequest request) {
@@ -58,7 +62,9 @@ public class VendaService {
                 Acrescimo = pedidos.Sum(x => x.TaxaServico + x.TaxaEntrega),
                 ValorTotal = valorTotal,
                 DataVenda = DateTime.Now,
-                StatusPagamento = StatusPagamento.Confirmado
+                StatusPagamento = StatusPagamento.Confirmado,
+                FuncionarioId = pedidos.First().FuncionarioId
+
             };
 
             foreach(var pedido in pedidos)
@@ -89,11 +95,12 @@ public class VendaService {
                 if(pedido.FuncionarioId.HasValue)
                 {
                     var funcionario = await _context.Funcionarios
-                         .Include(l=> l.Loja)
-                         .ThenInclude(c=> c.Configuracao)
-                        .FirstOrDefaultAsync(f=> f.Id == pedido.FuncionarioId.Value && f.LojaId == lojaId && f.PerfilId == (int) PerfilUsuario.Garcom);
+                         .Include(l => l.Loja)
+                         .ThenInclude(c => c.Configuracao)
+                        .FirstOrDefaultAsync(f => f.Id == pedido.FuncionarioId.Value && f.LojaId == lojaId && f.PerfilId == (int)PerfilUsuario.Garcom);
 
-                    if(funcionario != null && funcionario.PercentualComissao >0) {
+                    if(funcionario != null && funcionario.PercentualComissao > 0)
+                    {
                         var valorComissao = pedido.Total * funcionario.PercentualComissao / funcionario.Loja?.Configuracao?.PercentualTaxaServico;
                         var comissao = new ComissaoVenda
                         {
@@ -116,7 +123,6 @@ public class VendaService {
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
-
             return MapearResponse(venda);
         }
         catch
@@ -128,7 +134,6 @@ public class VendaService {
 
     public async Task<VendaResponse> BuscarPorIdAsync(int vendaId, int lojaId) {
         var venda = await BuscarVendaAsync(vendaId, lojaId);
-
         return MapearResponse(venda);
     }
 
@@ -207,7 +212,6 @@ public class VendaService {
             venda.StatusPagamento = StatusPagamento.Cancelado;
 
             await LiberarMesaAsync(venda.Pedidos.ToList());
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -245,7 +249,6 @@ public class VendaService {
             venda.StatusPagamento = StatusPagamento.Estornado;
 
             await LiberarMesaAsync(venda.Pedidos.ToList());
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -324,7 +327,7 @@ public class VendaService {
             if(pedido.Total <= 0)
                 throw new BusinessLogicException($"O pedido {pedido.Id} possui valor inválido.");
         }
-    } 
+    }
 
     private void ValidarPagamentos(List<PagamentoRequest> pagamentos, decimal valorTotal) {
         foreach(var pagamento in pagamentos)
@@ -343,6 +346,8 @@ public class VendaService {
     }
 
     private async Task LiberarMesaAsync(List<Pedido> pedidos) {
+        var lojaId = pedidos.First().LojaId;
+
         var mesaIds = pedidos
             .Where(x => x.MesaId.HasValue)
             .Select(x => x.MesaId!.Value)
@@ -353,18 +358,23 @@ public class VendaService {
         {
             var possuiPedidoAtivo = await _context.Pedidos.AnyAsync(x =>
                 x.MesaId == mesaId &&
-                x.LojaId == pedidos.First().LojaId &&
+                x.LojaId == lojaId &&
                 x.Status != StatusPedido.Finalizado &&
-                x.Status != StatusPedido.Cancelado);
+                x.Status != StatusPedido.Cancelado &&
+                !pedidos.Select(p => p.Id).Contains(x.Id));
 
             if(possuiPedidoAtivo)
                 continue;
 
             var mesa = await _context.Mesas
-                .FirstOrDefaultAsync(x => x.Id == mesaId && x.LojaId == pedidos.First().LojaId);
+                .FirstOrDefaultAsync(x =>
+                    x.Id == mesaId &&
+                    x.LojaId == lojaId);
 
-            if(mesa != null)
-                mesa.StatusMesa = StatusMesa.Livre;
+            if(mesa == null)continue;
+
+            mesa.StatusMesa = StatusMesa.Livre;
+            await _mesaHub.AtualizarMesaAsync(lojaId,mesaId,mesa);
         }
     }
 

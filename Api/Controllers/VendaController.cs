@@ -29,7 +29,6 @@ namespace MenuFast.Api.Api.Controllers {
         public async Task<IActionResult> FinalizarVenda([FromBody] ConfirmarPagamentoRequest request) {
             var lojaId = _contextApplication.LojaId()!.Value;
             var venda = await _vendaService.FinalizarVendaAsync(lojaId, request);
-
             return Ok(new { mensagem = "Venda finalizada com sucesso.", venda });
         }
 

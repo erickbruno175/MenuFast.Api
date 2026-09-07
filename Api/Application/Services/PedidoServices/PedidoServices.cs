@@ -4,6 +4,7 @@ using MenuFast.Api.Api.Application.DTOs.Request;
 using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.EstoqueServices;
 using MenuFast.Api.Api.Application.Services.KdsServices;
+using MenuFast.Api.Api.Application.Services.MesaServices;
 using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
 using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
 using MenuFast.Api.Api.Domain.Entities.Models.Cliente;
@@ -11,6 +12,7 @@ using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 using MenuFast.Api.Api.Domain.Enum;
+using MenuFast.Api.Api.Hubs;
 using MenuFast.Api.Api.Persistence.Context;
 using MenuFast.Api.Middlewares;
 using Microsoft.EntityFrameworkCore;
@@ -23,13 +25,14 @@ public class PedidoService {
     private readonly IMapper _mapper;
     private readonly OpenRouteServices _openRouteServices;
     private readonly EstoqueServices.EstoqueServices _estoqueServices;
-
-    public PedidoService(MenuFastContext context, KdsService kdsService, IMapper mapper, OpenRouteServices openRouteServices, EstoqueServices.EstoqueServices estoqueServices) {
+    private readonly MesaAtualizarHub _mesaHub;
+    public PedidoService(MenuFastContext context, KdsService kdsService, IMapper mapper, OpenRouteServices openRouteServices, EstoqueServices.EstoqueServices estoqueServices, MesaAtualizarHub mesaHub) {
         _context = context;
         _kdsService = kdsService;
         _mapper = mapper;
         _openRouteServices = openRouteServices;
         _estoqueServices = estoqueServices;
+        _mesaHub = mesaHub;
     }
 
     public async Task<PedidoResponse> CriarPedidoAsync(CriarPedidoRequest request, int lojaId, int funcionarioId) {
@@ -53,6 +56,8 @@ public class PedidoService {
 
             if(mesa.StatusMesa == StatusMesa.Bloqueada)
                 throw new BusinessLogicException("A mesa está bloqueada.");
+
+
         }
 
         if(request.TipoPedido == TipoPedido.Delivery)
@@ -86,7 +91,7 @@ public class PedidoService {
             LojaId = lojaId,
             MesaId = request.MesaId,
             ClienteId = request.ClienteId,
-            FuncionarioId = funcionarioId,
+            FuncionarioId = request.garcomId != null ? request.garcomId.Value : funcionarioId,
             TipoPedido = request.TipoPedido,
             Status = StatusPedido.Aberto,
             DataPedidoHora = DateTime.Now,
@@ -108,6 +113,7 @@ public class PedidoService {
 
         await _context.Pedidos.AddAsync(pedido);
         await _context.SaveChangesAsync();
+        await _mesaHub.AtualizarMesaAsync(lojaId, mesa.Id, mesa);
 
         return await BuscarPorIdAsync(pedido.Id, lojaId);
     }
@@ -280,6 +286,8 @@ public class PedidoService {
                             x.Status != StatusPedido.Cancelado)
                 .OrderBy(x => x.DataPedidoHora)
                 .ToListAsync();
+
+
 
             if(!pedidos.Any())
                 throw new BusinessLogicException("Não existem pedidos ativos para esta mesa.");
@@ -550,6 +558,8 @@ public class PedidoService {
             TipoPedido = pedido.TipoPedido,
             DataPedidoHora = pedido.DataPedidoHora,
             Observacao = pedido.Observacao,
+            NumeroMesa = pedido.Mesa?.Numero != null ? pedido.Mesa.Numero : "",
+
             Itens = pedido.Itens
                 .Where(p => p.Produto != null && p.Produto.EnviaParaProducao)
                 .Select(x => new ItemPedidoProducaoResponse
@@ -588,6 +598,8 @@ public class PedidoService {
         if(!existeOutroPedidoAtivoNaOrigem)
             mesaOrigem.StatusMesa = StatusMesa.Livre;
         await _context.SaveChangesAsync();
+        await _mesaHub.AtualizarMesaAsync(lojaId, mesaOrigemId, mesaOrigem);
+        await _mesaHub.AtualizarMesaAsync(lojaId, mesaDestinoId, mesaDestino);
     }
 
     private static PedidoResponse MapearResponse(Pedido pedido) {
@@ -596,6 +608,7 @@ public class PedidoService {
             Id = pedido.Id,
             LojaId = pedido.LojaId,
             MesaId = pedido.MesaId,
+            NumeroMesa = pedido.Mesa?.Numero != null ? pedido.Mesa.Numero : "",
             ClienteId = pedido.ClienteId,
             FuncionarioId = pedido.FuncionarioId,
             Status = pedido.Status,
@@ -606,6 +619,7 @@ public class PedidoService {
             Desconto = pedido.Desconto,
             TaxaServico = pedido.TaxaServico,
             TaxaEntrega = pedido.TaxaEntrega,
+            
             Total = pedido.Total,
             Itens = pedido.Itens.Select(x => new ItemPedidoResponse
             {

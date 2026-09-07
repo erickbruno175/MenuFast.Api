@@ -17,8 +17,8 @@ public class PedidoResponse {
     public decimal TaxaServico { get; set; }
     public decimal TaxaEntrega { get; set; }
     public decimal Total { get; set; }
-
     public ICollection<ItemPedidoResponse> Itens { get; set; } = [ ];
+    public string? NumeroMesa { get;  set; }
 }
 
 public class ItemPedidoResponse {
@@ -45,13 +45,14 @@ public class ItemProducaoResponse {
 
 public class PedidoProducaoResponse {
     public int PedidoId { get; set; }
+    public string NumeroMesa { get; set; }
     public int LojaId { get; set; }
     public int? MesaId { get; set; }
     public TipoPedido TipoPedido { get; set; }
     public DateTime DataPedidoHora { get; set; }
     public string? Observacao { get; set; }
 
-    public List<ItemPedidoProducaoResponse> Itens { get; set; } = [ ];
+    public List<ItemPedidoProducaoResponse> Itens { get; set; } 
 }
 
 public class ItemPedidoProducaoResponse {

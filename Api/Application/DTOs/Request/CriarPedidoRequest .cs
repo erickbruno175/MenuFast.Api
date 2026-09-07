@@ -5,6 +5,7 @@ namespace MenuFast.Api.Api.Application.DTOs.Request;
 public class CriarPedidoRequest {
     public int? MesaId { get; set; }
     public int? ClienteId { get; set; }
+    public int? garcomId { get; set; }
     public TipoPedido TipoPedido { get; set; }
     public string? Observacao { get; set; }
 

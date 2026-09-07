@@ -45,7 +45,8 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(List<DetalheProdutosResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> ListarProdutos(int idLoja) {
+        public async Task<ActionResult> ListarProdutos() {
+            var idLoja = _applicationContextService.LojaId().Value;
             return Ok(await _produtoService.ListaProdutosEmEstoque(idLoja));
         }
 
@@ -54,7 +55,8 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(List<DetalheProdutosResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult> BuscarProdutos(int idLoja, [FromBody] FiltroProdutoRequest? filtro, string tipoFiltro) {
+        public async Task<ActionResult> BuscarProdutos([FromBody] FiltroProdutoRequest? filtro, string tipoFiltro) {
+            var idLoja = _applicationContextService.LojaId().Value;
             return Ok(await _produtoService.BuscarProdutos(idLoja, filtro, tipoFiltro));
         }
 
