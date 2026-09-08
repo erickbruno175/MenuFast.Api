@@ -34,7 +34,6 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
                 DataAdmissao = DateTime.Now,
                 DataBloqueio = null,
                 DataUltimoLogin = null,
-                PrimeiroAcesso = true,
                 LojaId = request.LojaId,
                 Salario = request.Salario ?? null,
                 PerfilId = request.PerfilId,

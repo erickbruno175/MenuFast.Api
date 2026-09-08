@@ -16,9 +16,9 @@ public class CaixaService {
         _applicationContextServices = applicationContextServices;
     }
 
-  
-    public async Task<Caixa> AbrirCaixaAsync(int lojaId,int funcionarioId,string nome = "Caixa") {
-        var caixaAberto = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId && x.Aberto);
+
+    public async Task<Caixa> AbrirCaixaAsync(int lojaId, int funcionarioId, string nome = "Caixa") {
+        var caixaAberto = await _contexto.Caixas.FirstOrDefaultAsync(x => x.LojaId == lojaId && x.Aberto);
 
         if(caixaAberto != null)
             throw new Exception("Já existe um caixa aberto para esta loja.");
@@ -28,6 +28,7 @@ public class CaixaService {
 
         if(configuracao == null)
             throw new Exception("Configuração da loja não encontrada.");
+
         var caixa = new Caixa
         {
             LojaId = lojaId,
@@ -39,8 +40,6 @@ public class CaixaService {
             FuncioanrioId = funcionarioId,
             Terminal = Environment.MachineName,
             IpTerminal = _applicationContextServices.Ip(),
- 
-
         };
 
         _contexto.Caixas.Add(caixa);
@@ -52,17 +51,22 @@ public class CaixaService {
 
 
     public async Task<Caixa?> BuscarCaixaAbertoAsync(int lojaId) {
-        return await _contexto.Caixas.Include(x => x.Movimentos).FirstOrDefaultAsync(x =>x.LojaId == lojaId && x.Aberto);
+        return await _contexto.Caixas
+            .Include(x => x.Movimentos)
+            .FirstOrDefaultAsync(x => x.LojaId == lojaId && x.Aberto);
     }
 
 
-    public async Task<MovimentoCaixa> RegistrarMovimentoAsync(int lojaId,int funcionarioId,TipoMovimentoCaixa tipo,decimal valor,
-        string? descricao = null) {
-        var caixa = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId &&x.Aberto);
+    public async Task<MovimentoCaixa> RegistrarMovimentoAsync(int lojaId,int funcionarioId,TipoMovimentoCaixa tipo,decimal valor,string? descricao = null) {
 
-        if(caixa == null)throw new Exception("Não existe caixa aberto para esta loja.");
+        var caixa = await _contexto.Caixas
+            .FirstOrDefaultAsync(x => x.LojaId == lojaId && x.Aberto);
 
-        if(valor <= 0)throw new Exception("O valor do movimento deve ser maior que zero.");
+        if(caixa == null)
+            throw new Exception("Não existe caixa aberto para esta loja.");
+
+        if(valor <= 0)
+            throw new Exception("O valor do movimento deve ser maior que zero.");
 
         var movimento = new MovimentoCaixa
         {
@@ -79,25 +83,37 @@ public class CaixaService {
         _contexto.MovimentosCaixa.Add(movimento);
 
         await _contexto.SaveChangesAsync();
+
         return movimento;
     }
 
 
     public async Task<MovimentoCaixa> RegistrarSangriaAsync(int lojaId,int funcionarioId,decimal valor,string? descricao = null) {
-        return await RegistrarMovimentoAsync(lojaId,funcionarioId,TipoMovimentoCaixa.Sangria,valor,descricao);
+        return await RegistrarMovimentoAsync(
+            lojaId,
+            funcionarioId,
+            TipoMovimentoCaixa.Sangria,
+            valor,
+            descricao);
     }
 
-
-
     public async Task<MovimentoCaixa> RegistrarSuprimentoAsync(int lojaId,int funcionarioId,decimal valor,string? descricao = null) {
-        return await RegistrarMovimentoAsync(lojaId,funcionarioId,TipoMovimentoCaixa.Suprimento,valor,descricao);
+
+        return await RegistrarMovimentoAsync(
+            lojaId,
+            funcionarioId,
+            TipoMovimentoCaixa.Suprimento,
+            valor,
+            descricao);
     }
 
 
     public async Task<List<MovimentoCaixa>> BuscarMovimentosAsync(int lojaId) {
-        var caixa = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId &&x.Aberto);
+        var caixa = await _contexto.Caixas
+            .FirstOrDefaultAsync(x => x.LojaId == lojaId && x.Aberto);
 
-        if(caixa == null)throw new Exception("Não existe caixa aberto para esta loja.");
+        if(caixa == null)
+            throw new Exception("Não existe caixa aberto para esta loja.");
 
         return await _contexto.MovimentosCaixa
             .Where(x =>
@@ -114,7 +130,8 @@ public class CaixaService {
                 x.LojaId == lojaId &&
                 x.Aberto);
 
-        if(caixa == null)throw new Exception("Não existe caixa aberto para esta loja.");
+        if(caixa == null)
+            throw new Exception("Não existe caixa aberto para esta loja.");
 
         var movimentos = await _contexto.MovimentosCaixa
             .Where(x =>
@@ -144,13 +161,20 @@ public class CaixaService {
 
         return valor;
     }
-  
+
+
     public async Task<Caixa> FecharCaixaAsync(int lojaId,int funcionarioId,decimal valorFechamento) {
-        var caixa = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId && x.Aberto);
 
-        if(caixa == null) throw new Exception("Não existe caixa aberto para esta loja.");
+        var caixa = await _contexto.Caixas
+            .FirstOrDefaultAsync(x =>
+                x.LojaId == lojaId &&
+                x.Aberto);
 
-        if(valorFechamento < 0)throw new Exception("O valor de fechamento não pode ser negativo.");
+        if(caixa == null)
+            throw new Exception("Não existe caixa aberto para esta loja.");
+
+        if(valorFechamento < 0)
+            throw new Exception("O valor de fechamento não pode ser negativo.");
 
         var valorCalculado = await CalcularValorAtualAsync(lojaId);
 

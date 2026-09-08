@@ -180,7 +180,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> TransferirPedidosMesa(int mesaOrigemId,int mesaDestinoId) {
             await _pedidoService.TransferirPedidosMesaAsync(mesaOrigemId,mesaDestinoId,_applicationContextService.LojaId().Value);
-            return Ok();
+            return Ok($"Transferência realizada com sucesso! Os pedidos da mesa {mesaOrigemId} foram movidos para a mesa {mesaDestinoId}.");
         }
     }
 }

@@ -16,14 +16,14 @@
             }
         }
 
-        public static void ThrowIfNull(object? value, string message) {
+        public static void ThrowIfNull(object? value, string mensagem) {
             if(value is null)
-                throw new BusinessLogicException(message);
+                throw new BusinessLogicException(mensagem);
         }
 
-        public static void ThrowIfNullOrEmpty(string? value, string message) {
+        public static void ThrowIfNullOrEmpty(string? value, string mensagem) {
             if(string.IsNullOrWhiteSpace(value))
-                throw new BusinessLogicException(message);
+                throw new BusinessLogicException(mensagem);
         }
 
 

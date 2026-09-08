@@ -279,6 +279,7 @@ public class PedidoService {
                 throw new BusinessLogicException("Mesa não encontrada.");
 
             pedidos = await _context.Pedidos
+                .Include(m=> m.Mesa)
                 .Include(x => x.Itens)
                 .ThenInclude(x => x.Produto)
                 .Where(x => x.MesaId == mesaId && x.LojaId == lojaId &&
@@ -332,6 +333,7 @@ public class PedidoService {
             throw new BusinessLogicException("Mesa não encontrada.");
 
         var pedidos = await _context.Pedidos
+            .Include(m => m.Mesa)
             .Include(x => x.Itens)
             .ThenInclude(p => p.Produto)
             .Where(x => x.MesaId == mesaId && x.LojaId == lojaId)
@@ -433,6 +435,7 @@ public class PedidoService {
         var pedido = await _context.Pedidos
             .Include(x => x.Itens)
             .ThenInclude(x => x.Produto)
+            .Include(x => x.Mesa)
             .FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
 
         if(pedido == null)
@@ -574,32 +577,39 @@ public class PedidoService {
         };
     }
 
-    public async Task TransferirPedidosMesaAsync(int mesaOrigemId, int mesaDestinoId, int lojaId) {
-        if(mesaOrigemId == mesaDestinoId)
-            throw new BusinessLogicException("A mesa de origem e destino não podem ser a mesma.");
-        var mesaOrigem = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == mesaOrigemId && x.LojaId == lojaId);
-        var mesaDestino = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == mesaDestinoId && x.LojaId == lojaId);
-        if(mesaOrigem == null)
-            throw new BusinessLogicException("Mesa de origem não encontrada.");
-        if(mesaDestino == null)
-            throw new BusinessLogicException("Mesa de destino não encontrada.");
+    public async Task TransferirPedidosMesaAsync(int mesaOrigemId,int mesaDestinoId,int lojaId) {
+        if(mesaOrigemId == mesaDestinoId)throw new BusinessLogicException("A mesa de origem e destino não podem ser a mesma.");
+
+        var mesaOrigem = await _context.Mesas
+            .FirstOrDefaultAsync(x =>x.Id == mesaOrigemId &&x.LojaId == lojaId);
+        var mesaDestino = await _context.Mesas.FirstOrDefaultAsync(x =>x.Id == mesaDestinoId &&x.LojaId == lojaId);
+        if(mesaOrigem == null)throw new BusinessLogicException("Mesa de origem não encontrada.");
+
+        if(mesaDestino == null)throw new BusinessLogicException("Mesa de destino não encontrada.");
+
         var pedidosAtivos = await _context.Pedidos
-            .Where(x => x.MesaId == mesaOrigemId && x.LojaId == lojaId &&
-                        x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado)
+            .Where(x =>
+                x.MesaId == mesaOrigemId &&
+                x.LojaId == lojaId &&
+                x.Status != StatusPedido.Finalizado &&
+                x.Status != StatusPedido.Cancelado)
             .ToListAsync();
-        if(!pedidosAtivos.Any())
-            throw new BusinessLogicException("Não existem pedidos ativos na mesa de origem.");
+
+        if(!pedidosAtivos.Any())throw new BusinessLogicException("Não existem pedidos ativos na mesa de origem.");
+
+        // Transfere os pedidos
         foreach(var pedido in pedidosAtivos)
+        {
             pedido.MesaId = mesaDestinoId;
+        }
+
+        // Destino fica ocupada
         mesaDestino.StatusMesa = StatusMesa.Ocupada;
-        var existeOutroPedidoAtivoNaOrigem = await _context.Pedidos.AnyAsync(x =>
-            x.MesaId == mesaOrigemId && x.LojaId == lojaId &&
-            x.Status != StatusPedido.Finalizado && x.Status != StatusPedido.Cancelado);
-        if(!existeOutroPedidoAtivoNaOrigem)
-            mesaOrigem.StatusMesa = StatusMesa.Livre;
+        mesaOrigem.StatusMesa = StatusMesa.Livre;
+
         await _context.SaveChangesAsync();
-        await _mesaHub.AtualizarMesaAsync(lojaId, mesaOrigemId, mesaOrigem);
-        await _mesaHub.AtualizarMesaAsync(lojaId, mesaDestinoId, mesaDestino);
+        await _mesaHub.AtualizarMesaAsync(lojaId,mesaOrigemId,mesaOrigem);
+        await _mesaHub.AtualizarMesaAsync(lojaId,mesaDestinoId,mesaDestino);
     }
 
     private static PedidoResponse MapearResponse(Pedido pedido) {
@@ -619,7 +629,7 @@ public class PedidoService {
             Desconto = pedido.Desconto,
             TaxaServico = pedido.TaxaServico,
             TaxaEntrega = pedido.TaxaEntrega,
-            
+
             Total = pedido.Total,
             Itens = pedido.Itens.Select(x => new ItemPedidoResponse
             {

@@ -43,7 +43,33 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+
+// ========================================
+// CONTROLLERS
+// ========================================
+
 builder.Services.AddControllers();
+
+
+// ========================================
+// CORS
+// ========================================
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Angular", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+
+// ========================================
+// AUTENTICAÇÃO JWT
+// ========================================
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -71,7 +97,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             {
                 context.HandleResponse();
 
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.StatusCode =
+                    StatusCodes.Status401Unauthorized;
+
                 context.Response.ContentType = "application/json";
 
                 await context.Response.WriteAsJsonAsync(new
@@ -83,7 +111,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+// ========================================
+// AUTORIZAÇÃO
+// ========================================
+
 builder.Services.AddAuthorization();
+
+
+// ========================================
+// SWAGGER
+// ========================================
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -97,7 +135,8 @@ builder.Services.AddSwaggerGen(options =>
 
     options.TagActionsBy(api =>
     {
-        var controller = api.ActionDescriptor.RouteValues [ "controller" ];
+        var controller =
+            api.ActionDescriptor.RouteValues [ "controller" ];
 
         return new [ ]
         {
@@ -107,22 +146,30 @@ builder.Services.AddSwaggerGen(options =>
         };
     });
 
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Informe o token JWT."
-    });
+    options.AddSecurityDefinition("Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Informe o token JWT."
+        });
 
     options.AddSecurityRequirement(document =>
         new OpenApiSecurityRequirement
         {
-            [ new OpenApiSecuritySchemeReference("Bearer", document) ] = [ ]
+            [ new OpenApiSecuritySchemeReference(
+                "Bearer",
+                document) ] = [ ]
         });
 });
+
+
+// ========================================
+// REDIS
+// ========================================
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -132,45 +179,87 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "MenuFast:";
 });
 
+
+// ========================================
+// SERVICES
+// ========================================
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<ApplicationContextService>();
 builder.Services.AddScoped<SegurancaService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<RedisService>();
+
 builder.Services.AddScoped<ProdutoServices>();
 builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddScoped<ConfiguracaoSistemaLojaServices>();
+
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<MenuService>();
 builder.Services.AddScoped<MesaService>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<KdsService>();
 builder.Services.AddScoped<MesaAtualizarHub>();
+
 builder.Services.AddHttpClient<OpenRouteServices>();
+
 builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
+
 builder.Services.AddScoped<EstoqueServices>();
 builder.Services.AddScoped<CaixaService>();
 builder.Services.AddScoped<VendaService>();
+
+
+// ========================================
+// SIGNALR
+// ========================================
+
 builder.Services.AddSignalR();
+
+
+// ========================================
+// BANCO DE DADOS
+// ========================================
+
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+        builder.Configuration.GetConnectionString(
+            "DefaultConnection")
     ));
+
+
+// ========================================
+// REDIS CONNECTION
+// ========================================
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
     var redisConnection =
         builder.Configuration.GetConnectionString("Redis");
 
-    return ConnectionMultiplexer.Connect(redisConnection!);
+    return ConnectionMultiplexer.Connect(
+        redisConnection!);
 });
+
+
+// ========================================
+// AUTOMAPPER
+// ========================================
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingsProfile>();
 });
 
+
 var app = builder.Build();
+
+
+// ========================================
+// SWAGGER
+// ========================================
 
 app.UseSwagger();
 
@@ -180,17 +269,57 @@ app.UseSwaggerUI(options =>
         "/swagger/v1/swagger.json",
         "MenuFast API v1");
 });
+
+
+// ========================================
+// CORS
+// ========================================
+
+app.UseCors("Angular");
+
+
+// ========================================
+// SIGNALR
+// ========================================
+
 app.MapHub<KdsHub>("/chegar-pedido/kds");
+
 app.MapHub<MesaHub>("/atualizar-mesa");
+
+
+// ========================================
+// MIDDLEWARES
+// ========================================
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
+
+// ========================================
+// AUTENTICAÇÃO
+// ========================================
+
 app.UseAuthentication();
+
+
+// ========================================
+// JWT BLACKLIST
+// ========================================
 
 app.UseMiddleware<JwtBlacklistMiddleware>();
 
+
+// ========================================
+// AUTORIZAÇÃO
+// ========================================
+
 app.UseAuthorization();
+
+
+// ========================================
+// CONTROLLERS
+// ========================================
 
 app.MapControllers();
 

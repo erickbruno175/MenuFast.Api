@@ -12,10 +12,7 @@ namespace MenuFast.Api.Api.Controllers {
         private readonly CaixaService _caixaService;
         private readonly ApplicationContextService _contextApplication;
 
-        public CaixaController(
-            CaixaService caixaService,
-            ApplicationContextService contextApplicationService) {
-
+        public CaixaController(CaixaService caixaService,ApplicationContextService contextApplicationService) {
             _caixaService = caixaService;
             _contextApplication = contextApplicationService;
         }
@@ -24,11 +21,16 @@ namespace MenuFast.Api.Api.Controllers {
         [Route("abrir")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AbrirCaixa( string nome = "Caixa") {
+        public async Task<IActionResult> AbrirCaixa(string nome = "Caixa") {
             var lojaId = _contextApplication.LojaId()!.Value;
             var funcionarioId = _contextApplication.FuncionarioId()!.Value;
-            var caixa = await _caixaService.AbrirCaixaAsync(lojaId, funcionarioId, nome);
-            return Ok(new { mensagem = "Caixa aberto com sucesso.", caixa });
+            var caixa = await _caixaService.AbrirCaixaAsync(lojaId,funcionarioId,nome);
+
+            return Ok(new
+            {
+                mensagem = "Caixa aberto com sucesso.",
+                caixa
+            });
         }
 
         [HttpGet]
@@ -37,8 +39,16 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> BuscarCaixaAberto() {
             var lojaId = _contextApplication.LojaId()!.Value;
+
             var caixa = await _caixaService.BuscarCaixaAbertoAsync(lojaId);
-            if(caixa == null) return NotFound(new { mensagem = "Não existe caixa aberto." });
+            if(caixa == null)
+            {
+                return NotFound(new
+                {
+                    mensagem = "Não existe caixa aberto."
+                });
+            }
+
             return Ok(caixa);
         }
 
@@ -46,33 +56,47 @@ namespace MenuFast.Api.Api.Controllers {
         [Route("movimento")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RegistrarMovimento(int funcionarioId, TipoMovimentoCaixa tipo, decimal valor, string? descricao = null) {
+        public async Task<IActionResult> RegistrarMovimento(TipoMovimentoCaixa tipo,decimal valor,string? descricao = null) {
             var lojaId = _contextApplication.LojaId()!.Value;
-            var movimento = await _caixaService.RegistrarMovimentoAsync(lojaId, funcionarioId, tipo, valor, descricao);
-            return Ok(new { mensagem = "Movimento registrado com sucesso.", movimento });
+            var funcionarioId = _contextApplication.FuncionarioId()!.Value;
+            var movimento = await _caixaService.RegistrarMovimentoAsync(lojaId,funcionarioId,tipo,valor,descricao);
+            return Ok(new
+            {
+                mensagem = "Movimento registrado com sucesso.",
+                movimento
+            });
         }
 
         [HttpPost]
         [Route("sangria")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Sangria(decimal valor, string? descricao = null) {
+        public async Task<IActionResult> Sangria(decimal valor,string? descricao = null) {
             var lojaId = _contextApplication.LojaId()!.Value;
             var funcionarioId = _contextApplication.FuncionarioId()!.Value;
-            var movimento = await _caixaService.RegistrarSangriaAsync(lojaId, funcionarioId, valor, descricao);
 
-            return Ok(new { mensagem = "Sangria registrada com sucesso.", movimento });
+            var movimento = await _caixaService.RegistrarSangriaAsync(lojaId,funcionarioId,valor,descricao);
+            return Ok(new
+            {
+                mensagem = "Sangria registrada com sucesso.",
+                movimento
+            });
         }
 
         [HttpPost]
         [Route("suprimento")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Suprimento(decimal valor, string? descricao = null) {
+        public async Task<IActionResult> Suprimento(decimal valor,string? descricao = null) {
             var lojaId = _contextApplication.LojaId()!.Value;
             var funcionarioId = _contextApplication.FuncionarioId()!.Value;
-            var movimento = await _caixaService.RegistrarSuprimentoAsync(lojaId, funcionarioId, valor, descricao);
-            return Ok(new { mensagem = "Suprimento registrado com sucesso.", movimento });
+            var movimento = await _caixaService.RegistrarSuprimentoAsync(lojaId,funcionarioId,valor,descricao);
+
+            return Ok(new
+            {
+                mensagem = "Suprimento registrado com sucesso.",
+                movimento
+            });
         }
 
         [HttpGet]
@@ -92,7 +116,10 @@ namespace MenuFast.Api.Api.Controllers {
             var lojaId = _contextApplication.LojaId()!.Value;
             var valor = await _caixaService.CalcularValorAtualAsync(lojaId);
 
-            return Ok(new { valor });
+            return Ok(new
+            {
+                valor
+            });
         }
 
         [HttpPost]
@@ -103,9 +130,11 @@ namespace MenuFast.Api.Api.Controllers {
         public async Task<IActionResult> FecharCaixa(decimal valorFechamento) {
             var lojaId = _contextApplication.LojaId()!.Value;
             var funcionarioId = _contextApplication.FuncionarioId()!.Value;
-            var caixa = await _caixaService.FecharCaixaAsync(lojaId, funcionarioId, valorFechamento);
-
-            return Ok(new { mensagem = "Caixa fechado com sucesso.", caixa });
+            var caixa = await _caixaService.FecharCaixaAsync(lojaId,funcionarioId,valorFechamento);
+            return Ok(new
+            {
+                mensagem = "Caixa fechado com sucesso.",caixa
+            });
         }
     }
 }

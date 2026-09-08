@@ -117,7 +117,5 @@ namespace MenuFast.Api.Api.Controllers {
             return Ok(claims);
         }
 
-
-
     }
 }
