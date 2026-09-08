@@ -16,7 +16,7 @@ public class MenuService {
         CancellationToken cancellationToken = default) {
         var perfilId = await _context.Funcionarios
             .AsNoTracking()
-            .Where(f => f.Id == funcionarioId)
+            .Where(f => f.Id == funcionarioId && f.Ativo)
             .Select(f => f.PerfilId)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -186,46 +186,6 @@ public class MenuService {
             },
 
             // =========================================================
-            // DELIVERY
-            // =========================================================
-
-            new()
-            {
-                Nome = "Delivery",
-                Icone = "delivery_dining",
-                Filhos =
-                [
-                    new()
-                    {
-                        Nome = "Pedidos",
-                        Icone = "receipt_long",
-                        Rota = "/delivery",
-                        Permissao = "DELIVERY_VISUALIZAR"
-                    },
-
-                    new()
-                    {
-                        Nome = "Entregas",
-                        Icone = "local_shipping",
-                        Rota = "/entregas",
-                        Permissao = "ENTREGA_VISUALIZAR"
-                    }
-                ]
-            },
-
-            // =========================================================
-            // RETIRADA
-            // =========================================================
-
-            new()
-            {
-                Nome = "Retirada",
-                Icone = "shopping_bag",
-                Rota = "/retirada",
-                Permissao = "RETIRADA_VISUALIZAR"
-            },
-
-            // =========================================================
             // CAIXA
             // =========================================================
 
@@ -233,64 +193,8 @@ public class MenuService {
             {
                 Nome = "Caixa",
                 Icone = "point_of_sale",
-                Filhos =
-                [
-                    new()
-                    {
-                        Nome = "Caixa",
-                        Icone = "point_of_sale",
-                        Rota = "/caixa",
-                        Permissao = "CAIXA_VISUALIZAR"
-                    },
-
-                    new()
-                    {
-                        Nome = "Abrir caixa",
-                        Icone = "lock_open",
-                        Rota = "/caixa/abrir",
-                        Permissao = "CAIXA_ABRIR"
-                    },
-
-                    new()
-                    {
-                        Nome = "Sangria",
-                        Icone = "remove_circle",
-                        Rota = "/caixa/sangria",
-                        Permissao = "CAIXA_SANGRIA"
-                    },
-
-                    new()
-                    {
-                        Nome = "Suprimento",
-                        Icone = "add_circle",
-                        Rota = "/caixa/suprimento",
-                        Permissao = "CAIXA_SUPRIMENTO"
-                    },
-
-                    new()
-                    {
-                        Nome = "Movimentos",
-                        Icone = "swap_vert",
-                        Rota = "/caixa/movimentos",
-                        Permissao = "CAIXA_MOVIMENTO"
-                    },
-
-                    new()
-                    {
-                        Nome = "Conferência",
-                        Icone = "fact_check",
-                        Rota = "/caixa/conferencia",
-                        Permissao = "CAIXA_CONFERIR"
-                    },
-
-                    new()
-                    {
-                        Nome = "Histórico",
-                        Icone = "history",
-                        Rota = "/caixa/historico",
-                        Permissao = "CAIXA_VISUALIZAR_HISTORICO"
-                    }
-                ]
+                Rota = "/caixa",
+                Permissao = "CAIXA_VISUALIZAR"
             },
 
             // =========================================================
@@ -665,9 +569,7 @@ public class MenuService {
             var filhos = item.Filhos ?? [ ];
 
             if(filhos.Count > 0)
-            {
                 filhos = FiltrarMenu(filhos, permissoes);
-            }
 
             var possuiPermissao =
                 string.IsNullOrWhiteSpace(item.Permissao) ||
@@ -675,9 +577,29 @@ public class MenuService {
 
             var possuiFilhos = filhos.Count > 0;
 
-            // Item folha:
-            // precisa possuir a permissão.
-            if(!possuiFilhos && !string.IsNullOrWhiteSpace(item.Rota))
+            // =========================================================
+            // ITEM COM FILHOS
+            // =========================================================
+
+            if(possuiFilhos)
+            {
+                resultado.Add(new MenuItemResponse
+                {
+                    Nome = item.Nome,
+                    Icone = item.Icone,
+                    Rota = item.Rota,
+                    Permissao = item.Permissao,
+                    Filhos = filhos
+                });
+
+                continue;
+            }
+
+            // =========================================================
+            // ITEM FOLHA
+            // =========================================================
+
+            if(!string.IsNullOrWhiteSpace(item.Rota))
             {
                 if(!possuiPermissao)
                     continue;
@@ -689,23 +611,6 @@ public class MenuService {
                     Rota = item.Rota,
                     Permissao = item.Permissao,
                     Filhos = [ ]
-                });
-
-                continue;
-            }
-
-            // Menu pai:
-            // não precisa ter permissão própria.
-            // Basta possuir pelo menos um filho permitido.
-            if(possuiFilhos)
-            {
-                resultado.Add(new MenuItemResponse
-                {
-                    Nome = item.Nome,
-                    Icone = item.Icone,
-                    Rota = item.Rota,
-                    Permissao = item.Permissao,
-                    Filhos = filhos
                 });
             }
         }

@@ -5,7 +5,6 @@ using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace MenuFast.Api.Api.Controllers {
     [ApiController]
@@ -13,8 +12,8 @@ namespace MenuFast.Api.Api.Controllers {
     public class ConfiguracaoSistemaLojaController : ControllerBase {
         private readonly ConfiguracaoSistemaLojaServices _configuracaoSistemaLoja;
         private readonly ApplicationContextService _applicationContextService;
-        public ConfiguracaoSistemaLojaController(
-            ConfiguracaoSistemaLojaServices configuracaoSistemaLoja , ApplicationContextService applicationContextService) {
+
+        public ConfiguracaoSistemaLojaController(ConfiguracaoSistemaLojaServices configuracaoSistemaLoja, ApplicationContextService applicationContextService) {
             _configuracaoSistemaLoja = configuracaoSistemaLoja;
             _applicationContextService = applicationContextService;
         }
@@ -25,8 +24,8 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(Loja), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CadastrarDadosLoja([FromBody] DadosEmpresaRequest request) 
-            {var loja = await _configuracaoSistemaLoja.CadastrarDadosLoja(request);
+        public async Task<IActionResult> CadastrarDadosLoja([FromBody] DadosEmpresaRequest request) {
+            var loja = await _configuracaoSistemaLoja.CadastrarDadosLoja(request);
             return Ok(loja);
         }
 
@@ -37,10 +36,12 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AtualizarDadosLoja(int idLoja,[FromBody] DadosEmpresaRequest request) 
-        {
+        public async Task<IActionResult> AtualizarDadosLoja(int idLoja, [FromBody] DadosEmpresaRequest request) {
             var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(idLoja, request);
-            if(loja == null)return NotFound("Loja não encontrada.");
+
+            if(loja == null)
+                return NotFound("Loja não encontrada.");
+
             return Ok(loja);
         }
 
@@ -50,8 +51,8 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(IEnumerable<HorarioFuncionamento>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CadastrarHorarioFuncionamento(int idLoja,[FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
-            var horarios = await _configuracaoSistemaLoja.CadastrarHorarioFuncionemnto(idLoja, request);
+        public async Task<IActionResult> CadastrarHorarioFuncionamento(int idLoja, [FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
+            var horarios = await _configuracaoSistemaLoja.CadastrarHorarioFuncionamento(idLoja, request);
             return Ok(horarios);
         }
 
@@ -60,7 +61,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(IEnumerable<HorarioFuncionamento>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> AtualizarHorarioFuncionamento(int idHorario,[FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
+        public async Task<IActionResult> AtualizarHorarioFuncionamento(int idHorario, [FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
             var horarios = await _configuracaoSistemaLoja.AtualizarHorarioFuncionamento(request, idHorario);
             return Ok(horarios);
         }
@@ -71,7 +72,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(ConfiguracaoLoja), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CadastrarConfiguracaoLoja(int idLoja,[FromBody] CadastrarConfiguracaoLojaRequest request) {
+        public async Task<IActionResult> CadastrarConfiguracaoLoja(int idLoja, [FromBody] CadastrarConfiguracaoLojaRequest request) {
             var configuracao = await _configuracaoSistemaLoja.CadastrarConfiguracaoLoja(idLoja, request);
             return Ok(configuracao);
         }
@@ -82,38 +83,45 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(ConfiguracaoLoja), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AtualizarConfiguracaoLoja(int idConfig,[FromBody] CadastrarConfiguracaoLojaRequest request) {
+        public async Task<IActionResult> AtualizarConfiguracaoLoja(int idConfig, [FromBody] CadastrarConfiguracaoLojaRequest request) {
             var configuracao = await _configuracaoSistemaLoja.AtualizarConfiguracaoLoja(idConfig, request);
 
-            if(configuracao == null)return NotFound("Configuração da loja não encontrada.");
+            if(configuracao == null)
+                return NotFound("Configuração da loja não encontrada.");
+
             return Ok(configuracao);
         }
 
         [HttpGet]
-        [Route("lembrar-finalizar")]
+        [Route("lembrar-finalizacao-configuracao")]
         [Authorize]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> LembrarFinalizarCadastro() {
-            var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(_applicationContextService.FuncionarioId().Value);
+            var lojaId = _applicationContextService.LojaId();
+
+            if(!lojaId.HasValue)
+                return Unauthorized("Funcionario não identificado");
+
+            var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(lojaId.Value);
+
             return Ok(lembrar);
         }
+
         [HttpGet]
         [Route("consultar-configuracoes-loja")]
         [Authorize]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ConsultarConfiguracoesLoja() {
-       
             if(!_applicationContextService.LojaId().HasValue)
-            {
                 return Unauthorized("Funcionario não identificado");
-            }
 
             var configuracoesLoja = await _configuracaoSistemaLoja.ConsultarConfiguracoesLoja(_applicationContextService.LojaId()!.Value);
+
             return Ok(configuracoesLoja);
         }
-            
+
         [HttpGet]
         [Route("consultar-formas-pagamento")]
         [Authorize]
@@ -121,6 +129,7 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ConsultarFormasPagamento() {
             var formasPagamento = await _configuracaoSistemaLoja.ConsultarFormasPagamento();
+
             return Ok(formasPagamento);
         }
     }
