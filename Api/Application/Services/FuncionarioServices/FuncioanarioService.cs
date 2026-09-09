@@ -16,7 +16,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
         }
 
 
-        public async Task CadastrarFuncionario(CadastrarFuncionarioRequest request) {
+        public async Task CadastrarFuncionario(CadastrarFuncionarioRequest request ) {
 
             if(!DocumentoHelper.ValidarCpf(request.Cpf))
             {
@@ -28,7 +28,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
             {
                 Nome = request.Nome,
                 Email = request.Email,
-                SenhaHash = request.SenhaHash,
+                SenhaHash = SegurancaHelper.CriarHash(request.SenhaHash),
                 DataCadastro = DateTime.Now,
                 Ativo = request.Ativo,
                 DataAdmissao = DateTime.Now,
@@ -44,7 +44,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
             await _menuFastContext.SaveChangesAsync();
         }
 
-        public async Task EditarFuncionario(int id, CadastrarFuncionarioRequest request) {
+          public async Task EditarFuncionario(int id, CadastrarFuncionarioRequest request) {
             var funcionario = await _menuFastContext.Funcionarios
                 .FirstOrDefaultAsync(f => f.Id == id);
 
@@ -73,6 +73,7 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
                 .OrderBy(f => f.Nome)
                 .ToListAsync();
         }
+
 
     }
 }

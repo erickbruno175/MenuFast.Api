@@ -1,3 +1,4 @@
+using BCrypt.Net;
 using MenuFast.Api.Api.Application.Services.CaixaServices;
 using MenuFast.Api.Api.Application.Services.CategoriaServices;
 using MenuFast.Api.Api.Application.Services.ClienteServices;
@@ -10,6 +11,7 @@ using MenuFast.Api.Api.Application.Services.MesaServices;
 using MenuFast.Api.Api.Application.Services.PedidoServices;
 using MenuFast.Api.Api.Application.Services.ProdutoServices;
 using MenuFast.Api.Api.Application.Services.Redis;
+using MenuFast.Api.Api.Application.Services.RegistrarContaPlataforma;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
 using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
@@ -42,19 +44,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Host.UseSerilog();
-
-
-// ========================================
-// CONTROLLERS
-// ========================================
-
 builder.Services.AddControllers();
-
-
-// ========================================
-// CORS
-// ========================================
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Angular", policy =>
@@ -66,10 +56,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-
-// ========================================
-// AUTENTICAÇÃO JWT
-// ========================================
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -112,17 +98,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
-// ========================================
-// AUTORIZAÇÃO
-// ========================================
-
 builder.Services.AddAuthorization();
-
-
-// ========================================
-// SWAGGER
-// ========================================
-
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -167,10 +143,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-// ========================================
-// REDIS
-// ========================================
-
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration =
@@ -178,11 +150,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
     options.InstanceName = "MenuFast:";
 });
-
-
-// ========================================
-// SERVICES
-// ========================================
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<ApplicationContextService>();
@@ -202,6 +169,7 @@ builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<KdsService>();
 builder.Services.AddScoped<MesaAtualizarHub>();
+builder.Services.AddScoped<RegistrarContaPlataforma>();
 
 builder.Services.AddHttpClient<OpenRouteServices>();
 
@@ -210,29 +178,12 @@ builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
 builder.Services.AddScoped<EstoqueServices>();
 builder.Services.AddScoped<CaixaService>();
 builder.Services.AddScoped<VendaService>();
-
-
-// ========================================
-// SIGNALR
-// ========================================
-
 builder.Services.AddSignalR();
-
-
-// ========================================
-// BANCO DE DADOS
-// ========================================
-
 builder.Services.AddDbContext<MenuFastContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString(
             "DefaultConnection")
     ));
-
-
-// ========================================
-// REDIS CONNECTION
-// ========================================
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
@@ -243,11 +194,6 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
         redisConnection!);
 });
 
-
-// ========================================
-// AUTOMAPPER
-// ========================================
-
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingsProfile>();
@@ -255,11 +201,6 @@ builder.Services.AddAutoMapper(cfg =>
 
 
 var app = builder.Build();
-
-
-// ========================================
-// SWAGGER
-// ========================================
 
 app.UseSwagger();
 
@@ -270,57 +211,14 @@ app.UseSwaggerUI(options =>
         "MenuFast API v1");
 });
 
-
-// ========================================
-// CORS
-// ========================================
-
 app.UseCors("Angular");
-
-
-// ========================================
-// SIGNALR
-// ========================================
-
 app.MapHub<KdsHub>("/chegar-pedido/kds");
-
 app.MapHub<MesaHub>("/atualizar-mesa");
-
-
-// ========================================
-// MIDDLEWARES
-// ========================================
-
 app.UseMiddleware<ExceptionMiddleware>();
-
 app.UseHttpsRedirection();
-
-
-// ========================================
-// AUTENTICAÇÃO
-// ========================================
-
 app.UseAuthentication();
-
-
-// ========================================
-// JWT BLACKLIST
-// ========================================
-
 app.UseMiddleware<JwtBlacklistMiddleware>();
-
-
-// ========================================
-// AUTORIZAÇÃO
-// ========================================
-
 app.UseAuthorization();
-
-
-// ========================================
-// CONTROLLERS
-// ========================================
-
 app.MapControllers();
 
 app.Run();

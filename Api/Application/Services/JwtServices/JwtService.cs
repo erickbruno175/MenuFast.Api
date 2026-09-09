@@ -16,12 +16,18 @@ public class JwtService {
 
 
     public string GerarToken(int funcionarioId,string email,string perfil,string nome,string lojaId) {
+
+        if(!string.IsNullOrEmpty(lojaId))
+        {
+            new Claim("lojaId", lojaId);
+        }
         var chave = _configuration [ "Jwt:Key" ];
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(chave!));
         var credentials = new SigningCredentials(key,SecurityAlgorithms.HmacSha256
         );var claims = new [ ]{
         new Claim("funcionarioId", funcionarioId.ToString()),
-        new Claim("lojaId", lojaId),
+        
+        
         new Claim(JwtRegisteredClaimNames.UniqueName, email),
         new Claim(ClaimTypes.Role, perfil),
         new Claim("nome", nome)};

@@ -267,14 +267,7 @@ public class MenuService {
                 Icone = "security",
                 Filhos =
                 [
-                    new()
-                    {
-                        Nome = "Funções",
-                        Icone = "work",
-                        Rota = "/funcoes",
-                        Permissao = "FUNCAO_VISUALIZAR"
-                    },
-
+                   
                     new()
                     {
                         Nome = "Perfis",
@@ -393,23 +386,8 @@ public class MenuService {
                         Icone = "store",
                         Rota = "/loja",
                         Permissao = "LOJA_VISUALIZAR"
-                    },
-
-                    new()
-                    {
-                        Nome = "Endereço",
-                        Icone = "location_on",
-                        Rota = "/loja/endereco",
-                        Permissao = "LOJA_ALTERAR_ENDERECO"
-                    },
-
-                    new()
-                    {
-                        Nome = "Contatos",
-                        Icone = "contacts",
-                        Rota = "/loja/contatos",
-                        Permissao = "LOJA_ALTERAR_CONTATOS"
                     }
+
                 ]
             },
 
@@ -438,39 +416,8 @@ public class MenuService {
                         Rota = "/configuracoes/mesas",
                         Permissao = "CONFIGURACAO_MESA"
                     },
-
-                    new()
-                    {
-                        Nome = "Delivery",
-                        Icone = "delivery_dining",
-                        Rota = "/configuracoes/delivery",
-                        Permissao = "CONFIGURACAO_DELIVERY"
-                    },
-
-                    new()
-                    {
-                        Nome = "Retirada",
-                        Icone = "shopping_bag",
-                        Rota = "/configuracoes/retirada",
-                        Permissao = "CONFIGURACAO_RETIRADA"
-                    },
-
-                    new()
-                    {
-                        Nome = "Estoque",
-                        Icone = "inventory",
-                        Rota = "/configuracoes/estoque",
-                        Permissao = "CONFIGURACAO_ESTOQUE"
-                    },
-
-                    new()
-                    {
-                        Nome = "Taxa de serviço",
-                        Icone = "percent",
-                        Rota = "/configuracoes/taxa-servico",
-                        Permissao = "CONFIGURACAO_TAXA_SERVICO"
-                    },
-
+                 
+                   
                     new()
                     {
                         Nome = "Impressão",
@@ -479,21 +426,7 @@ public class MenuService {
                         Permissao = "CONFIGURACAO_IMPRESSAO"
                     },
 
-                    new()
-                    {
-                        Nome = "Cozinha",
-                        Icone = "restaurant",
-                        Rota = "/configuracoes/cozinha",
-                        Permissao = "CONFIGURACAO_COZINHA"
-                    },
-
-                    new()
-                    {
-                        Nome = "Bar",
-                        Icone = "local_bar",
-                        Rota = "/configuracoes/bar",
-                        Permissao = "CONFIGURACAO_BAR"
-                    },
+                 
 
                     new()
                     {

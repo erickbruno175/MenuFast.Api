@@ -20,7 +20,6 @@ namespace MenuFast.Api.Api.Application.DTOs.Request {
         public string? WhatsApp { get; set; }
         public string? Site { get; set; }
         public string? Logo { get; set; }
-        public IEnumerable<CadastrarHorarioFuncionamentoRequest> Horarios { get; set; }
 
     }
     public class CadastrarHorarioFuncionamentoRequest {

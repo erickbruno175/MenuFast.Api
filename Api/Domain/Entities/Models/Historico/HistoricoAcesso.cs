@@ -18,6 +18,6 @@ public class HistoricoAcesso {
     public string? Dispositivo { get; set; }
     public string? Token { get; set; }
     public TipoAcesso TipoAcesso { get; set; } = new TipoAcesso();
-    public int LojaId { get; set; }
+    public int? LojaId { get; set; }
     public Loja.Loja Loja { get; set; }
 }

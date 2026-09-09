@@ -1,4 +1,5 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
+using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Application.Services.LojaConfiguracoes;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
@@ -20,7 +21,6 @@ namespace MenuFast.Api.Api.Controllers {
 
         [HttpPost]
         [Route("dados-loja")]
-        [Authorize]
         [ProducesResponseType(typeof(Loja), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -30,50 +30,56 @@ namespace MenuFast.Api.Api.Controllers {
         }
 
         [HttpPut]
-        [Route("dados-loja/{idLoja}")]
+        [Route("dados-loja")]
         [Authorize]
         [ProducesResponseType(typeof(Loja), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AtualizarDadosLoja(int idLoja, [FromBody] DadosEmpresaRequest request) {
-            var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(idLoja, request);
+        public async Task<IActionResult> AtualizarDadosLoja([FromBody] DadosEmpresaRequest request) {
+            var lojaId = _applicationContextService.LojaId();
+
+            if(!lojaId.HasValue)
+                return Unauthorized("Funcionario não identificado.");
+
+            var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(lojaId.Value, request);
 
             if(loja == null)
                 return NotFound("Loja não encontrada.");
 
             return Ok(loja);
         }
-
-        [HttpPost]
-        [Route("{idLoja}/horarios")]
+        [HttpPut]
+        [Route("horarios")]
         [Authorize]
         [ProducesResponseType(typeof(IEnumerable<HorarioFuncionamento>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CadastrarHorarioFuncionamento(int idLoja, [FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
-            var horarios = await _configuracaoSistemaLoja.CadastrarHorarioFuncionamento(idLoja, request);
-            return Ok(horarios);
-        }
+        public async Task<IActionResult> SalvarHorarioFuncionamento([FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
+            var lojaId = _applicationContextService.LojaId();
 
-        [HttpPut]
-        [Route("{idHorario}/horarios")]
-        [Authorize]
-        [ProducesResponseType(typeof(IEnumerable<HorarioFuncionamento>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> AtualizarHorarioFuncionamento(int idHorario, [FromBody] List<CadastrarHorarioFuncionamentoRequest> request) {
-            var horarios = await _configuracaoSistemaLoja.AtualizarHorarioFuncionamento(request, idHorario);
+            if(!lojaId.HasValue)
+                return Unauthorized("Funcionario não identificado.");
+
+            var horarios = await _configuracaoSistemaLoja.SalvarHorarioFuncionamento(lojaId.Value, request);
+
             return Ok(horarios);
         }
 
         [HttpPost]
-        [Route("{idLoja}/configuracoes-loja")]
+        [Route("configuracoes-loja")]
         [Authorize]
         [ProducesResponseType(typeof(ConfiguracaoLoja), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> CadastrarConfiguracaoLoja(int idLoja, [FromBody] CadastrarConfiguracaoLojaRequest request) {
-            var configuracao = await _configuracaoSistemaLoja.CadastrarConfiguracaoLoja(idLoja, request);
+        public async Task<IActionResult> CadastrarConfiguracaoLoja([FromBody] CadastrarConfiguracaoLojaRequest request) {
+            var lojaId = _applicationContextService.LojaId();
+
+            if(!lojaId.HasValue)
+                return Unauthorized("Funcionario não identificado.");
+
+            var configuracao = await _configuracaoSistemaLoja.CadastrarConfiguracaoLoja(lojaId.Value, request);
+
             return Ok(configuracao);
         }
 
@@ -98,12 +104,12 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> LembrarFinalizarCadastro() {
-            var lojaId = _applicationContextService.LojaId();
+            var funcionarioId = _applicationContextService.FuncionarioId();
 
-            if(!lojaId.HasValue)
+            if(!funcionarioId.HasValue)
                 return Unauthorized("Funcionario não identificado");
 
-            var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(lojaId.Value);
+            var lembrar = await _configuracaoSistemaLoja.LembrarFinalizarCadastroConfiguracoesLoja(funcionarioId!.Value);
 
             return Ok(lembrar);
         }
@@ -113,6 +119,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ConfiguracoesLojaResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> ConsultarConfiguracoesLoja() {
             if(!_applicationContextService.LojaId().HasValue)
                 return Unauthorized("Funcionario não identificado");
@@ -131,6 +138,18 @@ namespace MenuFast.Api.Api.Controllers {
             var formasPagamento = await _configuracaoSistemaLoja.ConsultarFormasPagamento();
 
             return Ok(formasPagamento);
+        }
+
+        [HttpGet]
+        [Route("consultar-dados-loja")]
+        [Authorize]
+        [ProducesResponseType(typeof(DadosLojaResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ConsultarDadosLoja() {
+            var funcionarioId = _applicationContextService.FuncionarioId();
+            if(!funcionarioId.HasValue) return Unauthorized("Funcionário não identificado.");
+            var dadosLoja = await _configuracaoSistemaLoja.ConsultarDadosLoja(funcionarioId.Value);
+            return Ok(dadosLoja);
         }
     }
 }
