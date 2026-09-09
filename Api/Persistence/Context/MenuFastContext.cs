@@ -1,10 +1,11 @@
 ﻿using MenuFast.Api.Api.Domain.Entities.Models.Cardapio;
 using MenuFast.Api.Api.Domain.Entities.Models.Cliente;
+using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracaoImpressao;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
 using MenuFast.Api.Api.Domain.Entities.Models.Cozinha;
-using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Financeiro;
 using MenuFast.Api.Api.Domain.Entities.Models.Funcionario;
+using MenuFast.Api.Api.Domain.Entities.Models.Loja;
 using MenuFast.Api.Api.Domain.Entities.Models.Mesa;
 using MenuFast.Api.Api.Domain.Entities.Models.Pedido;
 using MenuFast.Api.Api.Domain.Entities.Models.Seguranca;
@@ -52,6 +53,7 @@ public class MenuFastContext : DbContext {
     public DbSet<PagamentoVenda> PagamentosVenda { get; set; }
     public DbSet<Venda> Vendas { get; set; }
     public DbSet<ComissaoVenda> ComissoesVenda { get; set; }
+    public DbSet<ConfiguracaoImpressao> ConfiguracoesImpressao => Set<ConfiguracaoImpressao>();
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
 

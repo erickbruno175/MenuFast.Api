@@ -28,6 +28,9 @@ public class ConfiguracaoSistemaLojaServices {
         if(!DocumentoHelper.ValidarCnpj(requestDadosEmpresa.Cnpj))
             throw new BusinessLogicException("CNPJ inválido.");
 
+        if(await _menuFastContext.Lojas.AnyAsync(x => x.Cnpj == DocumentoHelper.RemoverCaracteresEspeciais(requestDadosEmpresa.Cnpj)))
+            throw new BusinessLogicException("Já existe uma loja cadastrada com este CNPJ.");
+
         var coordenadas = await _openRouteServices.BuscarCoordenadasAsync(
             requestDadosEmpresa.Cep,
             requestDadosEmpresa.Logradouro,
@@ -118,7 +121,17 @@ public class ConfiguracaoSistemaLojaServices {
     }
 
 
-    public async Task<IEnumerable<HorarioFuncionamento>> CadastrarHorarioFuncionamento(int idLoja, List<CadastrarHorarioFuncionamentoRequest> horariosRequest) {
+    public async Task<DadosLojaResponse> ConsultarDadosLoja(int idFuncionarioLogado) {
+        var funcionario = await _menuFastContext.Funcionarios.FindAsync(idFuncionarioLogado);
+        if(funcionario == null)
+            throw new BusinessLogicException("Funcionário não encontrado.");
+        var loja = await _menuFastContext.Lojas.FindAsync(funcionario.LojaId);
+        if(loja == null)
+            throw new BusinessLogicException("Loja não encontrada.");
+        return await MapearDados(loja);
+    }
+
+    public async Task<IEnumerable<HorarioFuncionamento>> SalvarHorarioFuncionamento(int idLoja, List<CadastrarHorarioFuncionamentoRequest> horariosRequest) {
         var lojaExiste = await _menuFastContext.Lojas.AnyAsync(x => x.Id == idLoja);
 
         if(!lojaExiste)
@@ -148,30 +161,6 @@ public class ConfiguracaoSistemaLojaServices {
         await _cache.RemoveAsync($"configuracoes-loja:{idLoja}");
 
         return horarios;
-    }
-
-    public async Task<IEnumerable<HorarioFuncionamento>> AtualizarHorarioFuncionamento(List<CadastrarHorarioFuncionamentoRequest> horariosRequest, int idHorario) {
-        var horario = await _menuFastContext.HorariosFuncionamento.FirstOrDefaultAsync(x => x.Id == idHorario);
-
-        if(horario == null)
-            throw new BusinessLogicException("Horário de funcionamento não encontrado.");
-
-        var request = horariosRequest?.FirstOrDefault();
-
-        if(request == null)
-            throw new BusinessLogicException("Horário de funcionamento não informado.");
-
-        horario.DiaSemana = request.DiaSemana;
-        horario.Fechado = request.Fechado;
-        horario.HoraAbertura = request.HoraAbertura;
-        horario.HoraFechamento = request.HoraFechamento;
-
-        await _menuFastContext.SaveChangesAsync();
-        await _cache.RemoveAsync($"configuracoes-loja:{horario.LojaId}");
-
-        return await _menuFastContext.HorariosFuncionamento
-            .Where(x => x.LojaId == horario.LojaId)
-            .ToListAsync();
     }
 
     public async Task<ConfiguracaoLoja> CadastrarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {
@@ -319,7 +308,7 @@ public class ConfiguracaoSistemaLojaServices {
     public async Task<bool> LembrarFinalizarCadastroConfiguracoesLoja(int idFuncionario) {
         var funcionario = await _menuFastContext.Funcionarios.FirstOrDefaultAsync(
             f => f.Id == idFuncionario &&
-                 f.PerfilId == (int)PerfilUsuario.Administrador &&
+                 f.PerfilId == (int) PerfilUsuario.Administrador &&
                  f.Ativo);
 
         if(funcionario == null)

@@ -52,47 +52,81 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             try
             {
                 var hoje = DateTime.Now;
-                var configuracao = await _menuFastContext.ConfiguracoesSeguranca.FirstOrDefaultAsync();
+
+
+                var funcionario = await _menuFastContext.Funcionarios
+                    .Include(x => x.Loja)
+                    .Include(x => x.Perfil)
+                    .FirstOrDefaultAsync(x =>
+                        x.Email == loginRequest.Email &&
+                        x.PerfilId.HasValue &&
+                        new [ ] { 1, 2, 3 }.Contains(x.PerfilId.Value));
+
+                if(funcionario == null)
+                    throw new BusinessLogicException("Usuário inválido.");
+
+                if(!funcionario.Ativo)
+                    throw new BusinessLogicException("Usuário não está ativo.");
+
+
+                if(!funcionario.PerfilId.HasValue)
+                {
+                    throw new BusinessLogicException(
+                        "O funcionário não possui um perfil associado.");
+                }
+
+                if(funcionario.Perfil == null)
+                {
+                    throw new BusinessLogicException(
+                        "O perfil do funcionário não foi encontrado.");
+                }
+
+    
+
+                var configuracao = funcionario.LojaId.HasValue
+                    ? await _menuFastContext.ConfiguracoesSeguranca
+                        .FirstOrDefaultAsync(x =>
+                            x.LojaId == funcionario.LojaId.Value)
+                    : null;
 
                 var maxTentativas = configuracao?.MaxTentativasLogin ?? 5;
                 var tempoBloqueio = configuracao?.TempoBloqueioMinutos ?? 30;
 
-                var funcionario = await _menuFastContext.Funcionarios
-                    .Include(x => x.Loja)
-                    .Include(x => x.Perfil).
-                    FirstOrDefaultAsync(x => x.Email == loginRequest.Email && x.PerfilId.HasValue &&
-                        new [ ] { 1, 2, 3 }.Contains(x.PerfilId.Value));
-
-                if(funcionario == null) { throw new BusinessLogicException("Usuário inválido."); }
-
-                if(!funcionario.Ativo) { throw new BusinessLogicException("Usuário não está ativo."); }
-
-                if(SegurancaHelper.VerificaExpiracaoSenha(funcionario.DataExpiracaoSenha))
-                { throw new BusinessLogicException("Senha expirada, favor redefinir a senha."); }
-
+                if(SegurancaHelper.VerificaExpiracaoSenha(
+                    funcionario.DataExpiracaoSenha))
+                {
+                    throw new BusinessLogicException(
+                        "Senha expirada, favor redefinir a senha.");
+                }
 
                 if(funcionario.Bloqueado == true)
                 {
-                    if(funcionario.DataBloqueio.HasValue && funcionario.DataBloqueio.Value > hoje)
+                    if(funcionario.DataBloqueio.HasValue &&
+                        funcionario.DataBloqueio.Value > hoje)
                     {
-                        var minutosRestantes = Math.Ceiling((funcionario.DataBloqueio.Value - hoje).TotalMinutes);
+                        var minutosRestantes = Math.Ceiling(
+                            (funcionario.DataBloqueio.Value - hoje).TotalMinutes);
 
                         throw new BusinessLogicException(
                             $"Usuário bloqueado temporariamente. " +
                             $"Tente novamente em aproximadamente " +
-                            $"{minutosRestantes} minuto(s)."
-                        );
+                            $"{minutosRestantes} minuto(s).");
                     }
 
+                    // Bloqueio expirou
                     funcionario.Bloqueado = false;
                     funcionario.DataBloqueio = null;
                     funcionario.TentativasLogin = 0;
+
                     await _menuFastContext.SaveChangesAsync();
                 }
 
-                if(!SegurancaHelper.ValidarSenha(loginRequest.Senha, funcionario.SenhaHash))
+                if(!SegurancaHelper.ValidarSenha(
+                    loginRequest.Senha,
+                    funcionario.SenhaHash))
                 {
-                    funcionario.TentativasLogin = (funcionario.TentativasLogin ?? 0) + 1;
+                    funcionario.TentativasLogin =
+                        (funcionario.TentativasLogin ?? 0) + 1;
 
                     _logger.LogWarning(
                         "Senha inválida para o usuário {Email}. " +
@@ -100,52 +134,64 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                         funcionario.Email,
                         funcionario.TentativasLogin,
                         maxTentativas,
-                        hoje
-                    );
-
+                        hoje);
 
                     if(funcionario.TentativasLogin >= maxTentativas)
                     {
                         funcionario.Bloqueado = true;
-                        funcionario.DataBloqueio = hoje.AddMinutes(tempoBloqueio);
+                        funcionario.DataBloqueio =
+                            hoje.AddMinutes(tempoBloqueio);
 
                         await _menuFastContext.SaveChangesAsync();
 
-                        throw new BusinessLogicException($"Usuário bloqueado por {tempoBloqueio} minutos.");
+                        throw new BusinessLogicException(
+                            $"Usuário bloqueado por {tempoBloqueio} minutos.");
                     }
 
                     await _menuFastContext.SaveChangesAsync();
-                    throw new BusinessLogicException($"Senha inválida. Tentativa {funcionario.TentativasLogin} de {maxTentativas}.");
+
+                    throw new BusinessLogicException(
+                        $"Senha inválida. " +
+                        $"Tentativa {funcionario.TentativasLogin} de " +
+                        $"{maxTentativas}.");
                 }
 
-                var estarFechado = await EstabelecimentoEstaFechado(funcionario.LojaId.Value);
 
-                if(estarFechado && funcionario.PerfilId != (int)PerfilUsuario.Administrador)
-                { throw new BusinessLogicException("Opa, hoje estamos fechados. Abriremos amanha"); }
+
+                if(funcionario.LojaId.HasValue)
+                {
+                    var estabelecimentoFechado =
+                        await EstabelecimentoEstaFechado(
+                            funcionario.LojaId.Value);
+
+                    if(estabelecimentoFechado &&
+                        funcionario.PerfilId.Value !=
+                        (int)PerfilUsuario.Administrador)
+                    {
+                        throw new BusinessLogicException(
+                            "Opa, hoje estamos fechados. Abriremos amanhã.");
+                    }
+                }
+
 
                 funcionario.Bloqueado = false;
                 funcionario.TentativasLogin = 0;
                 funcionario.DataUltimoLogin = hoje;
                 funcionario.DataBloqueio = null;
 
+
                 var token = _jwtService.GerarToken(
                     funcionario.Id,
                     funcionario.Email,
                     funcionario.Perfil.Descricao,
                     funcionario.Nome,
-                    funcionario.LojaId.ToString()
-                );
+                    funcionario.LojaId?.ToString());
 
-                if(token == null)
+                if(string.IsNullOrWhiteSpace(token))
                 {
-                    throw new BusinessLogicException("Token não pode ser gerado.");
+                    throw new BusinessLogicException(
+                        "Token não pode ser gerado.");
                 }
-
-                _logger.LogInformation(
-                    "Login realizado com sucesso para o usuário {Email}. Data: {Data}",
-                    funcionario.Email,
-                    hoje
-                );
 
 
                 var dadosAcesso = new InformacaoAcesso
@@ -161,6 +207,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                         .ToString()
                 };
 
+
                 var historico = new Domain.Entities.Models.Seguranca.HistoricoAcesso
                 {
                     DataLogin = hoje,
@@ -171,14 +218,15 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     Dispositivo = dadosAcesso.Dispositivo,
                     Ip = dadosAcesso.Ip,
                     TipoAcesso = TipoAcesso.Login,
-                    LojaId = funcionario.LojaId.Value
+
+                    // Primeiro acesso pode não ter loja
+                    LojaId = funcionario.LojaId
                 };
 
                 _menuFastContext.HistoricoAcessos.Add(historico);
 
                 await _menuFastContext.SaveChangesAsync();
-
-
+           
                 await _redisService.SetAsync(
                     $"usuario-logado:{funcionario.Id}",
                     new
@@ -187,21 +235,26 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                         funcionario.Nome,
                         funcionario.PerfilId,
                         funcionario.Email,
-                        token = token,
-                        lojaId = funcionario.LojaId.Value,
+                        token,
+                        lojaId = funcionario.LojaId,
+                        primeiroAcesso = funcionario.PrimeiroAcesso
                     },
-                    TimeSpan.FromHours(8)
-                );
+                    TimeSpan.FromHours(8));
 
-                return new LoginResponse { Token = token, Nome = funcionario.Nome, PerfilId = funcionario.PerfilId.Value };
+                return new LoginResponse
+                {
+                    Token = token,
+                    Nome = funcionario.Nome,
+                    PerfilId = funcionario.PerfilId.Value
+                };
             }
             catch(BusinessLogicException ex)
             {
                 _logger.LogWarning(
                     "Erro de negócio ao autenticar funcionário: {Mensagem}. Data: {Data}",
                     ex.Message,
-                    DateTime.UtcNow
-                );
+                    DateTime.UtcNow);
+
                 throw;
             }
             catch(Exception ex)
@@ -211,9 +264,12 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                     "Erro inesperado ao autenticar funcionário. Data: {Data}",
                     DateTime.UtcNow);
 
-                throw new BusinessLogicException("Ocorreu um erro inesperado ao autenticar o funcionário.");
+                throw new BusinessLogicException(
+                    "Ocorreu um erro inesperado ao autenticar o funcionário.");
             }
         }
+
+
         public async Task Desloga() {
             var httpContext = _httpContextAccessor.HttpContext;
 
@@ -331,22 +387,22 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
             await _menuFastContext.SaveChangesAsync();
         }
 
-        public async Task RedefinirSenhaAsync(string token,string novaSenha,string confirmarSenha) {
+        public async Task RedefinirSenhaAsync(string token, string novaSenha, string confirmarSenha) {
             var tokenRedefinicao = await _menuFastContext.TokenRedefinicaoSenhas.FirstOrDefaultAsync(x => x.Token == token);
 
-            if(tokenRedefinicao == null)throw new BusinessLogicException("Link de redefinição inválido.");
+            if(tokenRedefinicao == null) throw new BusinessLogicException("Link de redefinição inválido.");
 
             if(tokenRedefinicao.Usado) throw new BusinessLogicException("Este link de redefinição já foi utilizado.");
 
-            if(tokenRedefinicao.DataExpiracao <= DateTime.UtcNow)throw new BusinessLogicException("Este link de redefinição expirou.");
+            if(tokenRedefinicao.DataExpiracao <= DateTime.UtcNow) throw new BusinessLogicException("Este link de redefinição expirou.");
 
-            if(novaSenha != confirmarSenha)throw new BusinessLogicException("As senhas não coincidem.");
+            if(novaSenha != confirmarSenha) throw new BusinessLogicException("As senhas não coincidem.");
 
-            if(novaSenha.Length < 8)throw new BusinessLogicException("A senha deve ter no mínimo 8 caracteres.");
+            if(novaSenha.Length < 8) throw new BusinessLogicException("A senha deve ter no mínimo 8 caracteres.");
 
             var funcionario = await _menuFastContext.Funcionarios.FirstOrDefaultAsync(x => x.Id == tokenRedefinicao.FuncionarioId);
 
-            if(funcionario == null)throw new BusinessLogicException("Funcionário não encontrado.");
+            if(funcionario == null) throw new BusinessLogicException("Funcionário não encontrado.");
 
             funcionario.SenhaHash = SegurancaHelper.CriarHash(novaSenha);
             tokenRedefinicao.Usado = true;
@@ -357,7 +413,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
         public async Task<ICollection<Perfil>> ListarPerfis() {
             return await _menuFastContext.Perfis
-                .OrderBy(p=> p.Nome).ToListAsync();
+                .OrderBy(p => p.Nome).ToListAsync();
         }
 
         public async Task<ICollection<Permissao>> ListarPermissoes() {
@@ -367,16 +423,16 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
         public async Task<IEnumerable<int>> ObterPermissoesDoPerfil(int perfilId) {
             return await _menuFastContext.PerfilPermissoes
-                 
+
                 .Where(x => x.PerfilId == perfilId)
-                .Select(x => x.PermissaoId )
+                .Select(x => x.PermissaoId)
                 .ToListAsync();
         }
 
-        public async Task AtualizarPermissoesPerfil(int perfilId,List<int> permissoesIds) {
+        public async Task AtualizarPermissoesPerfil(int perfilId, List<int> permissoesIds) {
             var perfilExiste = await _menuFastContext.Perfis.AnyAsync(x => x.Id == perfilId);
 
-            if(!perfilExiste)throw new Exception("Perfil não encontrado.");
+            if(!perfilExiste) throw new Exception("Perfil não encontrado.");
             var permissoesAtuais = await _menuFastContext.PerfilPermissoes.Where(x => x.PerfilId == perfilId).ToListAsync();
 
             _menuFastContext.PerfilPermissoes.RemoveRange(permissoesAtuais);

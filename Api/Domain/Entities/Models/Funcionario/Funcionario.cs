@@ -25,7 +25,7 @@ namespace MenuFast.Api.Api.Domain.Entities.Models.Funcionario {
         public DateTime? DataUltimoLogin { get; set; } = null;
         public DateTime? DataExpiracaoSenha { get; set; } = null;
 
-        public decimal PercentualComissao { get; set; }
+        public decimal PercentualComissao { get; set; } = decimal.Zero;
 
     }
 }
