@@ -1,4 +1,5 @@
 ﻿using MenuFast.Api.Api.Application.DTOs.Request;
+using MenuFast.Api.Api.Application.DTOs.Response;
 using MenuFast.Api.Api.Application.Services.ContextApplication;
 using MenuFast.Api.Api.Application.Services.LojaConfiguracoes;
 using MenuFast.Api.Api.Domain.Entities.Models.ConfiguracoesLoja;
@@ -113,6 +114,7 @@ namespace MenuFast.Api.Api.Controllers {
         [Authorize]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ConfiguracoesLojaResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> ConsultarConfiguracoesLoja() {
             if(!_applicationContextService.LojaId().HasValue)
                 return Unauthorized("Funcionario não identificado");
