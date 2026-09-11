@@ -104,7 +104,7 @@ public class PedidoService {
         RecalcularPedido(pedido);
 
         if(mesa != null)
-            mesa.StatusMesa = StatusMesa.Ocupada;
+        mesa.StatusMesa = StatusMesa.Ocupada;
 
         await _context.Pedidos.AddAsync(pedido);
         await _context.SaveChangesAsync();
@@ -141,8 +141,7 @@ public class PedidoService {
     }
 
     public async Task<PedidoResponse> AlterarQuantidadeItemAsync(int pedidoId, int itemId, AlterarQuantidadeItemPedidoRequest request, int lojaId) {
-        if(request.Quantidade <= 0)
-            throw new BusinessLogicException("A quantidade deve ser maior que zero.");
+        if(request.Quantidade <= 0)throw new BusinessLogicException("A quantidade deve ser maior que zero.");
 
         var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
@@ -150,19 +149,15 @@ public class PedidoService {
 
         var item = pedido.Itens.FirstOrDefault(x => x.Id == itemId);
 
-        if(item == null)
-            throw new BusinessLogicException("Item não encontrado.");
+        if(item == null)throw new BusinessLogicException("Item não encontrado.");
 
         item.Quantidade = request.Quantidade;
         item.Total = (item.ValorUnitario * item.Quantidade) - item.Desconto;
 
-        if(item.Total < 0)
-            item.Total = 0;
+        if(item.Total < 0)item.Total = 0;
 
         RecalcularPedido(pedido);
-
         await _context.SaveChangesAsync();
-
         return await BuscarPorIdAsync(pedidoId, lojaId);
     }
 
@@ -173,8 +168,7 @@ public class PedidoService {
 
         var item = pedido.Itens.FirstOrDefault(x => x.Id == itemId);
 
-        if(item == null)
-            throw new BusinessLogicException("Item não encontrado.");
+        if(item == null)throw new BusinessLogicException("Item não encontrado.");
 
         _context.ItensPedido.Remove(item);
         pedido.Itens.Remove(item);
@@ -191,8 +185,7 @@ public class PedidoService {
 
         ValidarPedidoAberto(pedido);
 
-        if(!pedido.Itens.Any())
-            throw new BusinessLogicException("Não é possível enviar um pedido sem itens.");
+        if(!pedido.Itens.Any())throw new BusinessLogicException("Não é possível enviar um pedido sem itens.");
 
         RecalcularPedido(pedido);
         pedido.Status = StatusPedido.Enviado;
@@ -209,8 +202,7 @@ public class PedidoService {
     public async Task<PedidoProducaoResponse> IniciarProducaoAsync(int pedidoId, int lojaId) {
         var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
-        if(pedido.Status != StatusPedido.Enviado)
-            throw new BusinessLogicException("O pedido precisa estar enviado para iniciar a produção.");
+        if(pedido.Status != StatusPedido.Enviado)throw new BusinessLogicException("O pedido precisa estar enviado para iniciar a produção.");
 
         pedido.Status = StatusPedido.EmProducao;
 
@@ -561,8 +553,7 @@ public class PedidoService {
     public async Task TransferirPedidosMesaAsync(int mesaOrigemId,int mesaDestinoId,int lojaId) {
         if(mesaOrigemId == mesaDestinoId)throw new BusinessLogicException("A mesa de origem e destino não podem ser a mesma.");
 
-        var mesaOrigem = await _context.Mesas
-            .FirstOrDefaultAsync(x =>x.Id == mesaOrigemId &&x.LojaId == lojaId);
+        var mesaOrigem = await _context.Mesas.FirstOrDefaultAsync(x =>x.Id == mesaOrigemId &&x.LojaId == lojaId);
         var mesaDestino = await _context.Mesas.FirstOrDefaultAsync(x =>x.Id == mesaDestinoId &&x.LojaId == lojaId);
         if(mesaOrigem == null)throw new BusinessLogicException("Mesa de origem não encontrada.");
 
