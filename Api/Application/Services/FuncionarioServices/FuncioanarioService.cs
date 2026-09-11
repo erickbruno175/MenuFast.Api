@@ -24,11 +24,20 @@ namespace MenuFast.Api.Api.Application.Services.Funcionario {
 
             }
 
+            if(request.LojaId.HasValue)
+            {
+                var jaexisteFuncionario = await _menuFastContext.Funcionarios
+                    .AnyAsync(f => f.Cpf == DocumentoHelper.RemoverCaracteresEspeciais(request.Cpf) && f.LojaId == request.LojaId.Value);
+                if (jaexisteFuncionario)
+                {
+                    throw new Exception("Funcionário já cadastrado.");
+                } 
+            }
             var funcionario = new Domain.Entities.Models.Funcionario.Funcionario
             {
                 Nome = request.Nome,
                 Email = request.Email,
-                SenhaHash = SegurancaHelper.CriarHash(request.SenhaHash),
+                SenhaHash = SegurancaHelper.CriarHash(request.SenhaHash) ?? string.Empty,
                 DataCadastro = DateTime.Now,
                 Ativo = request.Ativo,
                 DataAdmissao = DateTime.Now,

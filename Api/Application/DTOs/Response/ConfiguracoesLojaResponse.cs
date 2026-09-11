@@ -22,7 +22,6 @@ public class ConfiguracoesLojaResponse {
     public bool Ativo { get; set; }
     public string RazaoSocial { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public List<HorarioFuncionamentoResponse> HorarioFuncionamentos { get; set; } = new();
 }
 
 public class HorarioFuncionamentoResponse {

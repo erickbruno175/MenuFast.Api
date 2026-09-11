@@ -267,7 +267,7 @@ public class MenuService {
                 Icone = "security",
                 Filhos =
                 [
-                   
+
                     new()
                     {
                         Nome = "Perfis",
@@ -282,7 +282,15 @@ public class MenuService {
                         Icone = "lock",
                         Rota = "/permissoes",
                         Permissao = "PERMISSAO_VISUALIZAR"
+                    },
+                    new()
+                    {
+                        Nome = "Configurações",
+                        Icone = "settings",
+                        Rota = "/configuracoes-seguranca",
+                        Permissao = "CONFIGURACAO_SEGURANCA_VISUALIZAR"
                     }
+        
                 ]
             },
 
@@ -416,8 +424,8 @@ public class MenuService {
                         Rota = "/configuracoes/mesas",
                         Permissao = "CONFIGURACAO_MESA"
                     },
-                 
-                   
+
+
                     new()
                     {
                         Nome = "Impressão",
@@ -426,7 +434,7 @@ public class MenuService {
                         Permissao = "CONFIGURACAO_IMPRESSAO"
                     },
 
-                 
+
 
                     new()
                     {

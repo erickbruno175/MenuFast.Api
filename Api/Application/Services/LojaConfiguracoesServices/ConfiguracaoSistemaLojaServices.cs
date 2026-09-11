@@ -38,7 +38,12 @@ public class ConfiguracaoSistemaLojaServices {
             requestDadosEmpresa.Bairro,
             requestDadosEmpresa.Cidade,
             requestDadosEmpresa.Estado);
+        var logo = string.Empty;
+        if(requestDadosEmpresa.Logo != null && requestDadosEmpresa.Logo.Length > 0)
+        {
+            logo = requestDadosEmpresa.Logo;
 
+        }
         var loja = new Loja
         {
             Ativo = true,
@@ -61,7 +66,7 @@ public class ConfiguracaoSistemaLojaServices {
             Sigla = requestDadosEmpresa.Sigla,
             WhatsApp = requestDadosEmpresa.WhatsApp,
             Site = requestDadosEmpresa.Site,
-            Logo = requestDadosEmpresa.Logo,
+            Logo = logo,
             Latitude = coordenadas?.Latitude,
             Longitude = coordenadas?.Longitude,
             ConfiguracaoFinalizada = false
@@ -91,6 +96,14 @@ public class ConfiguracaoSistemaLojaServices {
             requestDadosEmpresa.Cidade,
             requestDadosEmpresa.Estado);
 
+        var logo = string.Empty;
+        if(requestDadosEmpresa.Logo != null)
+        {
+            logo = loja.Logo;
+        }
+
+        logo = requestDadosEmpresa.Logo ?? loja.Logo;
+
         loja.Slug = SlugHelper.GerarSlug(requestDadosEmpresa.NomeFantasia);
         loja.RazaoSocial = requestDadosEmpresa.RazaoSocial;
         loja.Cnpj = DocumentoHelper.RemoverCaracteresEspeciais(requestDadosEmpresa.Cnpj);
@@ -109,7 +122,7 @@ public class ConfiguracaoSistemaLojaServices {
         loja.Sigla = requestDadosEmpresa.Sigla;
         loja.WhatsApp = requestDadosEmpresa.WhatsApp;
         loja.Site = requestDadosEmpresa.Site;
-        loja.Logo = requestDadosEmpresa.Logo;
+        loja.Logo = logo;
         loja.Latitude = coordenadas?.Latitude;
         loja.Longitude = coordenadas?.Longitude;
         loja.DataAlteracao = DateTime.Now;
@@ -163,7 +176,16 @@ public class ConfiguracaoSistemaLojaServices {
         return horarios;
     }
 
-    public async Task<ConfiguracaoLoja> CadastrarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {
+    public async Task<IEnumerable<HorarioFuncionamento>> ConsultarHorariosFuncionamento(int idLoja) {
+        var lojaExiste = await _menuFastContext.Lojas.AnyAsync(x => x.Id == idLoja);
+        if(!lojaExiste)
+            throw new BusinessLogicException("Loja não encontrada.");
+        var horarios = await _menuFastContext.HorariosFuncionamento
+            .Where(x => x.LojaId == idLoja)
+            .ToListAsync();
+        return horarios;
+    }
+    public async Task<ConfiguracoesLojaResponse> CadastrarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {
         var loja = await _menuFastContext.Lojas.FirstOrDefaultAsync(x => x.Id == idLoja);
 
         if(loja == null)
@@ -195,7 +217,8 @@ public class ConfiguracaoSistemaLojaServices {
             TrabalhaComRetirada = request.TrabalhaComRetirada,
             AbilitarImpressoraTermica = request.AbilitarImpressoraTermica,
             AbilitarKDS = request.AbilitarKDS,
-            LojaId = idLoja
+            LojaId = idLoja,
+            Ativo = true
         };
 
         await _menuFastContext.ConfiguracoesLoja.AddAsync(configuracao);
@@ -213,13 +236,35 @@ public class ConfiguracaoSistemaLojaServices {
             administrador.PrimeiroAcesso = false;
 
         await _menuFastContext.SaveChangesAsync();
-        await _cache.RemoveAsync($"configuracoes-loja:{idLoja}");
 
-        return configuracao;
+
+        return new ConfiguracoesLojaResponse
+        {
+            Id = configuracao.Id,
+            Ativo = configuracao.Ativo,
+            RazaoSocial = loja.RazaoSocial,
+            Email = loja.Email,
+            TrabalhaComMesa = configuracao.TrabalhaComMesa,
+            TrabalhaComDelivery = configuracao.TrabalhaComDelivery,
+            TrabalhaComRetirada = configuracao.TrabalhaComRetirada,
+            PermiteVendaSemEstoque = configuracao.PermiteVendaSemEstoque,
+            CobraTaxaServico = configuracao.CobraTaxaServico,
+            PercentualTaxaServico = configuracao.PercentualTaxaServico ?? 0,
+            CobraTaxaEntrega = configuracao.CobraTaxaEntrega,
+            TipoTaxaEntrega = configuracao.TipoTaxaEntrega,
+            TaxaEntrega = configuracao.TaxaEntrega,
+            TaxaBaseEntrega = configuracao.TaxaBaseEntrega,
+            ValorPorKm = configuracao.ValorPorKm,
+            DistanciaMaximaEntregaKm = configuracao.DistanciaMaximaEntregaKm,
+            ValorAberturaCaixa = configuracao.ValorAberturaCaixa,
+            AbilitarImpressoraTermica = configuracao.AbilitarImpressoraTermica,
+            AbilitarKDS = configuracao.AbilitarKDS
+        };
     }
-
-    public async Task<ConfiguracaoLoja> AtualizarConfiguracaoLoja(int idLoja, CadastrarConfiguracaoLojaRequest request) {
-        var configuracao = await _menuFastContext.ConfiguracoesLoja.FirstOrDefaultAsync(x => x.LojaId == idLoja);
+    public async Task<ConfiguracoesLojaResponse> AtualizarConfiguracaoLoja(int idConfiguracao, CadastrarConfiguracaoLojaRequest request) {
+        var configuracao = await _menuFastContext.ConfiguracoesLoja
+            .Include(x => x.Loja)
+            .FirstOrDefaultAsync(x => x.Id == idConfiguracao);
 
         if(configuracao == null)
             throw new BusinessLogicException("Configurações da loja não encontradas.");
@@ -240,17 +285,34 @@ public class ConfiguracaoSistemaLojaServices {
         configuracao.AbilitarImpressoraTermica = request.AbilitarImpressoraTermica;
 
         await _menuFastContext.SaveChangesAsync();
-        await _cache.RemoveAsync($"configuracoes-loja:{idLoja}");
 
-        return configuracao;
+
+        return new ConfiguracoesLojaResponse
+        {
+            Id = configuracao.Id,
+            Ativo = configuracao.Ativo,
+            RazaoSocial = configuracao.Loja?.RazaoSocial ?? string.Empty,
+            Email = configuracao.Loja?.Email ?? string.Empty,
+            TrabalhaComMesa = configuracao.TrabalhaComMesa,
+            TrabalhaComDelivery = configuracao.TrabalhaComDelivery,
+            TrabalhaComRetirada = configuracao.TrabalhaComRetirada,
+            PermiteVendaSemEstoque = configuracao.PermiteVendaSemEstoque,
+            CobraTaxaServico = configuracao.CobraTaxaServico,
+            PercentualTaxaServico = configuracao.PercentualTaxaServico ?? 0,
+            CobraTaxaEntrega = configuracao.CobraTaxaEntrega,
+            TipoTaxaEntrega = configuracao.TipoTaxaEntrega,
+            TaxaEntrega = configuracao.TaxaEntrega,
+            TaxaBaseEntrega = configuracao.TaxaBaseEntrega,
+            ValorPorKm = configuracao.ValorPorKm,
+            DistanciaMaximaEntregaKm = configuracao.DistanciaMaximaEntregaKm,
+            ValorAberturaCaixa = configuracao.ValorAberturaCaixa,
+            AbilitarImpressoraTermica = configuracao.AbilitarImpressoraTermica,
+            AbilitarKDS = configuracao.AbilitarKDS
+        };
     }
 
     public async Task<ConfiguracoesLojaResponse> ConsultarConfiguracoesLoja(int lojaId) {
-        var cacheKey = $"configuracoes-loja:{lojaId}";
-        var cache = await _cache.GetStringAsync(cacheKey);
 
-        if(!string.IsNullOrEmpty(cache))
-            return JsonSerializer.Deserialize<ConfiguracoesLojaResponse>(cache)!;
 
         var loja = await _menuFastContext.Lojas
             .Include(l => l.Configuracao)
@@ -283,24 +345,8 @@ public class ConfiguracaoSistemaLojaServices {
             AbilitarImpressoraTermica = loja.Configuracao.AbilitarImpressoraTermica,
             AbilitarKDS = loja.Configuracao.AbilitarKDS,
             ValorAberturaCaixa = loja.Configuracao.ValorAberturaCaixa,
-            HorarioFuncionamentos = loja.Horarios.Select(x => new HorarioFuncionamentoResponse
-            {
-                Id = x.Id,
-                LojaId = x.LojaId,
-                DiaSemana = x.DiaSemana,
-                HoraAbertura = x.HoraAbertura,
-                HoraFechamento = x.HoraFechamento,
-                Fechado = x.Fechado
-            }).ToList()
         };
 
-        await _cache.SetStringAsync(
-            cacheKey,
-            JsonSerializer.Serialize(response),
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
-            });
 
         return response;
     }
@@ -308,7 +354,7 @@ public class ConfiguracaoSistemaLojaServices {
     public async Task<bool> LembrarFinalizarCadastroConfiguracoesLoja(int idFuncionario) {
         var funcionario = await _menuFastContext.Funcionarios.FirstOrDefaultAsync(
             f => f.Id == idFuncionario &&
-                 f.PerfilId == (int) PerfilUsuario.Administrador &&
+                 f.PerfilId == (int)PerfilUsuario.Administrador &&
                  f.Ativo);
 
         if(funcionario == null)

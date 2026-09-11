@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MenuFast.Api.Middlewares;
 
@@ -23,6 +22,12 @@ public class ExceptionMiddleware {
         {
             _logger.LogWarning(ex, ex.Message);
 
+            if(context.Response.HasStarted)
+            {
+                _logger.LogWarning("A resposta já havia iniciado. Não foi possível alterar o StatusCode.");
+                throw;
+            }
+
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "application/json";
 
@@ -38,6 +43,12 @@ public class ExceptionMiddleware {
         {
             _logger.LogWarning(ex, ex.Message);
 
+            if(context.Response.HasStarted)
+            {
+                _logger.LogWarning("A resposta já havia iniciado. Não foi possível alterar o StatusCode.");
+                throw;
+            }
+
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             context.Response.ContentType = "application/json";
 
@@ -51,7 +62,13 @@ public class ExceptionMiddleware {
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, ex.Message , "Data geração" , DateTime.Now);
+            _logger.LogError(ex, "Erro interno no servidor. Data geração: {Data}", DateTime.Now);
+
+            if(context.Response.HasStarted)
+            {
+                _logger.LogWarning("A resposta já havia iniciado. Não foi possível alterar o StatusCode.");
+                throw;
+            }
 
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";

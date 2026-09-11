@@ -63,7 +63,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                         new [ ] { 1, 2, 3 }.Contains(x.PerfilId.Value));
 
                 if(funcionario == null)
-                    throw new BusinessLogicException("Usuário inválido.");
+                    throw new BusinessLogicException("Usuário inválido ou não existe.");
 
                 if(!funcionario.Ativo)
                     throw new BusinessLogicException("Usuário não está ativo.");

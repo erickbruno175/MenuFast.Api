@@ -37,12 +37,18 @@ namespace MenuFast.Api.Api.Controllers {
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> AtualizarDadosLoja([FromBody] DadosEmpresaRequest request) {
+            var usuario = _applicationContextService.FuncionarioId();
+            if(!usuario.HasValue)
+                return Unauthorized("Funcionario não identificado.");
+
             var lojaId = _applicationContextService.LojaId();
 
             if(!lojaId.HasValue)
-                return Unauthorized("Funcionario não identificado.");
-
-            var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(lojaId.Value, request);
+            {
+                return Unauthorized("Loja não identificada.");
+            }
+            
+            var loja = await _configuracaoSistemaLoja.AtualizarDadosLoja(lojaId!.Value, request);
 
             if(loja == null)
                 return NotFound("Loja não encontrada.");
@@ -62,6 +68,22 @@ namespace MenuFast.Api.Api.Controllers {
                 return Unauthorized("Funcionario não identificado.");
 
             var horarios = await _configuracaoSistemaLoja.SalvarHorarioFuncionamento(lojaId.Value, request);
+
+            return Ok(horarios);
+        }
+
+        [HttpGet]
+        [Route("consultar-horarios")]
+        [Authorize]
+        [ProducesResponseType(typeof(IEnumerable<HorarioFuncionamento>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ConsultarHorariosFuncionamento() {
+            var lojaId = _applicationContextService.LojaId();
+
+            if(!lojaId.HasValue)
+                return Unauthorized("Funcionario não identificado.");
+
+            var horarios = await _configuracaoSistemaLoja.ConsultarHorariosFuncionamento(lojaId.Value);
 
             return Ok(horarios);
         }
