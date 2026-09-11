@@ -221,7 +221,8 @@ public class ConfiguracaoSistemaLojaServices {
             AbilitarImpressoraTermica = request.AbilitarImpressoraTermica,
             AbilitarKDS = request.AbilitarKDS,
             LojaId = idLoja,
-            Ativo = true
+            Ativo = true,
+            ControlaEstoque = request.ControlaEstoque,
         };
 
         await _menuFastContext.ConfiguracoesLoja.AddAsync(configuracao);
@@ -261,7 +262,8 @@ public class ConfiguracaoSistemaLojaServices {
             DistanciaMaximaEntregaKm = configuracao.DistanciaMaximaEntregaKm,
             ValorAberturaCaixa = configuracao.ValorAberturaCaixa,
             AbilitarImpressoraTermica = configuracao.AbilitarImpressoraTermica,
-            AbilitarKDS = configuracao.AbilitarKDS
+            AbilitarKDS = configuracao.AbilitarKDS,
+            ControlaEstoque = configuracao.ControlaEstoque
         };
     }
     public async Task<ConfiguracoesLojaResponse> AtualizarConfiguracaoLoja(int idConfiguracao, CadastrarConfiguracaoLojaRequest request) {
@@ -286,7 +288,7 @@ public class ConfiguracaoSistemaLojaServices {
         configuracao.DistanciaMaximaEntregaKm = request.DistanciaMaximaEntregaKm;
         configuracao.AbilitarKDS = request.AbilitarKDS;
         configuracao.AbilitarImpressoraTermica = request.AbilitarImpressoraTermica;
-
+        configuracao.ControlaEstoque = request.ControlaEstoque;
         await _menuFastContext.SaveChangesAsync();
 
 
@@ -310,48 +312,38 @@ public class ConfiguracaoSistemaLojaServices {
             DistanciaMaximaEntregaKm = configuracao.DistanciaMaximaEntregaKm,
             ValorAberturaCaixa = configuracao.ValorAberturaCaixa,
             AbilitarImpressoraTermica = configuracao.AbilitarImpressoraTermica,
-            AbilitarKDS = configuracao.AbilitarKDS
+            AbilitarKDS = configuracao.AbilitarKDS,
+            ControlaEstoque = configuracao.ControlaEstoque
         };
     }
 
     public async Task<ConfiguracoesLojaResponse> ConsultarConfiguracoesLoja(int lojaId) {
+        var configuracao = await _menuFastContext.ConfiguracoesLoja
+            .FirstOrDefaultAsync(x => x.LojaId == lojaId);
 
-
-        var loja = await _menuFastContext.Lojas
-            .Include(l => l.Configuracao)
-            .Include(l => l.Horarios)
-            .FirstOrDefaultAsync(x => x.Id == lojaId);
-
-        if(loja == null)
-            throw new BusinessLogicException("Loja não encontrada.");
-
-        if(loja.Configuracao == null)
+        if(configuracao == null)
             throw new BusinessLogicException("Configurações da loja não encontradas.");
-        var response = new ConfiguracoesLojaResponse
+
+        return new ConfiguracoesLojaResponse
         {
-            Id = loja.Configuracao.Id,
-            Ativo = loja.Ativo,
-            RazaoSocial = loja.RazaoSocial,
-            Email = loja.Email,
-            TrabalhaComMesa = loja.Configuracao.TrabalhaComMesa,
-            TrabalhaComDelivery = loja.Configuracao.TrabalhaComDelivery,
-            TrabalhaComRetirada = loja.Configuracao.TrabalhaComRetirada,
-            PermiteVendaSemEstoque = loja.Configuracao.PermiteVendaSemEstoque,
-            CobraTaxaServico = loja.Configuracao.CobraTaxaServico,
-            PercentualTaxaServico = loja.Configuracao.PercentualTaxaServico ?? 0,
-            CobraTaxaEntrega = loja.Configuracao.CobraTaxaEntrega,
-            TipoTaxaEntrega = loja.Configuracao.TipoTaxaEntrega,
-            TaxaEntrega = loja.Configuracao.TaxaEntrega,
-            TaxaBaseEntrega = loja.Configuracao.TaxaBaseEntrega,
-            ValorPorKm = loja.Configuracao.ValorPorKm,
-            DistanciaMaximaEntregaKm = loja.Configuracao.DistanciaMaximaEntregaKm,
-            AbilitarImpressoraTermica = loja.Configuracao.AbilitarImpressoraTermica,
-            AbilitarKDS = loja.Configuracao.AbilitarKDS,
-            ValorAberturaCaixa = loja.Configuracao.ValorAberturaCaixa,
+            Id = configuracao.Id,
+            TrabalhaComMesa = configuracao.TrabalhaComMesa,
+            TrabalhaComDelivery = configuracao.TrabalhaComDelivery,
+            TrabalhaComRetirada = configuracao.TrabalhaComRetirada,
+            PermiteVendaSemEstoque = configuracao.PermiteVendaSemEstoque,
+            CobraTaxaServico = configuracao.CobraTaxaServico,
+            PercentualTaxaServico = configuracao.PercentualTaxaServico ?? 0,
+            CobraTaxaEntrega = configuracao.CobraTaxaEntrega,
+            TipoTaxaEntrega = configuracao.TipoTaxaEntrega,
+            TaxaEntrega = configuracao.TaxaEntrega,
+            TaxaBaseEntrega = configuracao.TaxaBaseEntrega,
+            ValorPorKm = configuracao.ValorPorKm,
+            DistanciaMaximaEntregaKm = configuracao.DistanciaMaximaEntregaKm,
+            AbilitarImpressoraTermica = configuracao.AbilitarImpressoraTermica,
+            AbilitarKDS = configuracao.AbilitarKDS,
+            ValorAberturaCaixa = configuracao.ValorAberturaCaixa,
+            ControlaEstoque = configuracao.ControlaEstoque
         };
-
-
-        return response;
     }
 
     public async Task<bool> LembrarFinalizarCadastroConfiguracoesLoja(int idFuncionario) {

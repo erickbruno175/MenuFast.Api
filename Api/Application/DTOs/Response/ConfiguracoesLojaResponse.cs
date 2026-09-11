@@ -22,6 +22,7 @@ public class ConfiguracoesLojaResponse {
     public bool Ativo { get; set; }
     public string RazaoSocial { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public bool ControlaEstoque { get; set; }
 }
 
 public class HorarioFuncionamentoResponse {

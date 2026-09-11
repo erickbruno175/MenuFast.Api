@@ -61,18 +61,18 @@ public class MenuService {
                 [
                     new()
                     {
-                        Nome = "Pedidos",
-                        Icone = "receipt_long",
-                        Rota = "/pedidos",
-                        Permissao = "PEDIDO_VISUALIZAR"
+                        Nome = "Venda Balcão",
+                        Icone = "storefront",
+                        Rota = "/vendas/balcao",
+                        Permissao = "VENDA_BALCAO_VISUALIZAR"
                     },
 
                     new()
                     {
-                        Nome = "Mesas",
+                        Nome = "Venda Mesa",
                         Icone = "table_restaurant",
-                        Rota = "/mesas",
-                        Permissao = "MESA_VISUALIZAR"
+                        Rota = "/vendas/mesa",
+                        Permissao = "VENDA_MESA_VISUALIZAR"
                     },
 
                     new()
@@ -85,10 +85,10 @@ public class MenuService {
 
                     new()
                     {
-                        Nome = "Retirada",
-                        Icone = "shopping_bag",
-                        Rota = "/retirada",
-                        Permissao = "RETIRADA_VISUALIZAR"
+                        Nome = "Pedidos",
+                        Icone = "receipt_long",
+                        Rota = "/pedidos",
+                        Permissao = "PEDIDO_VISUALIZAR"
                     }
                 ]
             },
@@ -267,15 +267,7 @@ public class MenuService {
                 Icone = "security",
                 Filhos =
                 [
-
-                    new()
-                    {
-                        Nome = "Perfis",
-                        Icone = "manage_accounts",
-                        Rota = "/perfis",
-                        Permissao = "PERFIL_VISUALIZAR"
-                    },
-
+          
                     new()
                     {
                         Nome = "Permissões",
@@ -283,6 +275,7 @@ public class MenuService {
                         Rota = "/permissoes",
                         Permissao = "PERMISSAO_VISUALIZAR"
                     },
+
                     new()
                     {
                         Nome = "Configurações",
@@ -290,7 +283,6 @@ public class MenuService {
                         Rota = "/configuracoes-seguranca",
                         Permissao = "CONFIGURACAO_SEGURANCA_VISUALIZAR"
                     }
-        
                 ]
             },
 
@@ -395,7 +387,6 @@ public class MenuService {
                         Rota = "/loja",
                         Permissao = "LOJA_VISUALIZAR"
                     }
-
                 ]
             },
 
@@ -425,7 +416,6 @@ public class MenuService {
                         Permissao = "CONFIGURACAO_MESA"
                     },
 
-
                     new()
                     {
                         Nome = "Impressão",
@@ -433,8 +423,6 @@ public class MenuService {
                         Rota = "/configuracoes/impressao",
                         Permissao = "CONFIGURACAO_IMPRESSAO"
                     },
-
-
 
                     new()
                     {
@@ -518,10 +506,6 @@ public class MenuService {
 
             var possuiFilhos = filhos.Count > 0;
 
-            // =========================================================
-            // ITEM COM FILHOS
-            // =========================================================
-
             if(possuiFilhos)
             {
                 resultado.Add(new MenuItemResponse
@@ -535,10 +519,6 @@ public class MenuService {
 
                 continue;
             }
-
-            // =========================================================
-            // ITEM FOLHA
-            // =========================================================
 
             if(!string.IsNullOrWhiteSpace(item.Rota))
             {
