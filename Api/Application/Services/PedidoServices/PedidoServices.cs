@@ -51,27 +51,22 @@ public class PedidoService {
 
             mesa = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == request.MesaId.Value && x.LojaId == lojaId);
 
-            if(mesa == null)
-                throw new BusinessLogicException("Mesa não encontrada.");
+            if(mesa == null)throw new BusinessLogicException("Mesa não encontrada.");
 
-            if(mesa.StatusMesa == StatusMesa.Bloqueada)
-                throw new BusinessLogicException("A mesa está bloqueada.");
+            if(mesa.StatusMesa == StatusMesa.Bloqueada)throw new BusinessLogicException("A mesa está bloqueada.");
 
 
         }
 
         if(request.TipoPedido == TipoPedido.Delivery)
         {
-            if(configuracaoLoja == null || !configuracaoLoja.TrabalhaComDelivery)
-                throw new BusinessLogicException("Esta loja não trabalha com delivery.");
+            if(configuracaoLoja == null || !configuracaoLoja.TrabalhaComDelivery)throw new BusinessLogicException("Esta loja não trabalha com delivery.");
 
-            if(!request.ClienteId.HasValue)
-                throw new BusinessLogicException("O cliente é obrigatório para delivery.");
+            if(!request.ClienteId.HasValue)throw new BusinessLogicException("O cliente é obrigatório para delivery.");
 
             var cliente = await _context.Clientes.FirstOrDefaultAsync(x => x.Id == request.ClienteId.Value && x.LojaId == lojaId);
 
-            if(cliente == null)
-                throw new BusinessLogicException("Cliente não encontrado.");
+            if(cliente == null)throw new BusinessLogicException("Cliente não encontrado.");
 
             var resultadoTaxa = await CalcularTaxaEntregaAsync(lojaId, cliente, configuracaoLoja);
             taxaEntrega = resultadoTaxa.Taxa;
@@ -231,8 +226,7 @@ public class PedidoService {
     public async Task<PedidoProducaoResponse> FinalizarProducaoAsync(int pedidoId, int lojaId) {
         var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
-        if(pedido.Status != StatusPedido.EmProducao)
-            throw new BusinessLogicException("O pedido precisa estar em produção para ser finalizado.");
+        if(pedido.Status != StatusPedido.EmProducao)throw new BusinessLogicException("O pedido precisa estar em produção para ser finalizado.");
 
         pedido.Status = StatusPedido.Pronto;
 
@@ -248,11 +242,9 @@ public class PedidoService {
     public async Task<PedidoResponse> CancelarAsync(int pedidoId, int lojaId) {
         var pedido = await BuscarPedidoAsync(pedidoId, lojaId);
 
-        if(pedido.Status == StatusPedido.Cancelado)
-            throw new BusinessLogicException("O pedido já está cancelado.");
+        if(pedido.Status == StatusPedido.Cancelado)throw new BusinessLogicException("O pedido já está cancelado.");
 
-        if(pedido.Status == StatusPedido.Finalizado)
-            throw new BusinessLogicException("Não é possível cancelar um pedido finalizado.");
+        if(pedido.Status == StatusPedido.Finalizado)throw new BusinessLogicException("Não é possível cancelar um pedido finalizado.");
 
         pedido.Status = StatusPedido.Cancelado;
 
@@ -268,15 +260,13 @@ public class PedidoService {
         if(pedidoId.HasValue)
         {
             var pedido = await BuscarPedidoAsync(pedidoId.Value, lojaId);
-
             pedidos = [ pedido ];
         }
         else if(mesaId.HasValue)
         {
             var mesaExiste = await _context.Mesas.AnyAsync(x => x.Id == mesaId && x.LojaId == lojaId);
 
-            if(!mesaExiste)
-                throw new BusinessLogicException("Mesa não encontrada.");
+            if(!mesaExiste)throw new BusinessLogicException("Mesa não encontrada.");
 
             pedidos = await _context.Pedidos
                 .Include(m=> m.Mesa)
@@ -287,8 +277,6 @@ public class PedidoService {
                             x.Status != StatusPedido.Cancelado)
                 .OrderBy(x => x.DataPedidoHora)
                 .ToListAsync();
-
-
 
             if(!pedidos.Any())
                 throw new BusinessLogicException("Não existem pedidos ativos para esta mesa.");
@@ -320,9 +308,7 @@ public class PedidoService {
             .ThenInclude(p => p.Produto)
             .FirstOrDefaultAsync(x => x.Id == pedidoId && x.LojaId == lojaId);
 
-        if(pedido == null)
-            throw new BusinessLogicException("Pedido não encontrado.");
-
+        if(pedido == null)throw new BusinessLogicException("Pedido não encontrado.");
         return MapearResponse(pedido);
     }
 
@@ -353,7 +339,6 @@ public class PedidoService {
 
         return pedidos.Select(MapearResponse).ToList();
     }
-
     public async Task<List<PedidoResponse>> ListarPorStatusAsync(int lojaId, StatusPedido status) {
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)
@@ -543,13 +528,10 @@ public class PedidoService {
             x.Status != StatusPedido.Finalizado &&
             x.Status != StatusPedido.Cancelado);
 
-        if(existeOutroPedidoAtivo)
-            return;
+        if(existeOutroPedidoAtivo)return;
 
         var mesa = await _context.Mesas.FirstOrDefaultAsync(x => x.Id == pedido.MesaId.Value && x.LojaId == pedido.LojaId);
-
-        if(mesa != null)
-            mesa.StatusMesa = StatusMesa.Livre;
+        if(mesa != null)mesa.StatusMesa = StatusMesa.Livre;
     }
 
     private static PedidoProducaoResponse MontarPedidoProducao(Pedido pedido) {
@@ -576,7 +558,6 @@ public class PedidoService {
                 .ToList()
         };
     }
-
     public async Task TransferirPedidosMesaAsync(int mesaOrigemId,int mesaDestinoId,int lojaId) {
         if(mesaOrigemId == mesaDestinoId)throw new BusinessLogicException("A mesa de origem e destino não podem ser a mesma.");
 
@@ -598,10 +579,7 @@ public class PedidoService {
         if(!pedidosAtivos.Any())throw new BusinessLogicException("Não existem pedidos ativos na mesa de origem.");
 
         // Transfere os pedidos
-        foreach(var pedido in pedidosAtivos)
-        {
-            pedido.MesaId = mesaDestinoId;
-        }
+        foreach(var pedido in pedidosAtivos){pedido.MesaId = mesaDestinoId;}
 
         // Destino fica ocupada
         mesaDestino.StatusMesa = StatusMesa.Ocupada;

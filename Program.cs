@@ -14,6 +14,7 @@ using MenuFast.Api.Api.Application.Services.Redis;
 using MenuFast.Api.Api.Application.Services.RegistrarContaPlataforma;
 using MenuFast.Api.Api.Application.Services.Security;
 using MenuFast.Api.Api.Application.Services.Seguranca;
+using MenuFast.Api.Api.Application.Services.SegurancaServices;
 using MenuFast.Api.Api.Application.Services.Services.OpenRouteService;
 using MenuFast.Api.Api.Application.Services.VendaService;
 using MenuFast.Api.Api.Hubs;
@@ -170,7 +171,7 @@ builder.Services.AddScoped<PedidoService>();
 builder.Services.AddScoped<KdsService>();
 builder.Services.AddScoped<MesaAtualizarHub>();
 builder.Services.AddScoped<RegistrarContaPlataforma>();
-
+builder.Services.AddScoped<ConfiguracoesSegurancaServices>();
 builder.Services.AddHttpClient<OpenRouteServices>();
 
 builder.Services.AddHostedService<AlertaEstoqueBackgroundService>();
