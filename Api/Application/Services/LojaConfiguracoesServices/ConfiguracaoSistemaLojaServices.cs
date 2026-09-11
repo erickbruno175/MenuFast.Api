@@ -80,6 +80,9 @@ public class ConfiguracaoSistemaLojaServices {
     }
 
     public async Task<DadosLojaResponse> AtualizarDadosLoja(int idLoja, DadosEmpresaRequest requestDadosEmpresa) {
+
+
+
         var loja = await _menuFastContext.Lojas.FindAsync(idLoja);
 
         if(loja == null)

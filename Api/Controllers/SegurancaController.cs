@@ -117,5 +117,15 @@ namespace MenuFast.Api.Api.Controllers {
             return Ok(claims);
         }
 
+        [HttpGet]
+        [Route("possui-permissao/{codigo}")]
+        [Authorize]
+        public async Task<IActionResult> PossuiPermissao(string codigo) {
+            var funcionarioId = _applicationContextService.FuncionarioId();
+            if(!funcionarioId.HasValue)return Unauthorized();
+            var possui = await _service.PossuiPermissao(funcionarioId.Value, codigo);
+            return Ok(new { Possui = possui });
+        }
+
     }
 }

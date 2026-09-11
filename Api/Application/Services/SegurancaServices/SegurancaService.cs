@@ -81,7 +81,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                         "O perfil do funcionário não foi encontrado.");
                 }
 
-    
+
 
                 var configuracao = funcionario.LojaId.HasValue
                     ? await _menuFastContext.ConfiguracoesSeguranca
@@ -226,7 +226,7 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
                 _menuFastContext.HistoricoAcessos.Add(historico);
 
                 await _menuFastContext.SaveChangesAsync();
-           
+
                 await _redisService.SetAsync(
                     $"usuario-logado:{funcionario.Id}",
                     new
@@ -449,6 +449,15 @@ namespace MenuFast.Api.Api.Application.Services.Seguranca {
 
             await _menuFastContext.SaveChangesAsync();
         }
+
+        public async Task<bool> PossuiPermissao(int funcionarioId, string codigo) {
+            var funcionario = await _menuFastContext.Funcionarios
+                .Where(f=> f.Id == funcionarioId)
+                .SelectMany(f => f.Perfil.PerfilPermissoes)
+                .AllAsync(pp=> pp.Permissao.Codigo == codigo);
+            return funcionario;
+        }
+ 
     }
 }
 
