@@ -86,7 +86,7 @@ public class MesaService {
 
         if(mesa == null)throw new BusinessLogicException("Mesa não encontrada.");
 
-        var possuiPedidos = await _context.Pedidos.AnyAsync(x => x.MesaId == idMesa);
+        var possuiPedidos = await _context.Pedidos.AnyAsync(x => x.MesaId == idMesa && x.Mesa.StatusMesa == (int) StatusMesa.Livre);
 
         if(possuiPedidos)throw new BusinessLogicException("Não é possível remover uma mesa que possui pedidos.");
         _context.Mesas.Remove(mesa);
