@@ -37,10 +37,7 @@ public class MenuService {
     private static List<MenuItemResponse> CriarMenu() {
         return
         [
-            // =========================================================
-            // DASHBOARD
-            // =========================================================
-
+           
             new()
             {
                 Nome = "Dashboard",
@@ -49,42 +46,31 @@ public class MenuService {
                 Permissao = "DASHBOARD_VISUALIZAR"
             },
 
-            // =========================================================
-            // VENDAS
-            // =========================================================
-
             new()
             {
                 Nome = "Vendas",
                 Icone = "point_of_sale",
                 Filhos =
                 [
-                    new()
-                    {
+                    new() {
                         Nome = "Venda Balcão",
                         Icone = "storefront",
-                        Rota = "/vendas/balcao",
-                        Permissao = "VENDA_BALCAO_VISUALIZAR"
+                        Rota = "/balcao",
+                        Permissao = "PEDIDO_CRIAR"
                     },
-
-                    new()
-                    {
+                    new() {
                         Nome = "Venda Mesa",
                         Icone = "table_restaurant",
                         Rota = "/vendas/mesa",
-                        Permissao = "VENDA_MESA_VISUALIZAR"
+                        Permissao = "MESA_VISUALIZAR"
                     },
-
-                    new()
-                    {
+                    new() {
                         Nome = "Delivery",
                         Icone = "delivery_dining",
                         Rota = "/delivery",
                         Permissao = "DELIVERY_VISUALIZAR"
                     },
-
-                    new()
-                    {
+                    new() {
                         Nome = "Pedidos",
                         Icone = "receipt_long",
                         Rota = "/pedidos",
@@ -92,10 +78,6 @@ public class MenuService {
                     }
                 ]
             },
-
-            // =========================================================
-            // CATÁLOGO
-            // =========================================================
 
             new()
             {
@@ -119,13 +101,6 @@ public class MenuService {
                         Permissao = "CATEGORIA_VISUALIZAR"
                     },
 
-                    new()
-                    {
-                        Nome = "Complementos",
-                        Icone = "add_circle",
-                        Rota = "/complementos",
-                        Permissao = "COMPLEMENTO_VISUALIZAR"
-                    },
 
                     new()
                     {
@@ -137,9 +112,7 @@ public class MenuService {
                 ]
             },
 
-            // =========================================================
-            // ESTOQUE
-            // =========================================================
+    
 
             new()
             {
@@ -148,10 +121,6 @@ public class MenuService {
                 Rota = "/estoque",
                 Permissao = "ESTOQUE_VISUALIZAR"
             },
-
-            // =========================================================
-            // CLIENTES
-            // =========================================================
 
             new()
             {
@@ -185,10 +154,7 @@ public class MenuService {
                 ]
             },
 
-            // =========================================================
-            // CAIXA
-            // =========================================================
-
+      
             new()
             {
                 Nome = "Caixa",
@@ -196,10 +162,6 @@ public class MenuService {
                 Rota = "/caixa",
                 Permissao = "CAIXA_VISUALIZAR"
             },
-
-            // =========================================================
-            // FINANCEIRO
-            // =========================================================
 
             new()
             {
@@ -217,14 +179,6 @@ public class MenuService {
 
                     new()
                     {
-                        Nome = "Contas a receber",
-                        Icone = "trending_up",
-                        Rota = "/financeiro/contas-receber",
-                        Permissao = "FINANCEIRO_VISUALIZAR_CONTAS_RECEBER"
-                    },
-
-                    new()
-                    {
                         Nome = "Contas a pagar",
                         Icone = "trending_down",
                         Rota = "/financeiro/contas-pagar",
@@ -233,10 +187,6 @@ public class MenuService {
                 ]
             },
 
-            // =========================================================
-            // FORMAS DE PAGAMENTO
-            // =========================================================
-
             new()
             {
                 Nome = "Formas de pagamento",
@@ -244,11 +194,6 @@ public class MenuService {
                 Rota = "/formas-pagamento",
                 Permissao = "PAGAMENTO_VISUALIZAR"
             },
-
-            // =========================================================
-            // FUNCIONÁRIOS
-            // =========================================================
-
             new()
             {
                 Nome = "Funcionários",
@@ -257,9 +202,6 @@ public class MenuService {
                 Permissao = "FUNCIONARIO_VISUALIZAR"
             },
 
-            // =========================================================
-            // SEGURANÇA
-            // =========================================================
 
             new()
             {
@@ -267,7 +209,7 @@ public class MenuService {
                 Icone = "security",
                 Filhos =
                 [
-          
+
                     new()
                     {
                         Nome = "Permissões",
@@ -285,10 +227,6 @@ public class MenuService {
                     }
                 ]
             },
-
-            // =========================================================
-            // RELATÓRIOS
-            // =========================================================
 
             new()
             {
@@ -370,9 +308,7 @@ public class MenuService {
                 ]
             },
 
-            // =========================================================
-            // LOJA
-            // =========================================================
+         
 
             new()
             {
@@ -390,9 +326,7 @@ public class MenuService {
                 ]
             },
 
-            // =========================================================
-            // CONFIGURAÇÕES
-            // =========================================================
+           
 
             new()
             {
@@ -406,14 +340,6 @@ public class MenuService {
                         Icone = "settings",
                         Rota = "/configuracoes",
                         Permissao = "CONFIGURACAO_VISUALIZAR"
-                    },
-
-                    new()
-                    {
-                        Nome = "Mesas",
-                        Icone = "table_restaurant",
-                        Rota = "/configuracoes/mesas",
-                        Permissao = "CONFIGURACAO_MESA"
                     },
 
                     new()
@@ -441,10 +367,6 @@ public class MenuService {
                     }
                 ]
             },
-
-            // =========================================================
-            // HISTÓRICOS
-            // =========================================================
 
             new()
             {
