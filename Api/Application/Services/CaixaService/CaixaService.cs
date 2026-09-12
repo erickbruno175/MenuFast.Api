@@ -125,10 +125,7 @@ public class CaixaService {
 
 
     public async Task<decimal> CalcularValorAtualAsync(int lojaId) {
-        var caixa = await _contexto.Caixas
-            .FirstOrDefaultAsync(x =>
-                x.LojaId == lojaId &&
-                x.Aberto);
+        var caixa = await _contexto.Caixas.FirstOrDefaultAsync(x =>x.LojaId == lojaId &&x.Aberto);
 
         if(caixa == null)
             throw new Exception("Não existe caixa aberto para esta loja.");

@@ -320,7 +320,6 @@ public class PedidoService {
 
         return pedidos.Select(MapearResponse).ToList();
     }
-
     public async Task<List<PedidoResponse>> ListarAsync(int lojaId) {
         var pedidos = await _context.Pedidos
             .Include(x => x.Itens)

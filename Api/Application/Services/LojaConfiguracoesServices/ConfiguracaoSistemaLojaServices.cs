@@ -81,10 +81,7 @@ public class ConfiguracaoSistemaLojaServices {
 
     public async Task<DadosLojaResponse> AtualizarDadosLoja(int idLoja, DadosEmpresaRequest requestDadosEmpresa) {
 
-
-
         var loja = await _menuFastContext.Lojas.FindAsync(idLoja);
-
         if(loja == null)
             throw new BusinessLogicException("Loja não encontrada.");
 
@@ -135,7 +132,6 @@ public class ConfiguracaoSistemaLojaServices {
 
         return await MapearDados(loja);
     }
-
 
     public async Task<DadosLojaResponse> ConsultarDadosLoja(int idFuncionarioLogado) {
         var funcionario = await _menuFastContext.Funcionarios.FindAsync(idFuncionarioLogado);

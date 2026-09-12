@@ -430,6 +430,14 @@ public class MenuService {
                         Icone = "schedule",
                         Rota = "/configuracoes/horario",
                         Permissao = "CONFIGURACAO_HORARIO_FUNCIONAMENTO"
+                    },
+
+                    new()
+                    {
+                        Nome = "WhatsApp / Bot",
+                        Icone = "smartphone",
+                        Rota = "/configuracoes/whatsapp",
+                        Permissao = "CONFIGURACAO_WHATSAPP_VISUALIZAR"
                     }
                 ]
             },
